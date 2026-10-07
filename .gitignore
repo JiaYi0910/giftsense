@@ -1,0 +1,23 @@
+# Environment Variables & Secrets
+.env
+*.env
+backend/.env
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# SQLite Database (Runtime Data)
+*.sqlite3
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
