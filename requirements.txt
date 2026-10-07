@@ -6,4 +6,5 @@ curl_cffi>=0.7.0
 selenium>=4.20.0
 numpy>=1.24.0
 google-generativeai
+linebot
 line-bot-sdk
