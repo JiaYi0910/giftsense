@@ -1,4 +1,4 @@
-# 🎁 CareGift (脈脈關懷) - 智慧銀髮關懷與藥物防錯系統
+# 🎁 GiftSense
 
 > **系統版本**：`v55.0 (MUJI & Mascot Native Edition)`  
 > **系統架構**：Decoupled SPA Frontend + High-Performance Python FastAPI Backend + Pure SQLite Persistence (caregift.db)  
@@ -8,7 +8,7 @@
 
 ## 📌 系統概述 (System Overview)
 
-**CareGift (脈脈關懷)** 是一套針對銀髮照護痛點設計的軟硬整合前導系統。傳統親友送禮往往面臨「買錯保健品與慢性處方藥產生交互作用 (撞藥)」以及「問候千篇一律」的雙重困境。
+**GiftSense** 是一套針對銀髮照護痛點設計的軟硬整合前導系統。傳統親友送禮往往面臨「買錯保健品與慢性處方藥產生交互作用 (撞藥)」以及「問候千篇一律」的雙重困境。
 
 本系統透過 **檢索增強生成 (RAG, Retrieval-Augmented Generation)** 技術，串接國際頂級醫學文獻庫（US FDA、NIH、AHA、ADA、Cochrane）與台灣衛福部食藥署 (TFDA) 黑盒子警示資料庫，建立從「日常天氣關心」到「親友病況防錯比對」、「連鎖藥局真實 SKU 比價」及「自動化代購」的完整工程閉環。
 
