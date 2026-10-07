@@ -19,7 +19,7 @@ if errorlevel 1 (
 
 echo.
 echo [2/2] 正在啟動 FastAPI 後端伺服器 (Port: 8000)...
-echo 後端 API 規格文件請造訪：https://giftsensevjbu.onrender.com/docs
+echo 後端 API 規格文件請造訪：https://giftsense-vjbu.onrender.com/docs
 echo.
 python -m uvicorn main:app --host 127.0.0.1 --port 8000 --reload
 
