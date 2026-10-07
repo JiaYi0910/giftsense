@@ -158,7 +158,7 @@ pip install -r requirements.txt
 cd backend
 python main.py
 ```
-> 後端服務就緒後，將監聽於 `http://127.0.0.1:8000`。您可造訪 `http://127.0.0.1:8000/docs` 檢視完整的 Swagger 互動式 API 文件。
+> 後端服務就緒後，將監聽於 `http://127.0.0.1:8000`。您可造訪 `https://giftsensevjbu.onrender.com/docs` 檢視完整的 Swagger 互動式 API 文件。
 
 ### 步驟 3：啟動前端 SPA
 - 直接以瀏覽器開啟根目錄下的 `index.html`。

@@ -27309,7 +27309,7 @@ aY4(a){var s=0,r=A.C(t.a),q,p=2,o=[],n,m,l,k,j,i
 var $async$qI=A.D(function(b,c){if(b===1){o.push(c)
 s=p}for(;;)switch(s){case 0:p=4
 s=7
-return A.t(A.qr(A.co("http://127.0.0.1:8000/api/auth/profile?account="+A.kQ(2,a,B.C,!1),0,null),null),$async$qI)
+return A.t(A.qr(A.co("https://giftsensevjbu.onrender.com/api/auth/profile?account="+A.kQ(2,a,B.C,!1),0,null),null),$async$qI)
 case 7:n=c
 if(n.b===200){m=B.Q.ev(0,B.C.c5(0,n.w),null)
 k=J.W(m,"profile")
@@ -27335,7 +27335,7 @@ case 2:return A.z(o.at(-1),r)}})
 return A.B($async$qI,r)},
 a6r(a,b,c){var s=0,r=A.C(t.a),q,p,o,n,m
 var $async$a6r=A.D(function(d,e){if(d===1)return A.z(e,r)
-for(;;)switch(s){case 0:p=A.co("http://127.0.0.1:8000/api/guard/query",0,null)
+for(;;)switch(s){case 0:p=A.co("https://giftsensevjbu.onrender.com/api/guard/query",0,null)
 o=t.N
 n=A.T(["Content-Type","application/json; charset=utf-8"],o,o)
 s=3
@@ -27351,7 +27351,7 @@ Mn(a,b,c,d,e){return A.aY6(a,b,c,d,e)},
 aY6(a,b,c,d,e){var s=0,r=A.C(t.H),q=1,p=[],o,n,m,l,k
 var $async$Mn=A.D(function(f,g){if(f===1){p.push(g)
 s=q}for(;;)switch(s){case 0:q=3
-o=A.co("http://127.0.0.1:8000/api/pharmacy/referral-click",0,null)
+o=A.co("https://giftsensevjbu.onrender.com/api/pharmacy/referral-click",0,null)
 n=t.N
 m=A.T(["Content-Type","application/json; charset=utf-8"],n,n)
 s=6
@@ -27371,7 +27371,7 @@ return A.B($async$Mn,r)},
 a6o(){var s=0,r=A.C(t.eU),q,p,o,n
 var $async$a6o=A.D(function(a,b){if(a===1)return A.z(b,r)
 for(;;)switch(s){case 0:s=3
-return A.t(A.qr(A.co("http://127.0.0.1:8000/api/recipients?account="+A.kQ(2,$.l_,B.C,!1),0,null),null),$async$a6o)
+return A.t(A.qr(A.co("https://giftsensevjbu.onrender.com/api/recipients?account="+A.kQ(2,$.l_,B.C,!1),0,null),null),$async$a6o)
 case 3:o=b
 n=o.b
 if(n===200){p=J.W(B.Q.ev(0,B.C.c5(0,o.w),null),"recipients")
@@ -27385,7 +27385,7 @@ case 1:return A.A(q,r)}})
 return A.B($async$a6o,r)},
 a6j(a,b,c,d){var s=0,r=A.C(t.E9),q,p,o,n,m,l
 var $async$a6j=A.D(function(e,f){if(e===1)return A.z(f,r)
-for(;;)switch(s){case 0:o=A.co("http://127.0.0.1:8000/api/recipients",0,null)
+for(;;)switch(s){case 0:o=A.co("https://giftsensevjbu.onrender.com/api/recipients",0,null)
 n=t.N
 m=A.T(["Content-Type","application/json; charset=utf-8"],n,n)
 s=3
@@ -27402,7 +27402,7 @@ return A.B($async$a6j,r)},
 a6k(a){var s=0,r=A.C(t.H)
 var $async$a6k=A.D(function(b,c){if(b===1)return A.z(c,r)
 for(;;)switch(s){case 0:s=2
-return A.t(A.aUi(A.co("http://127.0.0.1:8000/api/recipients/"+a,0,null)),$async$a6k)
+return A.t(A.aUi(A.co("https://giftsensevjbu.onrender.com/api/recipients/"+a,0,null)),$async$a6k)
 case 2:if(c.b!==200)throw A.e(A.cJ("\u522a\u9664\u5931\u6557"))
 return A.A(null,r)}})
 return A.B($async$a6k,r)},
@@ -27411,7 +27411,7 @@ aY5(a){var s=0,r=A.C(t.a),q,p=2,o=[],n,m,l,k,j,i
 var $async$a6q=A.D(function(b,c){if(b===1){o.push(c)
 s=p}for(;;)switch(s){case 0:p=4
 s=7
-return A.t(A.qr(A.co("http://127.0.0.1:8000/api/weather?city="+A.kQ(2,a,B.C,!1),0,null),null),$async$a6q)
+return A.t(A.qr(A.co("https://giftsensevjbu.onrender.com/api/weather?city="+A.kQ(2,a,B.C,!1),0,null),null),$async$a6q)
 case 7:n=c
 if(n.b===200){m=B.Q.ev(0,B.C.c5(0,n.w),null)
 k=J.W(m,"weather")
@@ -27443,7 +27443,7 @@ s=p}for(;;)switch(s){case 0:g="normal"
 p=4
 j=t.N
 n=A.T(["elder_name",b,"elder_condition",a,"weather_city",d,"weather_temp",a0,"weather_condition",e,"weather_temp_diff",a1,"elder_status",g,"tone",c],j,t.K)
-i=A.co("http://127.0.0.1:8000/api/greeting/generate",0,null)
+i=A.co("https://giftsensevjbu.onrender.com/api/greeting/generate",0,null)
 j=A.T(["Content-Type","application/json; charset=utf-8"],j,j)
 s=7
 return A.t(A.jN(i,B.Q.hN(n,null),j),$async$a6l)
@@ -27473,7 +27473,7 @@ a6n(a){return A.aY2(a)},
 aY2(a){var s=0,r=A.C(t.j),q,p=2,o=[],n,m,l,k,j,i,h
 var $async$a6n=A.D(function(b,c){if(b===1){o.push(c)
 s=p}for(;;)switch(s){case 0:p=4
-j=A.co("http://127.0.0.1:8000/api/messages",0,null)
+j=A.co("https://giftsensevjbu.onrender.com/api/messages",0,null)
 n=j.a2g(0,a.length!==0?A.T(["elder",a],t.N,t.z):null)
 j=t.N
 s=7
@@ -27510,7 +27510,7 @@ var $async$Mo=A.D(function(e,f){if(e===1){o.push(f)
 s=p}for(;;)switch(s){case 0:p=4
 k=t.N
 n=A.T(["sender",c,"elder",b,"content",a,"type",d,"timestamp",B.c.S(new A.fI(Date.now(),0,!1).k(0),0,19)],k,k)
-j=A.co("http://127.0.0.1:8000/api/messages",0,null)
+j=A.co("https://giftsensevjbu.onrender.com/api/messages",0,null)
 k=A.T(["Content-Type","application/json; charset=utf-8"],k,k)
 s=7
 return A.t(A.jN(j,B.Q.hN(n,null),k),$async$Mo)
@@ -27541,7 +27541,7 @@ aY3(a){var s=0,r=A.C(t.j),q,p=2,o=[],n,m,l,k,j,i
 var $async$Aa=A.D(function(b,c){if(b===1){o.push(c)
 s=p}for(;;)switch(s){case 0:p=4
 s=7
-return A.t(A.qr(A.co("http://127.0.0.1:8000/api/points?account="+A.kQ(2,a,B.C,!1),0,null),null),$async$Aa)
+return A.t(A.qr(A.co("https://giftsensevjbu.onrender.com/api/points?account="+A.kQ(2,a,B.C,!1),0,null),null),$async$Aa)
 case 7:n=c
 if(n.b===200){m=B.Q.ev(0,B.C.c5(0,n.w),null)
 k=J.W(m,"ledger")
@@ -27568,7 +27568,7 @@ return A.B($async$Aa,r)},
 a6m(){var s=0,r=A.C(t.j),q,p,o
 var $async$a6m=A.D(function(a,b){if(a===1)return A.z(b,r)
 for(;;)switch(s){case 0:s=3
-return A.t(A.qr(A.co("http://127.0.0.1:8000/api/knowledge",0,null),null),$async$a6m)
+return A.t(A.qr(A.co("https://giftsensevjbu.onrender.com/api/knowledge",0,null),null),$async$a6m)
 case 3:p=b
 o=p.b
 if(o===200){o=J.W(B.Q.ev(0,B.C.c5(0,p.w),null),"literatures")
@@ -27580,7 +27580,7 @@ return A.B($async$a6m,r)},
 a6s(){var s=0,r=A.C(t.j),q,p,o
 var $async$a6s=A.D(function(a,b){if(a===1)return A.z(b,r)
 for(;;)switch(s){case 0:s=3
-return A.t(A.jN(A.co("http://127.0.0.1:8000/api/knowledge/reset",0,null),null,null),$async$a6s)
+return A.t(A.jN(A.co("https://giftsensevjbu.onrender.com/api/knowledge/reset",0,null),null,null),$async$a6s)
 case 3:o=b
 if(o.b===200){p=J.W(B.Q.ev(0,B.C.c5(0,o.w),null),"literatures")
 q=p==null?[]:p
@@ -27592,7 +27592,7 @@ a6t(a,b,c,d,e){return A.aY8(a,b,c,d,e)},
 aY8(a,b,c,d,e){var s=0,r=A.C(t.y),q,p=2,o=[],n,m,l,k,j,i,h,g
 var $async$a6t=A.D(function(f,a0){if(f===1){o.push(a0)
 s=p}for(;;)switch(s){case 0:p=4
-k=A.co("http://127.0.0.1:8000/api/user/profile",0,null)
+k=A.co("https://giftsensevjbu.onrender.com/api/user/profile",0,null)
 j=t.N
 i=A.T(["Content-Type","application/json; charset=utf-8"],j,j)
 s=7
@@ -94511,7 +94511,7 @@ r1(a,b){return this.aal(a,b)},
 aal(a,b){var s=0,r=A.C(t.H),q,p=2,o=[],n=this,m,l,k,j,i,h,g,f
 var $async$r1=A.D(function(c,d){if(c===1){o.push(d)
 s=p}for(;;)switch(s){case 0:p=4
-j=A.co("http://127.0.0.1:8000/api/points/add",0,null)
+j=A.co("https://giftsensevjbu.onrender.com/api/points/add",0,null)
 i=t.N
 h=A.T(["Content-Type","application/json; charset=utf-8"],i,i)
 n.a.toString
@@ -94942,7 +94942,7 @@ Dc(a,b){return this.awK(a,b)},
 awK(a,b){var s=0,r=A.C(t.y),q,p=2,o=[],n,m,l,k,j
 var $async$Dc=A.D(function(c,d){if(c===1){o.push(d)
 s=p}for(;;)switch(s){case 0:p=4
-m=A.co("http://127.0.0.1:8000/api/recipients/"+a,0,null)
+m=A.co("https://giftsensevjbu.onrender.com/api/recipients/"+a,0,null)
 l=t.N
 l=A.T(["Content-Type","application/json; charset=utf-8"],l,l)
 s=7
@@ -95912,7 +95912,7 @@ break}m.L(new A.azV(m))
 p=4
 s=m.d?7:9
 break
-case 7:d=A.co("http://127.0.0.1:8000/api/auth/login",0,null)
+case 7:d=A.co("https://giftsensevjbu.onrender.com/api/auth/login",0,null)
 c=t.N
 b=A.T(["Content-Type","application/json; charset=utf-8"],c,c)
 s=10
@@ -95942,7 +95942,7 @@ break
 case 9:a2=B.c.bT(m.w.a.a)
 i=a2.length===0?a4:a2
 h=a4.toLowerCase()==="admin"?"admin":"user"
-d=A.co("http://127.0.0.1:8000/api/auth/register",0,null)
+d=A.co("https://giftsensevjbu.onrender.com/api/auth/register",0,null)
 c=t.N
 b=A.T(["Content-Type","application/json; charset=utf-8"],c,c)
 s=11
@@ -96001,7 +96001,7 @@ n=[1]
 s=5
 break}s=8
 return A.t(k.gBC(),$async$ro)
-case 8:f=A.co("http://127.0.0.1:8000/api/auth/social",0,null)
+case 8:f=A.co("https://giftsensevjbu.onrender.com/api/auth/social",0,null)
 d=t.N
 c=A.T(["Content-Type","application/json; charset=utf-8"],d,d)
 b=k.b
@@ -96075,7 +96075,7 @@ ah8(a,a0,a1,a2){var s=0,r=A.C(t.H),q,p=2,o=[],n=[],m=this,l,k,j,i,h,g,f,e,d,c,b
 var $async$vE=A.D(function(a3,a4){if(a3===1){o.push(a4)
 s=p}for(;;)switch(s){case 0:m.L(new A.azQ(m))
 p=4
-i=A.co("http://127.0.0.1:8000/api/auth/social",0,null)
+i=A.co("https://giftsensevjbu.onrender.com/api/auth/social",0,null)
 h=t.N
 g=A.T(["Content-Type","application/json; charset=utf-8"],h,h)
 s=7
@@ -96184,7 +96184,7 @@ s=p}for(;;)switch(s){case 0:g=B.c.bT(n.b.a.a)
 A.dD(n.c,!1).eM(null)
 if(J.c8(g)===0){s=1
 break}p=4
-k=A.co("http://127.0.0.1:8000/api/auth/forgot-password",0,null)
+k=A.co("https://giftsensevjbu.onrender.com/api/auth/forgot-password",0,null)
 j=t.N
 i=A.T(["Content-Type","application/json; charset=utf-8"],j,j)
 s=7
@@ -96322,11 +96322,11 @@ n7(){var s=0,r=A.C(t.H),q=1,p=[],o=this,n,m,l,k,j,i,h,g,f
 var $async$n7=A.D(function(a,b){if(a===1){p.push(b)
 s=q}for(;;)switch(s){case 0:q=3
 s=6
-return A.t(A.qr(A.co("http://127.0.0.1:8000/api/db/stats",0,null),null),$async$n7)
+return A.t(A.qr(A.co("https://giftsensevjbu.onrender.com/api/db/stats",0,null),null),$async$n7)
 case 6:n=b
 if(n.b===200){m=B.Q.ev(0,B.C.c5(0,n.w),null)
 if(J.W(m,"stats")!=null)o.L(new A.aE2(o,m))}s=7
-return A.t(A.qr(A.co("http://127.0.0.1:8000/api/config/rag",0,null),null),$async$n7)
+return A.t(A.qr(A.co("https://giftsensevjbu.onrender.com/api/config/rag",0,null),null),$async$n7)
 case 7:l=b
 if(l.b===200){k=B.Q.ev(0,B.C.c5(0,l.w),null)
 i=J.W(k,"config")
@@ -96350,7 +96350,7 @@ var $async$AE=A.D(function(a,b){if(a===1){p.push(b)
 s=q}for(;;)switch(s){case 0:q=3
 k=t.N
 n=A.T(["topK",B.d.dC(o.f),"simThreshold",A.jK(B.d.ab(o.r/100,2)),"temperature",A.jK(B.d.ab(o.w/100,2)),"model",o.x,"apiKey",B.c.bT(o.z.a.a),"systemPrompt",B.c.bT(o.y.a.a)],k,t.K)
-j=A.co("http://127.0.0.1:8000/api/config/rag",0,null)
+j=A.co("https://giftsensevjbu.onrender.com/api/config/rag",0,null)
 k=A.T(["Content-Type","application/json; charset=utf-8"],k,k)
 s=6
 return A.t(A.jN(j,B.Q.hN(n,null),k),$async$AE)
@@ -96380,7 +96380,7 @@ zL(){var s=0,r=A.C(t.H),q,p=2,o=[],n=this,m,l,k,j,i
 var $async$zL=A.D(function(a,b){if(a===1){o.push(b)
 s=p}for(;;)switch(s){case 0:p=4
 s=7
-return A.t(A.qr(A.co("http://127.0.0.1:8000/api/db/export",0,null),null),$async$zL)
+return A.t(A.qr(A.co("https://giftsensevjbu.onrender.com/api/db/export",0,null),null),$async$zL)
 case 7:m=b
 if(m.b===200){k=n.c
 if(k==null){s=1

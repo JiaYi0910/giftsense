@@ -3532,7 +3532,7 @@
 
         try {
 
-          await fetch(`http://127.0.0.1:8000/api/recipients/${id}`, {
+          await fetch(`https://giftsensevjbu.onrender.com/api/recipients/${id}`, {
 
             method: 'PUT',
 
@@ -3602,7 +3602,7 @@
 
         try {
 
-          fetch(`http://127.0.0.1:8000/api/recipients/${recId}`, { method: 'DELETE' }).catch(() => { });
+          fetch(`https://giftsensevjbu.onrender.com/api/recipients/${recId}`, { method: 'DELETE' }).catch(() => { });
 
         } catch (e) { }
 
@@ -3674,7 +3674,7 @@
 
         try {
 
-          fetch('http://127.0.0.1:8000/api/recipients', {
+          fetch('https://giftsensevjbu.onrender.com/api/recipients', {
 
             method: 'POST',
 
