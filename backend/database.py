@@ -5,6 +5,12 @@ import time
 import uuid
 from datetime import datetime, timedelta, timezone
 
+# 💡 伺服器一律使用台灣時間（Render 預設是 UTC，會讓 LINE 訊息時間慢 8 小時、聊天排序錯亂）
+#    使用 POSIX 時區字串 CST-8（UTC+8、台灣無日光節約），不依賴系統是否安裝時區資料
+os.environ["TZ"] = "CST-8"
+if hasattr(time, "tzset"):
+    time.tzset()
+
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "caregift.db")
 
 # 💡 暖心選物商品資料（藥局官網實際查價）統一放在 product_catalog.py，init_db 啟動時同步寫入
@@ -302,6 +308,17 @@ def init_db():
         cursor.execute("UPDATE users SET points = 100 WHERE COALESCE(role, 'user') != 'admin'")
         cursor.execute(
             "INSERT OR REPLACE INTO system_config (key, value_json) VALUES ('points_reset_20261013', ?)",
+            (json.dumps({"done_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}),)
+        )
+
+    # 一次性：先前 LINE 回覆的時間是以 UTC 記錄（慢 8 小時），補回台灣時間
+    if not cursor.execute("SELECT 1 FROM system_config WHERE key = 'chat_tz_fix_20261013'").fetchone():
+        cursor.execute(
+            "UPDATE chat_messages SET timestamp = datetime(timestamp, '+8 hours') "
+            "WHERE from_role = 'elder' AND timestamp LIKE '____-__-__ __:__:__'"
+        )
+        cursor.execute(
+            "INSERT OR REPLACE INTO system_config (key, value_json) VALUES ('chat_tz_fix_20261013', ?)",
             (json.dumps({"done_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}),)
         )
 

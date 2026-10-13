@@ -20,6 +20,12 @@ import random
 import re
 import requests
 
+# 💡 伺服器一律使用台灣時間（Render 預設是 UTC，會讓 LINE 訊息時間慢 8 小時、聊天排序錯亂）
+#    使用 POSIX 時區字串 CST-8（UTC+8、台灣無日光節約），不依賴系統是否安裝時區資料
+os.environ["TZ"] = "CST-8"
+if hasattr(time, "tzset"):
+    time.tzset()
+
 from database import (
     authenticate_user, register_user, get_user_profile,
     get_all_recipients, get_recipient_by_id, add_recipient, update_recipient,
@@ -680,7 +686,7 @@ def get_family_messages(elder: str = "", account: str = ""):
 
 @app.post("/api/messages")
 def post_family_message(req: FamilyMessageRequest):
-    timestamp_str = req.timestamp or time.strftime("%Y-%m-%d %H:%M:%S")
+    timestamp_str = time.strftime("%Y-%m-%d %H:%M:%S")  # 一律以伺服器的台灣時間為準
     content_text = req.content
     
     sender_display = req.sender if req.sender and req.sender.strip() else "家人"
