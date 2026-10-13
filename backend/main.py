@@ -264,12 +264,52 @@ def health_check():
         "tfda_engine": "TFDAService (Official Black Box Registry)"
     }
 
+# =========================================================================
+# 管理員通行證：只有用帳號密碼登入的管理員才拿得到（簽章驗證，7 天有效）
+# 用途：RAG 測試台不限次數。只送 account=admin 不會被當成管理員。
+# =========================================================================
+ADMIN_TOKEN_TTL = 7 * 24 * 3600
+_ADMIN_PROCESS_SECRET = os.urandom(32)
+
+
+def _admin_token_key() -> bytes:
+    base = os.getenv("ADMIN_TOKEN_SECRET") or os.getenv("ADMIN_PASSWORD") or ""
+    if not base:
+        return _ADMIN_PROCESS_SECRET  # 未設定時每次重啟都會失效，需重新登入
+    return hashlib.sha256(f"giftsense-admin-token|{base}".encode()).digest()
+
+
+def issue_admin_token(account: str) -> str:
+    payload = f"{account}|{int(time.time()) + ADMIN_TOKEN_TTL}"
+    sig = hmac.new(_admin_token_key(), payload.encode(), hashlib.sha256).hexdigest()
+    return base64.urlsafe_b64encode(payload.encode()).decode().rstrip("=") + "." + sig
+
+
+def verify_admin_token(token: Optional[str], account: Optional[str]) -> bool:
+    try:
+        encoded, sig = (token or "").split(".", 1)
+        payload = base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4)).decode()
+        expected = hmac.new(_admin_token_key(), payload.encode(), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(sig, expected):
+            return False
+        token_account, exp = payload.rsplit("|", 1)
+        if int(exp) < time.time() or token_account != (account or ""):
+            return False
+        profile = get_user_profile(token_account)
+        return bool(profile) and profile.get("role") == "admin"
+    except Exception:
+        return False
+
+
 @app.post("/api/auth/login")
 def api_login(req: LoginRequest):
     user = authenticate_user(req.account, req.password)
     if not user:
         return {"success": False, "message": "帳號或密碼錯誤，請重新確認！"}
-    return {"success": True, "message": f"歡迎回來，{user['name']}！", "user": user}
+    result = {"success": True, "message": f"歡迎回來，{user['name']}！", "user": user}
+    if user.get("role") == "admin":
+        result["admin_token"] = issue_admin_token(user["account"])
+    return result
 
 @app.post("/api/auth/register")
 def api_register(req: RegisterRequest):
@@ -298,7 +338,11 @@ def guard_query(req: GuardQueryRequest, request: Request):
     if not req.query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty")
 
-    allowed, quota = consume_ai_guard_quota(_guard_quota_key(req.account, request), AI_GUARD_DAILY_LIMIT)
+    # 管理員（持有效通行證）在 RAG 測試台不限次數
+    if verify_admin_token(request.headers.get("x-admin-token"), req.account):
+        allowed, quota = True, {"unlimited": True, "remaining": None, "limit": None}
+    else:
+        allowed, quota = consume_ai_guard_quota(_guard_quota_key(req.account, request), AI_GUARD_DAILY_LIMIT)
     if not allowed:
         raise HTTPException(
             status_code=429,
@@ -315,7 +359,10 @@ def guard_query(req: GuardQueryRequest, request: Request):
 
 @app.get("/api/guard/quota")
 def guard_quota(request: Request, account: Optional[str] = None):
-    quota = get_ai_guard_quota(_guard_quota_key(account, request), AI_GUARD_DAILY_LIMIT)
+    if verify_admin_token(request.headers.get("x-admin-token"), account):
+        quota = {"unlimited": True, "remaining": None, "limit": None}
+    else:
+        quota = get_ai_guard_quota(_guard_quota_key(account, request), AI_GUARD_DAILY_LIMIT)
     return {
         "success": True,
         "quota": quota,
