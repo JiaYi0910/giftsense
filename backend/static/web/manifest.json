@@ -1,11 +1,11 @@
 {
-    "name": "giftsense",
-    "short_name": "giftsense",
+    "name": "GiftSense",
+    "short_name": "GiftSense",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "GiftSense 智慧關懷送禮",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
