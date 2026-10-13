@@ -163,6 +163,22 @@ def init_db():
     )
     """)
 
+    # 4.7.5 chat_messages 表格（傳情小站聊天紀錄；原本只放記憶體，服務重啟就會消失）
+    #      註：舊版遺留的 family_messages 表欄位不同且已不使用，所以另開新表
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS chat_messages (
+        id TEXT PRIMARY KEY,
+        owner_account TEXT NOT NULL,
+        elder TEXT NOT NULL,
+        sender TEXT,
+        content TEXT,
+        type TEXT DEFAULT 'text',
+        timestamp TEXT,
+        from_role TEXT DEFAULT 'family'
+    )
+    """)
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_chat_messages_owner ON chat_messages (owner_account, elder)")
+
     # 4.8 cashback_orders 表格（ShopBack 模式購物回饋：點擊追蹤 → 完成購物 → 藥局確認後入帳）
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS cashback_orders (
@@ -254,6 +270,14 @@ def init_db():
         INSERT INTO users (id, account, password_hash, name, role, points)
         VALUES (?, ?, ?, ?, ?, ?)
         """, ("usr_admin", "admin", "123", "系統管理員", "admin", 9999))
+    # 💡 線上環境請在 Render 設定 ADMIN_PASSWORD：每次啟動都以它覆蓋 admin 密碼，
+    #    避免任何人用 repo 裡公開的預設密碼登入管理後台
+    admin_password = os.getenv("ADMIN_PASSWORD", "").strip()
+    if admin_password:
+        cursor.execute(
+            "UPDATE users SET password_hash = ? WHERE account = 'admin'",
+            (admin_password,)
+        )
 
     # 為尚未有快速提問晶片的親友自動補上臨床規則晶片
     try:
@@ -876,10 +900,49 @@ def set_system_config(key: str, value):
     conn.close()
     return value
 
+# =========================================================================
+# 傳情小站聊天紀錄
+# =========================================================================
+def add_family_message(msg: dict):
+    conn = get_db()
+    conn.execute(
+        """INSERT INTO chat_messages (id, owner_account, elder, sender, content, type, timestamp, from_role)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        (msg["id"], msg.get("owner_account") or "", msg.get("elder") or "", msg.get("sender") or "",
+         msg.get("content") or "", msg.get("type") or "text", msg.get("timestamp") or "", msg.get("from_role") or "family")
+    )
+    conn.commit()
+    conn.close()
+    return msg
+
+def list_family_messages(owner_account: str, elder: str = "", limit: int = 300):
+    """只回傳「這個帳號 × 這位親友」的對話，新訊息在前"""
+    conn = get_db()
+    sql = "SELECT * FROM chat_messages WHERE owner_account = ?"
+    params = [owner_account]
+    if elder:
+        sql += " AND elder = ?"
+        params.append(elder)
+    sql += " ORDER BY timestamp DESC, rowid DESC LIMIT ?"
+    params.append(limit)
+    rows = conn.execute(sql, tuple(params)).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def latest_family_card(owner_account: str, elder: str):
+    conn = get_db()
+    row = conn.execute(
+        """SELECT * FROM chat_messages WHERE owner_account = ? AND elder = ? AND type = 'card'
+           ORDER BY timestamp DESC, rowid DESC LIMIT 1""",
+        (owner_account, elder)
+    ).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
 def get_database_stats():
     conn = get_db()
     cursor = conn.cursor()
-    tables = ["users", "recipients", "orders", "points_ledger", "pharmacy_cache", "recommendation_products", "clinical_knowledge", "system_config", "cashback_orders", "ai_guard_usage"]
+    tables = ["users", "recipients", "orders", "points_ledger", "pharmacy_cache", "recommendation_products", "clinical_knowledge", "system_config", "cashback_orders", "ai_guard_usage", "chat_messages"]
     counts = {}
     for t in tables:
         try:

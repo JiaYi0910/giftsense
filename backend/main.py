@@ -14,6 +14,7 @@ import hashlib
 import hmac
 import threading
 import time
+import uuid
 import random
 import re
 import requests
@@ -31,7 +32,8 @@ from database import (
     get_ai_guard_quota, consume_ai_guard_quota, add_ai_guard_bonus,
     find_or_create_social_user, create_line_bind_code, bind_line_by_code,
     unbind_recipient_line, find_recipient_line_id, get_line_binding_info, claim_reward,
-    create_cashback_click, list_cashback_orders, simulate_cashback_purchase, settle_cashback, CASHBACK_RATES
+    create_cashback_click, list_cashback_orders, simulate_cashback_purchase, settle_cashback, CASHBACK_RATES,
+    add_family_message, list_family_messages, latest_family_card
 )
 from social_auth import verify_social_token, SocialAuthError
 from line_messages import card as line_card, button as line_button
@@ -240,8 +242,10 @@ class KnowledgeItemRequest(BaseModel):
 class KnowledgeSyncRequest(BaseModel):
     literatures: List[Dict[str, Any]]
 
-# 傳情小站訊息（記憶體暫存）：owner_account = 守護家人的帳號，from_role = family（家人發送）/ elder（親友從 LINE 回覆）
-family_messages_store: List[Dict[str, Any]] = []
+# 傳情小站訊息存在資料庫 family_messages 表：owner_account = 守護家人的帳號，
+# from_role = family（家人發送）/ elder（親友從 LINE 回覆）
+def _new_message_id(prefix: str = "msg") -> str:
+    return f"{prefix}_{int(time.time() * 1000)}_{uuid.uuid4().hex[:6]}"
 
 @app.get("/api/health")
 def health_check():
@@ -607,11 +611,7 @@ def get_family_messages(elder: str = "", account: str = ""):
     # 💡 只回傳「這個帳號 × 這位親友」的一對一對話，避免不同使用者或不同親友的訊息混在一起
     if not account.strip():
         return {"success": True, "messages": []}
-    filtered = [
-        m for m in family_messages_store
-        if m.get("owner_account") == account and (not elder.strip() or m.get("elder") == elder.strip())
-    ]
-    return {"success": True, "messages": filtered}
+    return {"success": True, "messages": list_family_messages(account.strip(), elder.strip())}
 
 @app.post("/api/messages")
 def post_family_message(req: FamilyMessageRequest):
@@ -635,7 +635,7 @@ def post_family_message(req: FamilyMessageRequest):
         content_text = f"{card_prefix}\n{content_text}"
 
     new_msg = {
-        "id": f"msg_{int(time.time() * 1000)}",
+        "id": _new_message_id(),
         "sender": sender_display,
         "elder": req.elder,
         "content": content_text,
@@ -644,7 +644,7 @@ def post_family_message(req: FamilyMessageRequest):
         "owner_account": req.sender,
         "from_role": "family",
     }
-    family_messages_store.insert(0, new_msg)
+    add_family_message(new_msg)
     
     if req.sender != req.elder:
         # 💡 只推播給寄件者帳號底下的這位親友，避免不同使用者的同名親友收到別人的訊息
@@ -848,8 +848,8 @@ def _handle_line_event(event: dict):
     owner_account = binding["user_account"]
 
     def _store(content: str, store_type: str = "text"):
-        family_messages_store.insert(0, {
-            "id": f"msg_line_{int(datetime.now().timestamp() * 1000)}",
+        add_family_message({
+            "id": _new_message_id("msg_line"),
             "sender": elder_name,
             "elder": elder_name,
             "content": content,
@@ -862,11 +862,7 @@ def _handle_line_event(event: dict):
     if msg_type == "text":
         cmd = text.lower()
         if cmd in LINE_CMD_TODAY_CARE:
-            card_msg = next((
-                m for m in family_messages_store
-                if m.get("elder") == elder_name and m.get("type") == "card"
-                and m.get("owner_account") == owner_account
-            ), None)
+            card_msg = latest_family_card(owner_account, elder_name)
             if card_msg:
                 reply(_care_card(card_msg.get("sender") or owner_name, card_msg["content"], card_msg.get("timestamp", "")))
             else:
