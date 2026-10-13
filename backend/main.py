@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
@@ -254,6 +254,12 @@ class KnowledgeSyncRequest(BaseModel):
 # from_role = family（家人發送）/ elder（親友從 LINE 回覆）
 def _new_message_id(prefix: str = "msg") -> str:
     return f"{prefix}_{int(time.time() * 1000)}_{uuid.uuid4().hex[:6]}"
+
+# 隱私權政策公開網頁（Facebook 等開發者後台的「隱私政策網址」：https://giftsense-vjbu.onrender.com/privacy）
+@app.get("/privacy", response_class=HTMLResponse)
+def privacy_policy_page():
+    from privacy_page import PRIVACY_HTML
+    return HTMLResponse(PRIVACY_HTML)
 
 @app.get("/api/health")
 def health_check():
