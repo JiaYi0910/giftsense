@@ -33,6 +33,7 @@ from database import (
     unbind_recipient_line, find_recipient_line_id, get_line_binding_info, claim_reward
 )
 from social_auth import verify_social_token, SocialAuthError
+from line_messages import card as line_card, button as line_button
 from rag_engine import query_rag_engine, CLINICAL_LITERATURES
 from vector_store import global_vector_store
 from tfda_service import global_tfda_service
@@ -69,6 +70,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def no_cache_web_app(request: Request, call_next):
+    # 💡 網頁版（Flutter Web）每次都向伺服器確認是否有新版，部署後一般重新整理就能看到更新；
+    #    檔案沒變時伺服器回 304，不會重新下載
+    response = await call_next(request)
+    if not request.url.path.startswith("/api/"):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
+
 @app.on_event("startup")
 def startup_warmup_cache():
     # 💡 預熱藥局快取改在背景執行緒進行，避免爬蟲逾時拖慢伺服器啟動
@@ -100,30 +110,6 @@ def _get_line_bot_basic_id() -> str:
     except Exception as e:
         print("取得 LINE 官方帳號 ID 失敗:", e)
     return _line_bot_basic_id_cache["value"]
-
-LINE_WELCOME_TEXT = (
-    "💙 歡迎加入 GiftSense 智慧關懷 💙\n\n"
-    "心意，醫觸即達。在這裡您會收到家人傳來的暖心問候、健康關懷卡與用藥叮嚀，"
-    "也能直接留言或傳語音給家人 ✨"
-)
-
-LINE_HELP_TEXT = (
-    "【 GiftSense 服務說明 】\n\n"
-    "點下方選單就能使用：\n"
-    "💌 今日關懷：查看家人最新送來的關懷卡\n"
-    "💊 今日用藥：服藥與保健叮嚀\n"
-    "🆘 緊急求助：立即通知守護您的家人\n"
-    "🔗 綁定說明：如何綁定與改綁家人\n"
-    "👤 我的綁定：查看目前綁定的家人\n\n"
-    "💬 直接傳文字或語音，就會轉達給家人喔！"
-)
-
-LINE_UNBOUND_GUIDE = (
-    "您好！您的 LINE 尚未完成綁定 🙏\n\n"
-    "請向家人索取 GiftSense App 上顯示的 6 位數綁定碼，直接回傳：\n"
-    "👉 【綁定 123456】\n"
-    "（請把 123456 換成家人給您的綁定碼）"
-)
 
 def _verify_line_signature(body: bytes, signature: str) -> bool:
     digest = hmac.new(LINE_CHANNEL_SECRET.encode("utf-8"), body, hashlib.sha256).digest()
@@ -624,9 +610,15 @@ def post_family_message(req: FamilyMessageRequest):
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {LINE_CHANNEL_ACCESS_TOKEN}"
             }
+            if req.type == "card":
+                push_message = _with_quick_reply(_care_card(sender_display, content_text, timestamp_str))
+            else:
+                push_message = _with_quick_reply(line_card(
+                    f"{sender_display} 傳來訊息", paragraphs=[content_text], compact=True
+                ))
             payload = {
                 "to": target_line_id,
-                "messages": [{"type": "text", "text": content_text}]
+                "messages": [push_message]
             }
             try:
                 requests.post(url, headers=headers, json=payload)
@@ -673,11 +665,77 @@ LINE_QUICK_REPLY = {
     ]
 }
 
-def _line_text(text: str, quick_reply: bool = True) -> dict:
-    msg = {"type": "text", "text": text}
-    if quick_reply:
-        msg["quickReply"] = LINE_QUICK_REPLY
-    return msg
+def _with_quick_reply(message: dict) -> dict:
+    return {**message, "quickReply": LINE_QUICK_REPLY}
+
+# ---------- 機器人訊息卡片（統一使用 line_messages.card 樣式）----------
+
+def _welcome_cards() -> List[Dict[str, Any]]:
+    return [
+        line_card(
+            "歡迎加入 GiftSense",
+            subtitle="心意，醫觸即達",
+            paragraphs=["在這裡，您會收到家人傳來的暖心問候、健康關懷卡與用藥叮嚀，也能直接留言或傳語音給家人。"],
+            alt_text="歡迎加入 GiftSense！完成綁定後就能收到家人的關懷卡。",
+        ),
+        _unbound_card(),
+    ]
+
+def _unbound_card() -> Dict[str, Any]:
+    return line_card(
+        "完成綁定，開始接收關懷",
+        steps=[
+            "請家人在 GiftSense App 的「親友健康資料庫」產生綁定碼",
+            "在這個聊天室傳送下方訊息（數字換成家人給您的綁定碼）",
+        ],
+        info="綁定 123456",
+        note="綁定碼 24 小時內有效，使用一次後即失效。",
+        alt_text="尚未綁定：請向家人索取綁定碼，傳送「綁定 123456」。",
+    )
+
+def _help_card() -> Dict[str, Any]:
+    return line_card(
+        "服務說明",
+        subtitle="點下方選單就能使用以下功能",
+        rows=[
+            ("今日關懷", "查看家人最新送來的關懷卡"),
+            ("今日用藥", "服藥與保健叮嚀"),
+            ("緊急求助", "立即通知守護您的家人"),
+            ("綁定說明", "如何綁定與改綁家人"),
+            ("我的綁定", "查看目前綁定的家人"),
+        ],
+        note="直接傳文字或語音，就會轉達給家人。",
+        buttons=[line_button("今日關懷", primary=True)],
+    )
+
+def _care_card(sender: str, content: str, timestamp: str = "") -> Dict[str, Any]:
+    body = content
+    prefix = f"【來自 {sender} 的健康關懷】"
+    if body.startswith(prefix):
+        body = body[len(prefix):].strip()
+    return line_card(
+        f"來自 {sender} 的關懷",
+        subtitle=timestamp[5:16].replace("-", "/") if timestamp else None,
+        paragraphs=[body],
+        buttons=[line_button("今日用藥"), line_button("服務說明")],
+        alt_text=f"{sender} 送來一張關懷卡：{body}",
+    )
+
+def _medication_card(binding: dict) -> Dict[str, Any]:
+    from greeting_generator import _match_condition_lines
+    condition = binding.get("condition") or "日常養生"
+    steps = ["請依照醫師處方按時服藥，不要自行停藥或加量。"]
+    care = _match_condition_lines(condition)
+    if care:
+        steps.append(care["reserved"][0])
+    steps.append("想買市售保健品（如魚油、維他命）前，請先請家人用 GiftSense App 檢驗是否會撞藥。")
+    return line_card(
+        "今日用藥叮嚀",
+        subtitle=f"{binding['name']} · {condition}",
+        steps=steps,
+        info=care["insight"] if care else None,
+        buttons=[line_button("今日關懷")],
+    )
 
 def _handle_line_event(event: dict):
     event_type = event.get("type")
@@ -689,18 +747,20 @@ def _handle_line_event(event: dict):
 
     binding = get_line_binding_info(user_id)
 
+    def reply(*messages):
+        msgs = list(messages)
+        msgs[-1] = _with_quick_reply(msgs[-1]) if binding else msgs[-1]
+        _line_reply(reply_token, user_id, msgs)
+
     if event_type == "follow":
         if binding:
-            _line_reply(reply_token, user_id, [_line_text(
-                f"💙 歡迎回來，{binding['name']}！\n"
-                f"您已綁定，{binding['owner_name']} 傳送的關懷卡會直接送到這裡。\n"
-                "點下方選單就能查看今日關懷、用藥提醒或發送求助。"
-            )])
+            reply(line_card(
+                f"歡迎回來，{binding['name']}",
+                paragraphs=[f"您已完成綁定，{binding['owner_name']} 傳送的關懷卡會直接送到這裡。"],
+                buttons=[line_button("今日關懷", primary=True), line_button("今日用藥")],
+            ))
         else:
-            _line_reply(reply_token, user_id, [
-                _line_text(LINE_WELCOME_TEXT, quick_reply=False),
-                _line_text(LINE_UNBOUND_GUIDE, quick_reply=False),
-            ])
+            reply(*_welcome_cards())
         return
 
     if event_type != "message":
@@ -715,22 +775,27 @@ def _handle_line_event(event: dict):
     if bind_match:
         rec = bind_line_by_code(bind_match.group(1), user_id)
         if rec:
+            binding = get_line_binding_info(user_id)
             owner = rec.get("owner_name") or "家人"
-            reply = _line_text(
-                f"✅ 綁定成功！您好，{rec['name']}。\n"
-                f"{owner} 傳送的健康關懷與用藥叮嚀會即時送到這裡，點下方選單就能使用各項功能。"
-            )
+            reply(line_card(
+                "綁定成功",
+                subtitle=f"您好，{rec['name']}",
+                paragraphs=[f"{owner} 傳送的健康關懷與用藥叮嚀，會即時送到這個聊天室。"],
+                note="點下方選單就能使用各項功能。",
+                buttons=[line_button("今日關懷", primary=True), line_button("服務說明")],
+            ))
         else:
-            reply = _line_text(
-                "綁定失敗：綁定碼錯誤或已過期（有效 24 小時）。\n請家人在 App 重新產生綁定碼後再試一次。",
-                quick_reply=False,
-            )
-        _line_reply(reply_token, user_id, [reply])
+            reply(line_card(
+                "綁定失敗",
+                paragraphs=["綁定碼錯誤或已過期（有效 24 小時）。"],
+                info="請家人在 App 重新產生綁定碼後再試一次",
+                danger=True,
+            ))
         return
 
     # 2. 尚未綁定：只回覆綁定教學，訊息不存入系統
     if not binding:
-        _line_reply(reply_token, user_id, [_line_text(LINE_UNBOUND_GUIDE, quick_reply=False)])
+        reply(_unbound_card())
         return
 
     elder_name = binding["name"]
@@ -752,76 +817,74 @@ def _handle_line_event(event: dict):
     if msg_type == "text":
         cmd = text.lower()
         if cmd in LINE_CMD_TODAY_CARE:
-            card = next((
+            card_msg = next((
                 m for m in family_messages_store
                 if m.get("elder") == elder_name and m.get("type") == "card"
                 and m.get("owner_account") == owner_account
             ), None)
-            if card:
-                reply = f"💌 {owner_name} 最新送給您的關懷（{card.get('timestamp', '')[5:16]}）：\n\n{card['content']}"
+            if card_msg:
+                reply(_care_card(card_msg.get("sender") or owner_name, card_msg["content"], card_msg.get("timestamp", "")))
             else:
-                reply = f"💌 {owner_name} 今天還沒有送關懷卡喔！\n想念家人的話，可以直接在這裡留言，我會幫您轉達 ❤️"
-            _line_reply(reply_token, user_id, [_line_text(reply)])
+                reply(line_card(
+                    "今日關懷",
+                    paragraphs=[f"{owner_name} 今天還沒有送關懷卡喔！"],
+                    note="想念家人的話，可以直接在這裡留言，我會幫您轉達。",
+                ))
             return
 
         if cmd in LINE_CMD_MEDICATION:
-            _line_reply(reply_token, user_id, [_line_text(_build_medication_reminder(binding))])
+            reply(_medication_card(binding))
             return
 
         if cmd in LINE_CMD_SOS:
             _store("🚨【親友發出緊急求助訊號】", "text")
-            _line_reply(reply_token, user_id, [_line_text(
-                f"🆘 已收到您的求助！系統已通知 {owner_name}，請保持電話暢通。\n"
-                "⚠️ 若情況緊急，請立即撥打 119。"
-            )])
+            reply(line_card(
+                "已通知守護家人",
+                subtitle="緊急求助",
+                paragraphs=[f"系統已通知 {owner_name}，請保持電話暢通，家人會盡快與您聯絡。"],
+                info="若情況緊急，請立即撥打 119",
+                buttons=[line_button("撥打 119", uri="tel:119", primary=True)],
+                danger=True,
+            ))
             return
 
         if cmd in LINE_CMD_BIND_HELP:
-            _line_reply(reply_token, user_id, [_line_text(
-                f"🔗 您目前綁定為【{elder_name}】，由 {owner_name} 守護。\n\n"
-                "若要改綁其他家人：請向對方索取 GiftSense App 上的新綁定碼，回傳【綁定 123456】即可。"
-            )])
+            reply(line_card(
+                "綁定說明",
+                rows=[("目前綁定", elder_name), ("守護家人", owner_name)],
+                paragraphs=["若要改綁其他家人，請向對方索取 GiftSense App 上的新綁定碼，並傳送："],
+                info="綁定 123456",
+            ))
             return
 
         if cmd in LINE_CMD_HELP:
-            _line_reply(reply_token, user_id, [_line_text(LINE_HELP_TEXT)])
+            reply(_help_card())
             return
 
         if cmd in LINE_CMD_MY_BINDING:
-            _line_reply(reply_token, user_id, [_line_text(
-                f"👤 綁定身分：{elder_name}\n💙 守護家人：{owner_name}\n🩺 健康狀況：{binding.get('condition') or '日常養生'}"
-            )])
+            reply(line_card(
+                "我的綁定",
+                rows=[
+                    ("綁定身分", elder_name),
+                    ("守護家人", owner_name),
+                    ("健康狀況", binding.get("condition") or "日常養生"),
+                ],
+                buttons=[line_button("綁定說明")],
+            ))
             return
 
         # 一般文字留言：轉達給家人
         _store(text, "text")
-        _line_reply(reply_token, user_id, [_line_text(f"✅ 已轉達給 {owner_name}！")])
+        reply(line_card(f"已轉達給 {owner_name}", paragraphs=[text], compact=True))
         return
 
     if msg_type == "audio":
         _store(_download_line_audio(msg.get("id")), "audio")
-        _line_reply(reply_token, user_id, [_line_text(f"✅ 語音已轉達給 {owner_name}！")])
+        reply(line_card(f"語音已轉達給 {owner_name}", compact=True))
         return
 
     if msg_type == "sticker":
         _store("🎨 [LINE 貼圖]", "sticker")
-
-def _build_medication_reminder(binding: dict) -> str:
-    from greeting_generator import _match_condition_lines
-    condition = binding.get("condition") or "日常養生"
-    lines = [
-        f"💊 【{binding['name']}的今日用藥與保健叮嚀】",
-        "",
-        "• 請依照醫師處方按時服藥，不要自行停藥或加量。",
-    ]
-    care = _match_condition_lines(condition)
-    if care:
-        lines.append(f"• {care['reserved'][0]}")
-        lines.append("")
-        lines.append(care["insight"])
-    lines.append("")
-    lines.append("• 想買市售保健品（如魚油、維他命）前，請先請家人用 GiftSense App 檢驗是否會撞藥喔！")
-    return "\n".join(lines)
 
 def _download_line_audio(msg_id: str) -> str:
     try:
