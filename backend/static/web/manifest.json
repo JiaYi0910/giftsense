@@ -3,9 +3,9 @@
     "short_name": "GiftSense",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "GiftSense 智慧關懷送禮",
+    "background_color": "#F4F8FF",
+    "theme_color": "#2563EB",
+    "description": "GiftSense 智慧關懷送禮：每日關懷、AI 守護助理、藥局比價與家人傳情",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
@@ -31,5 +31,6 @@
             "type": "image/png",
             "purpose": "maskable"
         }
-    ]
+    ],
+    "lang": "zh-Hant-TW"
 }
