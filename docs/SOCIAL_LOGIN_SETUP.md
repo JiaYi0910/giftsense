@@ -47,6 +47,7 @@
    - 「設定 → 基本資料」→「應用程式網域」填 `giftsense-vjbu.onrender.com`（不加 `https://`）；最下方「新增平台 → 網站」，網址填 `https://giftsense-vjbu.onrender.com/`。
    - 「Facebook 登入 → 設定」：「用戶端 OAuth 登入」「網頁 OAuth 登入」「用 JavaScript SDK 登入」都開啟；「JavaScript SDK 的允許網域」與「有效的 OAuth 重新導向 URI」都填 `https://giftsense-vjbu.onrender.com/`。
    - 兩頁都要按「儲存變更」，生效可能要幾分鐘。
+   - 「使用案例 → 驗證和要求用戶資料 → 自訂 → 權限」加入 `email`（沒加會出現「Invalid Scopes: email」）。
 5. 把值填進專案：
    - `giftsense/lib/config/social_login_config.dart` → `facebookAppId`
    - `giftsense/android/app/src/main/res/values/strings.xml` → `facebook_app_id`、`facebook_client_token`
