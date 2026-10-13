@@ -1,8 +1,10 @@
 import os
+import ssl
 import threading
 import time
 
 import requests
+from requests.adapters import HTTPAdapter
 
 # Automatically load .env file if present
 def load_env():
@@ -34,6 +36,48 @@ PREFERRED_STATIONS = {
     "澎湖縣": ["澎湖"], "金門縣": ["金門"], "連江縣": ["馬祖"],
 }
 
+class _CwaTLSAdapter(HTTPAdapter):
+    """氣象署網站使用 TWCA 憑證，缺少 Subject Key Identifier 欄位；
+    Python 3.13 預設啟用的 VERIFY_X509_STRICT 會因此拒絕連線（Render 預設是 3.13）。
+    這裡保留完整的憑證驗證，只關閉 VERIFY_X509_STRICT 這一項。"""
+
+    def init_poolmanager(self, *args, **kwargs):
+        ctx = ssl.create_default_context()
+        try:
+            import certifi
+            ctx.load_verify_locations(certifi.where())
+        except Exception:
+            pass
+        ctx.verify_flags &= ~getattr(ssl, "VERIFY_X509_STRICT", 0)
+        kwargs["ssl_context"] = ctx
+        return super().init_poolmanager(*args, **kwargs)
+
+
+_session = requests.Session()
+_session.mount("https://opendata.cwa.gov.tw", _CwaTLSAdapter())
+
+
+def _cwa_get(path: str, params: dict, timeout: int = 15):
+    """呼叫氣象署 API：逾時或連線失敗時自動重試一次"""
+    last_error = None
+    for attempt in range(2):
+        try:
+            res = _session.get(f"{CWA_BASE}/{path}", params=params, timeout=timeout)
+            res.raise_for_status()
+            return res.json()
+        except (requests.ConnectionError, requests.Timeout) as e:
+            last_error = e
+            time.sleep(0.5)
+    raise last_error
+
+
+def _describe_error(e: Exception) -> str:
+    """錯誤類型（不含網址，避免把授權碼帶進回應或紀錄）"""
+    if isinstance(e, requests.HTTPError) and e.response is not None:
+        return f"HTTP {e.response.status_code}"
+    return type(e).__name__
+
+
 _cache = {}
 _obs_cache = {"at": 0.0, "stations": []}
 _lock = threading.Lock()
@@ -59,13 +103,8 @@ def _valid(value):
 
 def _fetch_forecast(key: str, cwa_city: str):
     """F-C0032-001 一般天氣預報（今明 36 小時）：天氣現象、溫度範圍、降雨機率、舒適度"""
-    res = requests.get(
-        f"{CWA_BASE}/F-C0032-001",
-        params={"Authorization": key, "locationName": cwa_city},
-        timeout=8,
-    )
-    res.raise_for_status()
-    records = res.json().get("records", {}).get("location", [])
+    data = _cwa_get("F-C0032-001", {"Authorization": key, "locationName": cwa_city})
+    records = data.get("records", {}).get("location", [])
     if not records:
         return None
     els = records[0].get("weatherElement", [])
@@ -82,9 +121,8 @@ def _fetch_observation(key: str, cwa_city: str):
     """O-A0003-001 現在天氣觀測：取得該縣市代表測站的即時氣溫與相對濕度（預報資料不含濕度）"""
     now = time.time()
     if now - _obs_cache["at"] > CACHE_SECONDS or not _obs_cache["stations"]:
-        res = requests.get(f"{CWA_BASE}/O-A0003-001", params={"Authorization": key, "format": "JSON"}, timeout=12)
-        res.raise_for_status()
-        _obs_cache["stations"] = res.json().get("records", {}).get("Station", [])
+        data = _cwa_get("O-A0003-001", {"Authorization": key, "format": "JSON"}, timeout=20)
+        _obs_cache["stations"] = data.get("records", {}).get("Station", [])
         _obs_cache["at"] = now
     stations = _obs_cache["stations"]
 
@@ -115,7 +153,8 @@ def get_live_weather(city: str = "台北市", cwa_api_key: str = None):
     - O-A0003-001 現在天氣觀測（即時氣溫、相對濕度）
     需在環境變數設定 CWA_API_KEY（Render → Environment）。
     """
-    key = (cwa_api_key or os.environ.get("CWA_API_KEY", "")).strip()
+    # 去掉不小心一起貼上的空白或引號
+    key = (cwa_api_key or os.environ.get("CWA_API_KEY", "")).strip().strip('"').strip("'").strip()
     # 氣象署官方地名使用正體字「臺」（如：臺北市、臺中市、臺南市、臺東縣）
     cwa_city = city.replace("台", "臺").strip()
 
@@ -131,7 +170,7 @@ def get_live_weather(city: str = "台北市", cwa_api_key: str = None):
                 try:
                     obs = _fetch_observation(key, cwa_city)
                 except Exception as e:
-                    print("CWA 觀測資料取得失敗（仍使用預報資料）:", e)
+                    print("CWA 觀測資料取得失敗（仍使用預報資料）:", _describe_error(e))
                 humidity = obs["humidity"] if obs else None
                 result = {
                     "source": "中央氣象署 (CWA)",
@@ -151,9 +190,10 @@ def get_live_weather(city: str = "台北市", cwa_api_key: str = None):
                 with _lock:
                     _cache[cwa_city] = (time.time(), result)
                 return result
+            reason = "中央氣象署沒有回傳這個縣市的預報"
         except Exception as e:
-            print("CWA API 連線異常，改用離線參考值:", e)
-        reason = "目前無法連線中央氣象署"
+            print("CWA API 連線異常，改用離線參考值:", _describe_error(e))
+            reason = f"目前無法連線中央氣象署（{_describe_error(e)}）"
     else:
         reason = "後端尚未設定中央氣象署 API 授權碼（CWA_API_KEY）"
 

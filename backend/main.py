@@ -14,6 +14,7 @@ import hashlib
 import hmac
 import threading
 import time
+import platform
 import uuid
 import random
 import re
@@ -257,6 +258,7 @@ def health_check():
         "version": "2.0.0",
         "database": "Turso (libSQL) Connected" if db_stats.get("persistent") else "SQLite (caregift.db) Connected",
         "sqlite_stats": db_stats,
+        "python": platform.python_version(),
         "literatures_count": db_stats["counts"].get("clinical_knowledge", len(CLINICAL_LITERATURES)),
         "vector_engine": "MedicalVectorStore (High-Dimensional Cosine)",
         "tfda_engine": "TFDAService (Official Black Box Registry)"
