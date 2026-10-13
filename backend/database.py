@@ -116,7 +116,7 @@ DEFAULT_RECOMMENDATION_PRODUCTS = [
         "category": "睡眠調節 / AASM 指引",
         "spec": "90錠/瓶 (日本原裝進口)",
         "search_kw": "芝麻明",
-        "match_conditions": ["睡", "失眠", "焦慮", "放鬆", "日常"],
+        "match_conditions": ["睡", "失眠", "焦慮", "放鬆", "熬夜", "疲勞", "精神", "日常"],
         "match_reason": "結合 GABA 與高濃度芝麻素，幫助中樞神經放鬆，改善親友淺眠，無安眠藥成癮性。",
         "recommended_pharmacy": "杏一醫療",
         "best_price": 1600,
@@ -261,6 +261,26 @@ def init_db():
     )
     """)
 
+    # 4.8 cashback_orders 表格（ShopBack 模式購物回饋：點擊追蹤 → 完成購物 → 藥局確認後入帳）
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS cashback_orders (
+        id TEXT PRIMARY KEY,
+        account TEXT NOT NULL,
+        recipient TEXT,
+        pharmacy TEXT NOT NULL,
+        product_name TEXT NOT NULL,
+        est_price INTEGER DEFAULT 0,
+        rate REAL NOT NULL,
+        status TEXT NOT NULL,
+        order_amount INTEGER DEFAULT 0,
+        points INTEGER DEFAULT 0,
+        official_url TEXT,
+        created_at TEXT NOT NULL,
+        purchased_at TEXT,
+        settled_at TEXT
+    )
+    """)
+
     # 5. clinical_knowledge 表格
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS clinical_knowledge (
@@ -376,17 +396,15 @@ def init_db():
         except Exception as e:
             print("Notice: Clinical knowledge auto-seed deferred:", e)
 
-    # 推薦商品數量與預設不符時重新寫入
-    cursor.execute("SELECT COUNT(*) FROM recommendation_products")
-    if cursor.fetchone()[0] != len(DEFAULT_RECOMMENDATION_PRODUCTS):
-        cursor.execute("DELETE FROM recommendation_products")
-        conn.commit()
-        conn.close()
-        save_recommendation_products(DEFAULT_RECOMMENDATION_PRODUCTS)
-        return
-
+    # 推薦商品：每次啟動都以預設資料為準（移除不在預設清單的商品，並更新內容）
+    default_ids = [p["id"] for p in DEFAULT_RECOMMENDATION_PRODUCTS]
+    cursor.execute(
+        f"DELETE FROM recommendation_products WHERE id NOT IN ({','.join('?' * len(default_ids))})",
+        default_ids
+    )
     conn.commit()
     conn.close()
+    save_recommendation_products(DEFAULT_RECOMMENDATION_PRODUCTS)
 
 def save_clinical_knowledge(item: dict):
     conn = get_db()
@@ -501,19 +519,23 @@ def get_all_recommendation_products():
         products.append(d)
     return products
 
-def get_recommendation_products_by_condition(condition: str = ""):
+def match_recommendation_products(condition: str = ""):
+    """依病況比對推薦商品；沒有對應商品時回傳一般日常保養商品並標記 is_fallback"""
     cond = (condition or "").lower().strip()
     items = get_all_recommendation_products()
-    if not cond:
-        return items[:3]
-
     matched = []
-    for item in items:
-        terms = item.get("match_conditions") or []
-        if any((term or "").lower() in cond or cond in (term or "").lower() for term in terms):
-            matched.append(item)
+    if cond:
+        for item in items:
+            terms = [t for t in (item.get("match_conditions") or []) if t and t != "日常"]
+            if any(t.lower() in cond or cond in t.lower() for t in terms):
+                matched.append(item)
+    if matched:
+        return {"products": matched, "is_fallback": False}
+    # 「日常養生」本來就是一般保養，不算找不到對應商品
+    return {"products": items[:3], "is_fallback": "日常" not in cond}
 
-    return matched if matched else items[:3]
+def get_recommendation_products_by_condition(condition: str = ""):
+    return match_recommendation_products(condition)["products"]
 
 def search_cached_products(keyword: str):
     conn = get_db()
@@ -640,7 +662,8 @@ def get_user_profile(account: str):
 def _recipient_row_to_dict(row):
     d = dict(row)
     try:
-        d["quick_tags"] = json.loads(d.get("quick_tags_json") or "[]")
+        from chips_generator import normalize_chips
+        d["quick_tags"] = normalize_chips(json.loads(d.get("quick_tags_json") or "[]"))
     except Exception:
         d["quick_tags"] = []
     d["line_bound"] = bool(d.get("line_user_id"))
@@ -1085,5 +1108,117 @@ def claim_reward(account: str, action: str, recipient: str = ""):
 
     add_points_transaction(account, rule["amount"], rule["title"].format(recipient=recipient or "親友"))
     return {"success": True, "awarded": rule["amount"], "message": f"獲得 {rule['amount']} 點關懷回饋！"}
+
+# =========================================================================
+# 購物回饋（ShopBack 模式）：透過 GiftSense 前往藥局購物，確認購物後依金額回饋點數
+# 目前尚未與藥局正式合作，「完成購物」與「藥局確認」由模擬操作觸發
+# =========================================================================
+CASHBACK_RATES = {"大樹藥局": 0.05, "杏一醫療": 0.04, "啄木鳥藥局": 0.03, "丁丁藥局": 0.03}
+CASHBACK_DEFAULT_RATE = 0.03
+POINTS_PER_CASHBACK_DOLLAR = 1  # 回饋金額每 1 元換算的點數
+CASHBACK_STATUS_TEXT = {
+    "tracked": "追蹤中",
+    "pending": "回饋待確認",
+    "confirmed": "已入帳",
+    "rejected": "訂單取消",
+}
+
+def cashback_rate_for(pharmacy: str) -> float:
+    for name, rate in CASHBACK_RATES.items():
+        if name in (pharmacy or "") or (pharmacy or "") in name:
+            return rate
+    return CASHBACK_DEFAULT_RATE
+
+def calc_cashback_points(amount: int, rate: float) -> int:
+    return int(round(max(0, amount) * rate * POINTS_PER_CASHBACK_DOLLAR))
+
+def _cashback_row(row):
+    d = dict(row)
+    d["status_text"] = CASHBACK_STATUS_TEXT.get(d["status"], d["status"])
+    d["rate_percent"] = round(d["rate"] * 100, 1)
+    d["est_points"] = calc_cashback_points(d.get("order_amount") or d.get("est_price") or 0, d["rate"])
+    return d
+
+def create_cashback_click(account: str, pharmacy: str, product_name: str, est_price: int = 0, recipient: str = "", official_url: str = ""):
+    now = datetime.now()
+    click_id = f"CB{now.strftime('%Y%m%d%H%M%S')}{int(now.microsecond / 1000):03d}"
+    rate = cashback_rate_for(pharmacy)
+    conn = get_db()
+    conn.execute(
+        """INSERT INTO cashback_orders (id, account, recipient, pharmacy, product_name, est_price, rate, status, official_url, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, 'tracked', ?, ?)""",
+        (click_id, account, recipient, pharmacy, product_name, int(est_price or 0), rate, official_url, now.strftime("%Y-%m-%d %H:%M:%S"))
+    )
+    conn.commit()
+    row = conn.execute("SELECT * FROM cashback_orders WHERE id = ?", (click_id,)).fetchone()
+    conn.close()
+    return _cashback_row(row)
+
+def list_cashback_orders(account: str):
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM cashback_orders WHERE account = ? ORDER BY created_at DESC", (account,)).fetchall()
+    conn.close()
+    orders = [_cashback_row(r) for r in rows]
+    return {
+        "orders": orders,
+        "summary": {
+            "tracked": sum(1 for o in orders if o["status"] == "tracked"),
+            "pending_points": sum(o["points"] for o in orders if o["status"] == "pending"),
+            "confirmed_points": sum(o["points"] for o in orders if o["status"] == "confirmed"),
+        },
+    }
+
+def _get_cashback_for_account(order_id: str, account: str):
+    conn = get_db()
+    row = conn.execute("SELECT * FROM cashback_orders WHERE id = ? AND account = ?", (order_id, account)).fetchone()
+    conn.close()
+    return row
+
+def simulate_cashback_purchase(order_id: str, account: str, amount: int = 0):
+    """模擬藥局回傳「已完成購物」：記錄訂單金額，回饋進入待確認"""
+    row = _get_cashback_for_account(order_id, account)
+    if not row:
+        return None, "找不到這筆購物追蹤紀錄"
+    if row["status"] != "tracked":
+        return _cashback_row(row), f"這筆紀錄目前是「{CASHBACK_STATUS_TEXT[row['status']]}」，無法再次回報購物"
+    amount = int(amount or row["est_price"] or 0)
+    if amount <= 0:
+        return _cashback_row(row), "請輸入購物金額"
+    points = calc_cashback_points(amount, row["rate"])
+    conn = get_db()
+    conn.execute(
+        "UPDATE cashback_orders SET status = 'pending', order_amount = ?, points = ?, purchased_at = ? WHERE id = ?",
+        (amount, points, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), order_id)
+    )
+    conn.commit()
+    row = conn.execute("SELECT * FROM cashback_orders WHERE id = ?", (order_id,)).fetchone()
+    conn.close()
+    return _cashback_row(row), None
+
+def settle_cashback(order_id: str, account: str, approve: bool = True):
+    """模擬藥局確認訂單：approve=True 回饋點數入帳；False 視為訂單取消、不給點"""
+    row = _get_cashback_for_account(order_id, account)
+    if not row:
+        return None, "找不到這筆購物追蹤紀錄"
+    allowed = ("pending",) if approve else ("tracked", "pending")
+    if row["status"] not in allowed:
+        return _cashback_row(row), f"這筆紀錄目前是「{CASHBACK_STATUS_TEXT[row['status']]}」，無法執行此操作"
+    new_status = "confirmed" if approve else "rejected"
+    conn = get_db()
+    # 以狀態做條件更新，避免重複入帳
+    cur = conn.execute(
+        "UPDATE cashback_orders SET status = ?, settled_at = ? WHERE id = ? AND status = ?",
+        (new_status, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), order_id, row["status"])
+    )
+    conn.commit()
+    updated = cur.rowcount == 1
+    row = conn.execute("SELECT * FROM cashback_orders WHERE id = ?", (order_id,)).fetchone()
+    conn.close()
+    if approve and updated and row["points"] > 0:
+        add_points_transaction(
+            account, row["points"],
+            f"購物回饋：{row['pharmacy']}（訂單 ${row['order_amount']:,} × {round(row['rate'] * 100, 1)}%）"
+        )
+    return _cashback_row(row), None
 
 init_db()

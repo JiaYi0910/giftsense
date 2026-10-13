@@ -5,7 +5,7 @@ import urllib.parse
 import json
 import os
 import time
-from database import save_pharmacy_products, save_recommendation_products, get_recommendation_products_by_condition as get_db_recommendation_products_by_condition
+from database import save_pharmacy_products, save_recommendation_products, match_recommendation_products
 
 urllib3.disable_warnings()
 
@@ -494,7 +494,7 @@ def get_recommended_products_by_condition(elder_name: str = "親友", condition:
             "category": "睡眠調節 / AASM 指引",
             "spec": "90錠/瓶 (日本原裝進口)",
             "search_kw": "芝麻明",
-            "match_conditions": ["睡", "失眠", "焦慮", "放鬆", "日常"],
+            "match_conditions": ["睡", "失眠", "焦慮", "放鬆", "熬夜", "疲勞", "精神", "日常"],
             "match_reason": "結合 GABA 與高濃度芝麻素，幫助中樞神經放鬆，改善親友淺眠，無安眠藥成癮性。",
             "recommended_pharmacy": "杏一醫療",
             "best_price": 1600,
@@ -508,27 +508,21 @@ def get_recommended_products_by_condition(elder_name: str = "親友", condition:
         }
     ]
 
-    db_matches = get_db_recommendation_products_by_condition(cond)
-    if db_matches:
-        matched = db_matches
-    else:
-        matched = []
-        for item in all_recommendations:
-            if any(mc in cond for mc in item["match_conditions"]):
-                matched.append(item)
-
+    db_result = match_recommendation_products(cond)
+    matched = db_result["products"]
+    is_fallback = db_result["is_fallback"]
     if not matched:
-        matched = all_recommendations[:3]
-
-    try:
-        save_recommendation_products(matched)
-    except Exception as e:
-        print("Recommendation DB seed error:", e)
+        # 資料庫尚未建立時，改用程式內建清單比對
+        matched = [item for item in all_recommendations if any(mc in cond for mc in item["match_conditions"] if mc != "日常")]
+        is_fallback = not matched
+        if not matched:
+            matched = all_recommendations[:3]
 
     return {
         "success": True,
         "elder_name": elder_name,
         "elder_condition": condition,
         "total": len(matched),
+        "is_fallback": is_fallback,
         "products": matched
     }

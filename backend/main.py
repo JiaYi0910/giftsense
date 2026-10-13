@@ -30,7 +30,8 @@ from database import (
     get_db, update_user_profile_in_db, get_user_profile_by_account,
     get_ai_guard_quota, consume_ai_guard_quota, add_ai_guard_bonus,
     find_or_create_social_user, create_line_bind_code, bind_line_by_code,
-    unbind_recipient_line, find_recipient_line_id, get_line_binding_info, claim_reward
+    unbind_recipient_line, find_recipient_line_id, get_line_binding_info, claim_reward,
+    create_cashback_click, list_cashback_orders, simulate_cashback_purchase, settle_cashback, CASHBACK_RATES
 )
 from social_auth import verify_social_token, SocialAuthError
 from line_messages import card as line_card, button as line_button
@@ -203,6 +204,11 @@ class ReferralClickRequest(BaseModel):
     price: int
     recipient: str = "親友"
     official_url: str
+    account: Optional[str] = None
+
+class CashbackActionRequest(BaseModel):
+    account: str
+    amount: Optional[int] = None
 
 class TFDACheckRequest(BaseModel):
     elder_name: str = "親友"
@@ -356,14 +362,53 @@ def pharmacy_auto_order(req: AutoOrderRequest):
 
 @app.post("/api/pharmacy/referral-click")
 def pharmacy_referral_click(req: ReferralClickRequest):
-    order_id = f"REF-{time.strftime('%Y%m%d')}-{random.randint(1000, 9999)}"
-    create_order(
-        order_id=order_id,
-        items=[{"name": f"{req.product_name} [{req.pharmacy} 官方直營]", "price": req.price, "qty": 1}],
-        total=f"${req.price:,}", recipient=req.recipient, pharmacy=req.pharmacy
+    # 💡 ShopBack 模式：點擊只建立「購物追蹤」，確認有購物後才回饋點數（不再點擊就送點）
+    if not req.account or not get_user_profile(req.account):
+        return {"success": False, "message": "請先登入，才能追蹤購物回饋", "official_url": req.official_url}
+    order = create_cashback_click(
+        account=req.account, pharmacy=req.pharmacy, product_name=req.product_name,
+        est_price=req.price, recipient=req.recipient, official_url=req.official_url
     )
-    add_points_transaction(account="test", amount=100, title=f"導購送禮加贈：{req.pharmacy} - {req.product_name}")
-    return {"success": True, "order_id": order_id, "pharmacy": req.pharmacy, "points_awarded": 100, "official_url": req.official_url}
+    return {
+        "success": True,
+        "cashback": order,
+        "message": f"已開始追蹤購物回饋：在【{req.pharmacy}】完成購物並確認後，可獲得約 {order['rate_percent']}% 點數回饋",
+        "official_url": req.official_url
+    }
+
+# 購物回饋（ShopBack 模式，目前以模擬方式示範藥局回傳與確認）
+@app.get("/api/cashback")
+def api_list_cashback(account: str = ""):
+    if not account:
+        return {"success": True, "orders": [], "summary": {"tracked": 0, "pending_points": 0, "confirmed_points": 0}}
+    return {"success": True, "rates": CASHBACK_RATES, **list_cashback_orders(account)}
+
+@app.post("/api/cashback/{order_id}/simulate-purchase")
+def api_simulate_cashback_purchase(order_id: str, req: CashbackActionRequest):
+    order, error = simulate_cashback_purchase(order_id, req.account, req.amount or 0)
+    if error:
+        return {"success": False, "message": error, "order": order}
+    return {"success": True, "message": f"已模擬藥局回傳訂單 ${order['order_amount']:,}，預計回饋 {order['points']} 點（待藥局確認）", "order": order}
+
+@app.post("/api/cashback/{order_id}/simulate-confirm")
+def api_simulate_cashback_confirm(order_id: str, req: CashbackActionRequest):
+    order, error = settle_cashback(order_id, req.account, approve=True)
+    if error:
+        return {"success": False, "message": error, "order": order}
+    profile = get_user_profile(req.account)
+    return {
+        "success": True,
+        "message": f"藥局已確認訂單，{order['points']} 點回饋已入帳！",
+        "order": order,
+        "new_points": profile["points"] if profile else None
+    }
+
+@app.post("/api/cashback/{order_id}/simulate-cancel")
+def api_simulate_cashback_cancel(order_id: str, req: CashbackActionRequest):
+    order, error = settle_cashback(order_id, req.account, approve=False)
+    if error:
+        return {"success": False, "message": error, "order": order}
+    return {"success": True, "message": "已模擬訂單取消／退貨，這筆不會回饋點數", "order": order}
 
 @app.get("/api/weather")
 def weather_forecast(city: str = "台北市", key: Optional[str] = None):

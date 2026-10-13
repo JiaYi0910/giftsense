@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import requests
 from typing import List, Dict, Any, Optional
 
@@ -148,7 +149,21 @@ CLINICAL_DISEASE_TAGS_MAP = {
     ]
 }
 
+_LEADING_EMOJI = re.compile(r"^[\s☀-➿⬀-⯿️\U0001F000-\U0001FAFF]+")
+
+def normalize_chip(chip: Dict[str, Any]) -> Dict[str, Any]:
+    """標籤不使用 emoji：去掉開頭的 emoji，原本以 ⚠️ 標示的撞藥警示改用 warning 欄位"""
+    label = str(chip.get("label", ""))
+    warning = bool(chip.get("warning")) or "⚠" in label
+    return {**chip, "label": _LEADING_EMOJI.sub("", label).strip(), "warning": warning}
+
+def normalize_chips(chips) -> List[Dict[str, Any]]:
+    return [normalize_chip(c) for c in (chips or []) if isinstance(c, dict)]
+
 def get_clinical_rule_chips(condition: str = "日常養生", name: str = "親友") -> List[Dict[str, Any]]:
+    return normalize_chips(_get_clinical_rule_chips(condition, name))
+
+def _get_clinical_rule_chips(condition: str = "日常養生", name: str = "親友") -> List[Dict[str, Any]]:
     """
     Track 1: Instantly matches the condition string to high-relevance clinical question chips.
     Returns 6 to 8 tailored chips with zero latency.
@@ -286,7 +301,7 @@ def generate_ai_recipient_chips(
                                 "badge": str(item.get("badge", "AI推薦")).strip()
                             })
                     if len(formatted) >= 4:
-                        return formatted[:8]
+                        return normalize_chips(formatted[:8])
         except Exception as e:
             print("Notice: AI chips generation fallback to clinical rules:", e)
 
