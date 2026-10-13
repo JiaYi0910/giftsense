@@ -261,6 +261,16 @@ def privacy_policy_page():
     from privacy_page import PRIVACY_HTML
     return HTMLResponse(PRIVACY_HTML)
 
+# 系統說明文件：架構圖、流程圖、ER Model、點數回饋、Demo 腳本（https://giftsense-vjbu.onrender.com/guide）
+GUIDE_HTML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "guide.html")
+
+@app.get("/guide", response_class=HTMLResponse)
+def system_guide_page():
+    if not os.path.exists(GUIDE_HTML_PATH):
+        raise HTTPException(status_code=404, detail="Guide not found")
+    with open(GUIDE_HTML_PATH, encoding="utf-8") as f:
+        return HTMLResponse(f.read())
+
 @app.get("/api/health")
 def health_check():
     db_stats = get_database_stats()

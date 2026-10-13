@@ -41,7 +41,8 @@
     white-space: nowrap; text-decoration: none; color: var(--blue-dark); font-weight: 700; font-size: 13.5px;
     padding: 6px 12px; border-radius: 999px;
   }
-  nav.toc a:hover { background: var(--blue-soft); }
+  nav.toc a:hover, nav.toc a.active { background: var(--blue-soft); }
+  section { scroll-margin-top: 64px; }
   main { padding: 28px 0 60px; }
   section { margin-top: 28px; }
   .card {
@@ -175,6 +176,138 @@
     .links .pipes { gap: 10px; }
     .pipe { height: auto; min-height: 58px; padding: 12px 0; }
     .pipe span { white-space: normal; text-align: center; max-width: 150px; }
+  }
+  /* ---------- 系統總流程（手工排版） ---------- */
+  .fa { display: flex; flex-direction: column; align-items: center; max-width: 1000px; margin: 0 auto; }
+  .fa-node { background: #fff; border: 1.5px solid var(--blue); border-radius: 14px; padding: 10px 18px; text-align: center;
+             display: flex; flex-direction: column; gap: 1px; min-width: 240px; }
+  .fa-node b { font-size: 15px; color: var(--blue-deep); }
+  .fa-node small { font-size: 12.5px; color: var(--slate); }
+  .fa-start { background: linear-gradient(135deg,#3B82F6,#1D4ED8); border-color: transparent; border-radius: 999px; }
+  .fa-start b, .fa-start small { color: #fff; }
+  .fa-decide { border-style: dashed; background: var(--blue-soft); }
+  .fa-decide b::before { content: "◆ "; color: var(--blue); font-size: 12px; }
+  .fa-admin { border-color: #94A3B8; background: #F8FAFC; min-width: 0; }
+  .fa-admin b { color: #334155; }
+  .fa-home { border-width: 2px; box-shadow: 0 6px 18px rgba(37,99,235,.10); }
+  .fa-v { width: 2px; height: 34px; background: var(--blue); position: relative; display: flex; align-items: center; justify-content: center; }
+  .fa-v::after { content: ""; position: absolute; bottom: -1px; left: -5px; border: 6px solid transparent; border-top-color: var(--blue); border-bottom: 0; }
+  .fa-v span, .fa-h span { position: absolute; white-space: nowrap; background: #fff; border: 1px solid var(--blue-border); color: var(--blue-dark);
+                           font-size: 12px; font-weight: 800; border-radius: 999px; padding: 1px 9px; }
+  .fa-login { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; width: 100%; }
+  .fa-login .fa-decide { grid-column: 2; }
+  .fa-login .fa-side { grid-column: 3; display: flex; align-items: center; }
+  .fa-h { flex: 0 0 64px; height: 2px; background: #94A3B8; position: relative; display: flex; justify-content: center; }
+  .fa-h::after { content: ""; position: absolute; right: -1px; top: -5px; border: 6px solid transparent; border-left-color: #94A3B8; border-right: 0; }
+  .fa-h span { top: -24px; border-color: #CBD5E1; color: #334155; }
+  .fa-split, .fa-merge { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; width: 100%; }
+  .fa-split { height: 46px; }
+  .fa-merge { height: 72px; }
+  .fa-split::before, .fa-merge::before { content: ""; position: absolute; left: 50%; width: 2px; margin-left: -1px; background: var(--blue); }
+  .fa-split::before { top: 0; height: 50%; }
+  .fa-merge::before { top: 50%; bottom: 0; }
+  .fa-split::after, .fa-merge::after { content: ""; position: absolute; top: 50%; height: 2px; margin-top: -1px; background: var(--blue);
+                                       left: calc((100% - 36px) / 6); right: calc((100% - 36px) / 6); }
+  .fa-split i, .fa-merge i { position: relative; display: flex; justify-content: center; font-style: normal; }
+  .fa-split i::before, .fa-merge i::before { content: ""; position: absolute; left: 50%; width: 2px; margin-left: -1px; background: var(--blue); }
+  .fa-split i::before { top: 50%; bottom: 0; }
+  .fa-merge i::before { top: 0; height: 50%; }
+  .fa-split i::after { content: ""; position: absolute; bottom: -1px; left: 50%; margin-left: -6px; border: 6px solid transparent; border-top-color: var(--blue); border-bottom: 0; }
+  .fa-merge > span { position: absolute; bottom: -1px; left: 50%; margin-left: -6px; border: 6px solid transparent; border-top-color: var(--blue); border-bottom: 0; }
+  .fa-merge i b { position: relative; z-index: 1; align-self: flex-start; margin-top: 4px; background: #FFFBEB; border: 1px solid #FCD34D; color: #92400E;
+                  font-size: 12px; font-weight: 800; border-radius: 999px; padding: 1px 10px; white-space: nowrap; }
+  .fa-lanes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; width: 100%; }
+  .fa-lane { border: 1px solid var(--blue-border); background: #F8FBFF; border-radius: 18px; padding: 12px 14px 16px;
+             display: flex; flex-direction: column; align-items: stretch; }
+  .fa-lane-h { align-self: center; font-size: 13px; font-weight: 900; color: #fff; background: var(--blue); border-radius: 999px;
+               padding: 3px 14px; margin-bottom: 12px; letter-spacing: .5px; }
+  .fa-lane.green { background: #F3FCF7; border-color: #BBF7D0; }
+  .fa-lane.green .fa-lane-h { background: #059669; }
+  .fa-lane.indigo { background: #F5F7FF; border-color: #C7D2FE; }
+  .fa-lane.indigo .fa-lane-h { background: #4F46E5; }
+  .fa-step { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; text-align: center;
+             font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.45; }
+  .fa-step small { display: block; font-size: 12px; font-weight: 500; color: var(--muted); }
+  .fa-step.coin { background: #FFFBEB; border-color: #FCD34D; color: #92400E; }
+  .fa-step.coin small { color: #B45309; }
+  .fa-step.link { border-style: dashed; color: #4F46E5; border-color: #A5B4FC; background: #fff; }
+  .fa-dn { align-self: center; width: 2px; height: 20px; background: #93C5FD; position: relative; }
+  .fa-dn::after { content: ""; position: absolute; bottom: -1px; left: -4px; border: 5px solid transparent; border-top-color: #60A5FA; border-bottom: 0; }
+  .fa-wallet { border-color: #F59E0B; background: linear-gradient(135deg,#FFFBEB,#fff); min-width: 320px; }
+  .fa-wallet b { color: #92400E; }
+  .fa-wallet small { color: #B45309; }
+  @media (max-width: 640px) {
+    .fa-node { min-width: 0; }
+    .fa-login { grid-template-columns: 1fr; justify-items: center; gap: 10px; }
+    .fa-login .fa-decide, .fa-login .fa-side { grid-column: 1; }
+    .fa-h { flex-basis: 36px; }
+    .fa-lanes { grid-template-columns: 1fr; }
+    .fa-split, .fa-merge { grid-template-columns: 1fr; }
+    .fa-split::after, .fa-merge::after, .fa-split i:not(:nth-child(2)) { display: none; }
+    .fa-merge { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; height: auto; padding: 10px 0 30px; }
+    .fa-merge::before { top: auto; height: 22px; }
+    .fa-merge i::before { display: none; }
+  }
+
+  /* ---------- ER Model（手工排版） ---------- */
+  .er-wrap { overflow-x: auto; }
+  .er { position: relative; margin: 0 auto; }
+  .er svg.er-lines { position: absolute; left: 0; top: 0; overflow: visible; }
+  .ent { position: absolute; background: #fff; border: 1.5px solid var(--blue); border-radius: 12px; overflow: hidden;
+         box-shadow: 0 4px 14px rgba(37,99,235,.08); z-index: 1; }
+  .ent-h { background: linear-gradient(135deg,#3B82F6,#1D4ED8); color: #fff; padding: 6px 12px; display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
+  .ent-h b { font-size: 13px; letter-spacing: .3px; font-family: "SF Mono", Consolas, monospace; }
+  .ent-h span { font-size: 12px; opacity: .9; }
+  .ent table { margin: 0; font-size: 12px; width: 100%; }
+  .ent td { padding: 3px 10px; border-bottom: 1px solid #EEF2F7; white-space: nowrap; }
+  .ent tr:last-child td { border-bottom: 0; }
+  .ent tr:hover td { background: transparent; }
+  .ent td.ty { color: #94A3B8; padding-right: 4px; font-family: "SF Mono", Consolas, monospace; font-size: 11px; }
+  .ent td.nm { color: var(--ink); font-family: "SF Mono", Consolas, monospace; font-size: 11.5px; }
+  .ent td.k { text-align: right; padding-left: 4px; }
+  .ent td.k i { font-style: normal; font-size: 10px; font-weight: 900; border-radius: 5px; padding: 0 5px; }
+  .ent td.k i.pk { background: #FEF3C7; color: #92400E; }
+  .ent td.k i.fk { background: var(--blue-soft); color: var(--blue-dark); }
+  .ent td.k i.uk { background: #F1F5F9; color: #334155; }
+  .er-rel { position: absolute; z-index: 2; transform: translate(-50%, -50%); background: #fff; border: 1px solid var(--blue-border);
+            color: var(--blue-dark); font-size: 11.5px; font-weight: 800; border-radius: 999px; padding: 0 8px; white-space: nowrap; line-height: 18px; }
+  .er-note { position: absolute; z-index: 1; border: 1px solid var(--line); background: #FAFCFF; border-radius: 12px; padding: 10px 12px;
+             font-size: 12px; color: var(--slate); line-height: 1.7; white-space: nowrap; }
+  .er-note b { color: var(--blue-deep); display: block; font-size: 12.5px; margin-bottom: 2px; }
+  .er-note svg { vertical-align: middle; margin-right: 6px; }
+  /* ---------- 回饋訂單狀態（手工排版） ---------- */
+  .st { display: flex; flex-direction: column; align-items: center; width: 640px; max-width: 100%; margin: 6px auto 0; }
+  .st-dot { width: 18px; height: 18px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 5px var(--blue-soft); }
+  .st-arrow { width: 2px; height: 54px; background: var(--blue); position: relative; }
+  .st-arrow::after, .st-split i::after { content: ""; position: absolute; bottom: -1px; left: 50%; margin-left: -6px;
+                                         border: 6px solid transparent; border-top-color: var(--blue); border-bottom: 0; }
+  .st-arrow span { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); white-space: nowrap;
+                   font-size: 13px; font-weight: 700; color: var(--slate); }
+  .st-node { min-width: 210px; text-align: center; border: 1.5px solid var(--blue); background: var(--blue-soft);
+             border-radius: 14px; padding: 10px 18px; }
+  .st-node b { display: block; font-size: 16px; color: var(--blue-deep); }
+  .st-node small { font-size: 12px; color: var(--muted); }
+  .st-node code { font-size: 11.5px; }
+  .st-node.ok { border-color: #16A34A; background: #F0FDF4; }
+  .st-node.ok b { color: #166534; }
+  .st-node.no { border-color: #DC2626; background: #FEF2F2; }
+  .st-node.no b { color: #991B1B; }
+  .st-split { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 100%; height: 84px; }
+  .st-split::before { content: ""; position: absolute; left: 50%; top: 0; height: 22px; width: 2px; margin-left: -1px; background: var(--blue); }
+  .st-split::after { content: ""; position: absolute; top: 21px; height: 2px; background: var(--blue);
+                     left: calc((100% - 40px) / 4); right: calc((100% - 40px) / 4); }
+  .st-split i { position: relative; font-style: normal; }
+  .st-split i::before { content: ""; position: absolute; left: 50%; top: 22px; bottom: 0; width: 2px; margin-left: -1px; background: var(--blue); }
+  .st-split i span { position: absolute; top: 32px; font-size: 12.5px; font-weight: 700; color: var(--slate); line-height: 1.45; white-space: nowrap; }
+  .st-split i:first-child span { right: calc(50% + 12px); text-align: right; color: #166534; }
+  .st-split i:last-child span { left: calc(50% + 12px); color: #991B1B; }
+  .st-row { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 100%; }
+  .st-row .st-node { justify-self: center; min-width: 0; width: 100%; max-width: 250px; }
+  @media (max-width: 640px) {
+    .st-split i span { font-size: 11.5px; }
+    .st-split { gap: 16px; }
+    .st-split::after { left: calc((100% - 16px) / 4); right: calc((100% - 16px) / 4); }
+    .st-row { gap: 16px; }
   }
   footer { text-align: center; color: var(--muted); font-size: 13px; padding: 30px 20px 50px; }
   @media (max-width: 640px) {
@@ -349,9 +482,10 @@
 <!-- ===================== 3. 系統流程圖 ===================== -->
 <section id="flow" class="card">
   <h2><span class="num">3</span>系統流程圖</h2>
-  <p class="sub">點選分頁查看各功能的流程。</p>
+  <p class="sub">「總流程」是整個系統的使用路徑；其他分頁是各功能的詳細流程。</p>
   <div class="tabs" data-group="flow">
-    <button class="active" data-panel="f-login">登入</button>
+    <button class="active" data-panel="f-all">總流程</button>
+    <button data-panel="f-login">登入</button>
     <button data-panel="f-care">每日關懷 × LINE</button>
     <button data-panel="f-bind">LINE 綁定</button>
     <button data-panel="f-rag">AI 守護助理</button>
@@ -360,7 +494,49 @@
     <button data-panel="f-streak">連續守護</button>
   </div>
 
-  <div class="panel active" data-group="flow" id="f-login">
+  <div class="panel active" data-group="flow" id="f-all">
+<!-- flow-all:start -->
+<div class="fa">
+  <div class="fa-node fa-start"><b>開啟 GiftSense</b><small>網頁 · Android · iPhone</small></div>
+  <div class="fa-v"></div>
+  <div class="fa-login">
+    <div class="fa-node fa-decide"><b>登入</b><small>帳號密碼 · Google · Facebook</small></div>
+    <div class="fa-side"><div class="fa-h"><span>管理員</span></div>
+      <div class="fa-node fa-admin"><b>管理後台</b><small>系統總覽 · 文獻庫 · RAG 測試台</small></div></div>
+  </div>
+  <div class="fa-v" style="height:44px"><span>一般會員</span></div>
+  <div class="fa-node fa-home"><b>今日守護首頁</b><small>每日打卡 · 中央氣象署天氣 · 依病況產生關懷叮嚀</small></div>
+  <div class="fa-split"><i></i><i></i><i></i></div>
+  <div class="fa-lanes">
+    <div class="fa-lane green">
+      <div class="fa-lane-h">每日關懷</div>
+      <div class="fa-step">發送關懷卡</div><i class="fa-dn"></i>
+      <div class="fa-step">LINE 推播給親友<small>Flex 關懷卡</small></div><i class="fa-dn"></i>
+      <div class="fa-step">親友在 LINE 回覆</div><i class="fa-dn"></i>
+      <div class="fa-step">傳情小站聊天室<small>家人 × 親友對話同步</small></div>
+    </div>
+    <div class="fa-lane">
+      <div class="fa-lane-h">AI 守護助理</div>
+      <div class="fa-step">輸入症狀或保健品</div><i class="fa-dn"></i>
+      <div class="fa-step">實證文獻檢索<small>TF-IDF 向量相似度</small></div><i class="fa-dn"></i>
+      <div class="fa-step">TFDA 撞藥判斷<small>親友用藥 × 保健成分</small></div><i class="fa-dn"></i>
+      <div class="fa-step link">安全的商品建議 → 暖心選物</div>
+    </div>
+    <div class="fa-lane indigo">
+      <div class="fa-lane-h">暖心選物</div>
+      <div class="fa-step">依病況推薦 3 項<small>四大藥局比價 · 同規格最低價</small></div><i class="fa-dn"></i>
+      <div class="fa-step">前往藥局購買</div><i class="fa-dn"></i>
+      <div class="fa-step">回到 GiftSense<small>確認完成購買</small></div><i class="fa-dn"></i>
+      <div class="fa-step coin">購物回饋入帳<small>回饋 $1 ＝ 1 點</small></div>
+    </div>
+  </div>
+  <div class="fa-merge"><i><b>關懷卡 +10 點</b></i><i><b>50 點兌換 3 次詢問</b></i><i><b>購物回饋 +N 點</b></i><span></span></div>
+  <div class="fa-node fa-wallet"><b>暖幣存摺</b><small>1 點可折抵 $1 · 效期 3 年</small></div>
+</div>
+<!-- flow-all:end -->
+  </div>
+
+  <div class="panel" data-group="flow" id="f-login">
     <pre class="mermaid">
 flowchart TD
   S(["開啟 GiftSense"]) --> K{"網頁版且&lt;br/&gt;尚未選擇 Cookie？"}
@@ -550,106 +726,102 @@ flowchart TD
 <!-- ===================== 5. ER Model ===================== -->
 <section id="er" class="card">
   <h2><span class="num">5</span>ER Model</h2>
-  <p class="sub">以會員帳號（account）串連各資料表；關聯為邏輯外鍵（應用程式層維護）。</p>
-  <pre class="mermaid">
-erDiagram
-  USERS ||--o{ RECIPIENTS : "守護"
-  USERS ||--o{ CHAT_MESSAGES : "擁有對話"
-  RECIPIENTS ||--o{ CHAT_MESSAGES : "對話對象"
-  USERS ||--o{ POINTS_LEDGER : "點數明細"
-  USERS ||--o{ CASHBACK_ORDERS : "購物回饋"
-  USERS ||--o{ REWARD_CLAIMS : "領取紀錄"
-  USERS ||--o{ AI_GUARD_USAGE : "每日詢問額度"
-  RECOMMENDATION_PRODUCTS ||--o{ CASHBACK_ORDERS : "購買商品"
-  CLINICAL_KNOWLEDGE }o--o{ RECOMMENDATION_PRODUCTS : "成分對應"
+  <p class="sub">以會員帳號（account）串連各資料表；USERS 下方的匯流排連到六張子表，商品與文獻在右下。</p>
+<!-- er:start -->
+<div class="er-wrap">
+  <div class="er" id="erDiagram">
+    <svg class="er-lines"></svg>
+    <div class="er-note" data-id="NOTE"><b>符號說明</b>
+      <svg width="34" height="14"><line x1="0" y1="7" x2="34" y2="7" stroke="#2563EB" stroke-width="1.6"/><line x1="22" y1="1" x2="22" y2="13" stroke="#2563EB" stroke-width="1.6"/><line x1="27" y1="1" x2="27" y2="13" stroke="#2563EB" stroke-width="1.6"/></svg>一筆（必有）<br>
+      <svg width="34" height="14"><line x1="0" y1="7" x2="34" y2="7" stroke="#2563EB" stroke-width="1.6"/><circle cx="14" cy="7" r="4" fill="#fff" stroke="#2563EB" stroke-width="1.6"/><line x1="20" y1="7" x2="34" y2="1" stroke="#2563EB" stroke-width="1.6"/><line x1="20" y1="7" x2="34" y2="13" stroke="#2563EB" stroke-width="1.6"/></svg>零到多筆<br>
+      <i style="font-style:normal;font-size:10px;font-weight:900;background:#FEF3C7;color:#92400E;border-radius:5px;padding:0 5px">PK</i> 主鍵
+      <i style="font-style:normal;font-size:10px;font-weight:900;background:#EFF6FF;color:#1D4ED8;border-radius:5px;padding:0 5px">FK</i> 外鍵
+      <i style="font-style:normal;font-size:10px;font-weight:900;background:#F1F5F9;color:#334155;border-radius:5px;padding:0 5px">UK</i> 唯一
+    </div>
+    <div class="er-note" data-id="DB"><b>Turso 雲端資料庫（libSQL）</b>9 張主要資料表，以會員帳號 account 串連<br>關聯為邏輯外鍵，由應用程式層維護</div>
+    <div class="ent" data-id="USERS"><div class="ent-h"><b>USERS</b><span>會員</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="uk">UK</i></td></tr><tr><td class="ty">string</td><td class="nm">password_hash</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">name</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">role</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">points</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">auth_provider</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">social_id</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">avatar</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">social_avatar_url</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">last_active_date</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">login_streak</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="RECIPIENTS"><div class="ent-h"><b>RECIPIENTS</b><span>親友</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">user_account</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">string</td><td class="nm">name</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">condition</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">line_user_id</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">line_bind_code</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">line_bind_expires</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">quick_tags_json</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="CHAT_MESSAGES"><div class="ent-h"><b>CHAT_MESSAGES</b><span>傳情訊息</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">owner_account</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">string</td><td class="nm">elder</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">string</td><td class="nm">sender</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">content</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">type</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">timestamp</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">from_role</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="POINTS_LEDGER"><div class="ent-h"><b>POINTS_LEDGER</b><span>暖幣明細</span></div><table><tr><td class="ty">int</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">int</td><td class="nm">amount</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">title</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">date_str</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">expire_str</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">type</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="REWARD_CLAIMS"><div class="ent-h"><b>REWARD_CLAIMS</b><span>回饋領取</span></div><table><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">claim_key</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">int</td><td class="nm">amount</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="AI_GUARD_USAGE"><div class="ent-h"><b>AI_GUARD_USAGE</b><span>AI 詢問額度</span></div><table><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">date_str</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">int</td><td class="nm">used</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">bonus</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="CASHBACK_ORDERS"><div class="ent-h"><b>CASHBACK_ORDERS</b><span>購物回饋訂單</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">string</td><td class="nm">pharmacy</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">product_name</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">est_price</td><td class="k"></td></tr><tr><td class="ty">real</td><td class="nm">rate</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">status</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">order_amount</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">points</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">created_at</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">settled_at</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="RECOMMENDATION_PRODUCTS"><div class="ent-h"><b>RECOMMENDATION_PRODUCTS</b><span>暖心選物商品</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">product_name</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">match_conditions_json</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">primary_conditions_json</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">exclude_conditions_json</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">best_price</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">pharmacy_comparison_json</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">price_checked_at</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="CLINICAL_KNOWLEDGE"><div class="ent-h"><b>CLINICAL_KNOWLEDGE</b><span>實證文獻</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">title</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">ingredient</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">evidence_level</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">contraindications</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">target_symptoms_json</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">citation</td><td class="k"></td></tr></table></div>
+  </div>
+</div>
+<script>
+  // ER Model：依實際表格大小排版，再用 SVG 畫出關聯線（避免自動排版線條交錯）
+  function layoutER() {
+    const root = document.getElementById("erDiagram");
+    if (!root) return;
+    root.style.zoom = 1;
+    const E = id => root.querySelector(`[data-id="${id}"]`);
+    const size = id => ({ w: E(id).offsetWidth, h: E(id).offsetHeight });
+    const P = {};
+    const place = (id, x, y) => { const s = size(id); P[id] = { x, y, w: s.w, h: s.h, cx: x + s.w / 2 };
+                                  E(id).style.left = x + "px"; E(id).style.top = y + "px"; };
+    const PAD = 14, TRUNK = 30, DROP = 70;
+    const row = ["RECIPIENTS", "CHAT_MESSAGES", "POINTS_LEDGER", "REWARD_CLAIMS", "AI_GUARD_USAGE", "CASHBACK_ORDERS"];
+    const gaps = [96, 30, 30, 30, 30];
+    const users = size("USERS");
+    const busY = PAD + users.h + TRUNK, childY = busY + DROP;
+    let x = PAD;
+    row.forEach((id, i) => { place(id, x, childY); x += P[id].w + (gaps[i] || 0); });
+    const right = P.CASHBACK_ORDERS.x + P.CASHBACK_ORDERS.w;
+    const midX = (P.RECIPIENTS.cx + P.CASHBACK_ORDERS.cx) / 2;
+    place("USERS", Math.round(midX - users.w / 2), PAD);
+    place("NOTE", PAD, PAD);
+    place("DB", right - size("DB").w, PAD);
+    const rowBottom = Math.max(...row.map(id => P[id].y + P[id].h));
+    const prod = size("RECOMMENDATION_PRODUCTS");
+    const prodY = rowBottom + 84;
+    place("RECOMMENDATION_PRODUCTS", Math.min(right - prod.w, Math.round(P.CASHBACK_ORDERS.cx - prod.w / 2)), prodY);
+    place("CLINICAL_KNOWLEDGE", P.RECOMMENDATION_PRODUCTS.x - 150 - size("CLINICAL_KNOWLEDGE").w, prodY);
+    const W = Math.max(right, P.RECOMMENDATION_PRODUCTS.x + P.RECOMMENDATION_PRODUCTS.w) + PAD;
+    const H = Math.max(P.RECOMMENDATION_PRODUCTS.y + P.RECOMMENDATION_PRODUCTS.h, P.CLINICAL_KNOWLEDGE.y + P.CLINICAL_KNOWLEDGE.h) + PAD;
+    root.style.width = W + "px"; root.style.height = H + "px";
 
-  USERS {
-    string id PK
-    string account UK "帳號或 Email"
-    string password_hash
-    string name
-    string role "user / admin"
-    int points "暖幣餘額"
-    string auth_provider "email / google / facebook / apple"
-    string social_id
-    string avatar "自訂頭貼 data URL"
-    string social_avatar_url
-    string last_active_date
-    int login_streak
+    // ---- 連線 ----
+    const C = "#2563EB";
+    let out = "";
+    const line = (x1, y1, x2, y2) => { out += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${C}" stroke-width="1.6"/>`; };
+    // one：端點 (x,y)、d 為朝向資料表的方向
+    const one = (x, y, dx, dy) => { [9, 14].forEach(t => { const px = x - dx * t, py = y - dy * t;
+                                    line(px - dy * 7, py - dx * 7, px + dy * 7, py + dx * 7); }); };
+    const many = (x, y, dx, dy) => { const bx = x - dx * 14, by = y - dy * 14;
+      line(bx, by, x + dy * 8, y + dx * 8); line(bx, by, x, y); line(bx, by, x - dy * 8, y - dx * 8);
+      out += `<circle cx="${x - dx * 21}" cy="${y - dy * 21}" r="4.5" fill="#fff" stroke="${C}" stroke-width="1.6"/>`; };
+    root.querySelectorAll(".er-rel").forEach(n => n.remove());
+    const label = (text, lx, ly) => { const n = document.createElement("span"); n.className = "er-rel"; n.textContent = text;
+                                      n.style.left = lx + "px"; n.style.top = ly + "px"; root.appendChild(n); };
+    // USERS → 六張子表（匯流排）
+    const uB = P.USERS.y + P.USERS.h;
+    line(P.USERS.cx, uB, P.USERS.cx, busY); one(P.USERS.cx, uB, 0, -1);
+    line(P.RECIPIENTS.cx, busY, P.CASHBACK_ORDERS.cx, busY);
+    const rel = { RECIPIENTS: "守護", CHAT_MESSAGES: "擁有對話", POINTS_LEDGER: "點數明細",
+                  REWARD_CLAIMS: "領取紀錄", AI_GUARD_USAGE: "每日詢問額度", CASHBACK_ORDERS: "購物回饋" };
+    row.forEach(id => { line(P[id].cx, busY, P[id].cx, childY); many(P[id].cx, childY, 0, 1); label(rel[id], P[id].cx, busY + 22); });
+    // RECIPIENTS → CHAT_MESSAGES
+    const ry = childY + 64, rx1 = P.RECIPIENTS.x + P.RECIPIENTS.w, rx2 = P.CHAT_MESSAGES.x;
+    line(rx1, ry, rx2, ry); one(rx1, ry, -1, 0); many(rx2, ry, 1, 0); label("對話對象", (rx1 + rx2) / 2, ry - 16);
+    // RECOMMENDATION_PRODUCTS → CASHBACK_ORDERS
+    const vx = P.CASHBACK_ORDERS.cx, cB = P.CASHBACK_ORDERS.y + P.CASHBACK_ORDERS.h;
+    line(vx, prodY, vx, cB); one(vx, prodY, 0, 1); many(vx, cB, 0, -1); label("購買商品", vx, (prodY + cB) / 2 + 12);
+    // CLINICAL_KNOWLEDGE ↔ RECOMMENDATION_PRODUCTS
+    const ky = prodY + 64, kx1 = P.CLINICAL_KNOWLEDGE.x + P.CLINICAL_KNOWLEDGE.w, kx2 = P.RECOMMENDATION_PRODUCTS.x;
+    line(kx1, ky, kx2, ky); many(kx1, ky, -1, 0); many(kx2, ky, 1, 0); label("成分對應", (kx1 + kx2) / 2, ky - 16);
+    const svg = root.querySelector("svg.er-lines");
+    svg.setAttribute("width", W); svg.setAttribute("height", H); svg.innerHTML = out;
+    // 版面不夠寬時等比例縮小
+    const avail = root.parentElement.clientWidth;
+    if (avail && avail < W) root.style.zoom = avail / W;
   }
-  RECIPIENTS {
-    string id PK
-    string user_account FK
-    string name
-    string condition "病況與用藥"
-    string line_user_id
-    string line_bind_code
-    string line_bind_expires
-    string quick_tags_json
-  }
-  CHAT_MESSAGES {
-    string id PK
-    string owner_account FK
-    string elder FK "親友名稱"
-    string sender
-    string content
-    string type "card / text / audio"
-    string timestamp "台灣時間"
-    string from_role "family / elder"
-  }
-  POINTS_LEDGER {
-    int id PK
-    string account FK
-    int amount
-    string title
-    string date_str
-    string expire_str "3 年效期"
-    string type "plus / minus"
-  }
-  CASHBACK_ORDERS {
-    string id PK
-    string account FK
-    string pharmacy
-    string product_name
-    int est_price
-    real rate
-    string status "tracked / pending / confirmed / rejected"
-    int order_amount
-    int points
-    string created_at
-    string settled_at
-  }
-  REWARD_CLAIMS {
-    string account PK
-    string claim_key PK "care_card:日期:親友"
-    int amount
-  }
-  AI_GUARD_USAGE {
-    string account PK
-    string date_str PK
-    int used
-    int bonus "兌換次數"
-  }
-  RECOMMENDATION_PRODUCTS {
-    string id PK
-    string product_name
-    string match_conditions_json
-    string primary_conditions_json
-    string exclude_conditions_json
-    int best_price
-    string pharmacy_comparison_json
-    string price_checked_at
-  }
-  CLINICAL_KNOWLEDGE {
-    string id PK
-    string title
-    string ingredient
-    string evidence_level
-    string contraindications
-    string target_symptoms_json
-    string citation
-  }
-  </pre>
+  layoutER();
+  window.addEventListener("load", layoutER);
+  window.addEventListener("resize", layoutER);
+</script>
+<!-- er:end -->
   <h3>資料表說明</h3>
   <table>
     <tr><th>資料表</th><th>用途</th></tr>
@@ -693,15 +865,20 @@ erDiagram
   <p class="sub" style="margin-top:6px">其他藥局預設 3%。四捨五入採 Python <code>round()</code>（剛好 .5 時取偶數）。</p>
 
   <h3>回饋訂單狀態</h3>
-  <pre class="mermaid">
-stateDiagram-v2
-  [*] --> 追蹤中: 點「前往購買」
-  追蹤中 --> 回饋待確認: 完成購買（輸入實付金額）
-  回饋待確認 --> 已入帳: 藥局確認 → 寫入點數明細
-  回饋待確認 --> 訂單取消: 退貨或取消（不給點）
-  已入帳 --> [*]
-  訂單取消 --> [*]
-  </pre>
+<!-- state:start -->
+<div class="st">
+  <div class="st-dot"></div>
+  <div class="st-arrow"><span>點「前往購買」</span></div>
+  <div class="st-node"><b>追蹤中</b><small><code>tracked</code> 已開啟藥局網站</small></div>
+  <div class="st-arrow"><span>回到 GiftSense，完成購買（輸入實付金額）</span></div>
+  <div class="st-node"><b>回饋待確認</b><small><code>pending</code> 等待藥局確認訂單</small></div>
+  <div class="st-split"><i><span>藥局確認<br>寫入點數明細</span></i><i><span>退貨或取消<br>不給點</span></i></div>
+  <div class="st-row">
+    <div class="st-node ok"><b>已入帳</b><small><code>confirmed</code> 存入暖幣存摺</small></div>
+    <div class="st-node no"><b>訂單取消</b><small><code>rejected</code> 不給點</small></div>
+  </div>
+</div>
+<!-- state:end -->
   <div class="ok" style="margin-top:10px">防重複入帳：確認時以「狀態仍為待確認」作為更新條件，同一筆訂單只會入帳一次。</div>
 
   <h3>使用點數</h3>
@@ -825,6 +1002,28 @@ stateDiagram-v2
 
 <footer>GiftSense 智慧關懷送禮 · 系統說明文件 · 2026/10/13</footer>
 
+<script>
+  // 導覽列：用 JS 捲動（在預覽視窗、iframe 中錨點連結會失效），並標示目前所在章節
+  (function () {
+    const links = Array.from(document.querySelectorAll('nav.toc a[href^="#"]'));
+    links.forEach(a => a.addEventListener("click", e => {
+      const target = document.getElementById(a.getAttribute("href").slice(1));
+      if (!target) return;
+      e.preventDefault();
+      const top = target.getBoundingClientRect().top + window.scrollY - 60;
+      window.scrollTo({ top, behavior: "smooth" });
+      try { history.replaceState(null, "", a.getAttribute("href")); } catch (_) {}
+    }));
+    if (!("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (!en.isIntersecting) return;
+        links.forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + en.target.id));
+      });
+    }, { rootMargin: "-45% 0px -50% 0px" });
+    links.forEach(a => { const t = document.getElementById(a.getAttribute("href").slice(1)); if (t) io.observe(t); });
+  })();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
 <script>
   mermaid.initialize({
@@ -847,8 +1046,7 @@ stateDiagram-v2
       fontFamily: '-apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif',
       fontSize: "14px"
     },
-    flowchart: { curve: "basis", htmlLabels: true },
-    er: { layoutDirection: "TB" }
+    flowchart: { curve: "basis", htmlLabels: true }
   });
 
   // 隱藏中的分頁先不繪製，切換時才繪製（避免圖表尺寸計算錯誤）

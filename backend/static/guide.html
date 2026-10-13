@@ -1,0 +1,1075 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GiftSense 系統說明</title>
+<style>
+  :root {
+    --blue: #2563EB; --blue-dark: #1D4ED8; --blue-deep: #1E3A8A; --blue-soft: #EFF6FF;
+    --blue-border: #BFDBFE; --ink: #0F172A; --slate: #475569; --muted: #64748B;
+    --line: #E2E8F0; --bg: #F4F8FF; --card: #FFFFFF;
+    --red: #DC2626; --amber: #B45309; --green: #16A34A; --teal: #0F766E;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+    line-height: 1.7; font-size: 15px;
+  }
+  header.hero {
+    background: linear-gradient(135deg, #3B82F6, #1D4ED8 60%, #1E3A8A);
+    color: #fff; padding: 56px 20px 72px; position: relative; overflow: hidden;
+  }
+  header.hero::after {
+    content: ""; position: absolute; width: 420px; height: 420px; right: -120px; top: -160px;
+    border-radius: 50%; background: rgba(255,255,255,.08);
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+  .hero h1 { font-size: 34px; margin: 0 0 6px; letter-spacing: .5px; }
+  .hero p { margin: 0; opacity: .9; font-size: 16px; }
+  .hero .meta { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill { background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.3);
+          padding: 4px 12px; border-radius: 999px; font-size: 13px; }
+  nav.toc {
+    position: sticky; top: 0; z-index: 10; background: rgba(255,255,255,.92); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--blue-border);
+  }
+  nav.toc .wrap { display: flex; gap: 4px; overflow-x: auto; padding: 10px 20px; }
+  nav.toc a {
+    white-space: nowrap; text-decoration: none; color: var(--blue-dark); font-weight: 700; font-size: 13.5px;
+    padding: 6px 12px; border-radius: 999px;
+  }
+  nav.toc a:hover, nav.toc a.active { background: var(--blue-soft); }
+  section { scroll-margin-top: 64px; }
+  main { padding: 28px 0 60px; }
+  section { margin-top: 28px; }
+  .card {
+    background: var(--card); border: 1px solid var(--blue-border); border-radius: 22px;
+    padding: 24px 26px; box-shadow: 0 10px 30px rgba(37,99,235,.06);
+  }
+  h2 { font-size: 22px; margin: 0 0 4px; color: var(--blue-deep); display: flex; align-items: center; gap: 10px; }
+  h2 .num { background: linear-gradient(135deg,#3B82F6,#1D4ED8); color:#fff; width: 32px; height: 32px;
+            border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; }
+  h3 { font-size: 17px; color: var(--blue-dark); margin: 26px 0 8px; }
+  .sub { color: var(--muted); margin: 0 0 16px; }
+  .grid { display: grid; gap: 14px; }
+  .g2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .g4 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+  .stat { background: var(--blue-soft); border: 1px solid var(--blue-border); border-radius: 16px; padding: 14px 16px; }
+  .stat b { font-size: 26px; color: var(--blue-dark); display: block; line-height: 1.2; }
+  .stat span { color: var(--slate); font-size: 13px; }
+  .mermaid { background: #FAFCFF; border: 1px solid var(--line); border-radius: 16px; padding: 14px; overflow-x: auto; text-align: center; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 4px; }
+  th, td { border-bottom: 1px solid var(--line); padding: 9px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--blue-soft); color: var(--blue-deep); font-weight: 800; white-space: nowrap; }
+  tr:hover td { background: #FBFDFF; }
+  code { background: #EEF4FF; color: var(--blue-deep); padding: 1px 6px; border-radius: 6px; font-size: 13px;
+         font-family: "SF Mono", Consolas, monospace; }
+  .formula { background: linear-gradient(135deg,#EFF6FF,#FFFFFF); border: 1px dashed var(--blue); border-radius: 16px;
+             padding: 14px 18px; font-size: 16px; font-weight: 800; color: var(--blue-deep); text-align: center; }
+  .note { background: #FFFBEB; border: 1px solid #FDE68A; color: #92400E; border-radius: 14px; padding: 12px 14px; font-size: 13.5px; }
+  .ok { background: #F0FDF4; border: 1px solid #BBF7D0; color: #166534; border-radius: 14px; padding: 12px 14px; font-size: 13.5px; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 800; padding: 2px 8px; border-radius: 8px; margin-right: 4px; }
+  .t-blue { background: var(--blue-soft); color: var(--blue-dark); border: 1px solid var(--blue-border); }
+  .t-red { background: #FEF2F2; color: var(--red); border: 1px solid #FECACA; }
+  .t-amber { background: #FFFBEB; color: var(--amber); border: 1px solid #FDE68A; }
+  .t-green { background: #F0FDF4; color: var(--green); border: 1px solid #BBF7D0; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tabs button {
+    border: 1px solid var(--blue-border); background: #fff; color: var(--blue-dark); font-weight: 800;
+    padding: 8px 16px; border-radius: 999px; cursor: pointer; font-size: 14px; font-family: inherit;
+  }
+  .tabs button.active { background: linear-gradient(135deg,#3B82F6,#1D4ED8); color: #fff; border-color: transparent; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  ol.steps { padding-left: 0; list-style: none; counter-reset: s; margin: 0; }
+  ol.steps > li { counter-increment: s; position: relative; padding: 12px 14px 12px 54px; border: 1px solid var(--line);
+                  border-radius: 14px; margin-bottom: 10px; background: #fff; }
+  ol.steps > li::before { content: counter(s); position: absolute; left: 14px; top: 12px; width: 28px; height: 28px; border-radius: 9px;
+                          background: var(--blue-soft); color: var(--blue-dark); font-weight: 900; display: flex; align-items: center; justify-content: center; }
+  .step-title { font-weight: 800; color: var(--ink); }
+  .time { float: right; font-size: 12px; color: var(--muted); font-weight: 700; }
+  .say { color: var(--slate); font-size: 13.5px; margin-top: 4px; }
+  .say::before { content: "講解："; font-weight: 800; color: var(--blue-dark); }
+  .expect { color: var(--teal); font-size: 13.5px; margin-top: 2px; }
+  .expect::before { content: "預期畫面："; font-weight: 800; }
+  ul.check { padding-left: 0; list-style: none; margin: 6px 0; }
+  ul.check li { padding-left: 26px; position: relative; margin: 4px 0; }
+  ul.check li::before { content: ""; position: absolute; left: 2px; top: 6px; width: 14px; height: 14px; border-radius: 4px;
+                        border: 2px solid var(--blue); }
+  /* ---------- 系統架構圖（分層） ---------- */
+  .arch { margin-top: 6px; }
+  .tier { display: grid; grid-template-columns: 132px 1fr; gap: 16px; align-items: stretch;
+          border: 1px solid var(--blue-border); border-radius: 20px; padding: 16px; background: #FAFCFF; }
+  .tier-label { border-radius: 14px; background: linear-gradient(160deg,#3B82F6,#1D4ED8); color: #fff;
+                display: flex; flex-direction: column; justify-content: center; padding: 12px 14px; }
+  .tier-label span { font-size: 12px; font-weight: 800; opacity: .75; letter-spacing: 1px; }
+  .tier-label b { font-size: 16px; line-height: 1.35; }
+  .tier-label small { font-size: 12px; opacity: .85; margin-top: 2px; }
+  .nodes { display: grid; gap: 10px; grid-template-columns: repeat(5, minmax(0,1fr)); }
+  .node { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px 10px; text-align: center;
+          display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .node .ico { width: 36px; height: 36px; border-radius: 11px; background: var(--blue-soft); color: var(--blue-dark);
+               display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
+  .node .ico svg { width: 20px; height: 20px; }
+  .node b { font-size: 14px; color: var(--ink); }
+  .node small { font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .node.green .ico { background: #ECFDF5; color: #059669; }
+  .node.slate .ico { background: #F1F5F9; color: #334155; }
+  .core-body { display: flex; flex-direction: column; gap: 10px; }
+  .gateway { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; background: linear-gradient(135deg,#EFF6FF,#fff);
+             border: 1.5px solid var(--blue); border-radius: 14px; padding: 10px 14px; }
+  .gateway b { color: var(--blue-deep); font-size: 15px; margin-right: 4px; }
+  .gateway span { font-size: 12.5px; font-weight: 700; color: var(--blue-dark); background: #fff;
+                  border: 1px solid var(--blue-border); border-radius: 999px; padding: 2px 10px; }
+  .mods { display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(0,1fr)); }
+  .mod { background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--blue); border-radius: 12px;
+         padding: 10px 12px; display: flex; flex-direction: column; gap: 3px; }
+  .mod b { font-size: 14px; }
+  .mod code { font-size: 11.5px; align-self: flex-start; }
+  .mod em { font-style: normal; font-size: 12px; color: var(--muted); }
+  .mod em.ext { color: var(--teal); font-weight: 700; }
+  .mod.teal { border-left-color: #14B8A6; }
+  .links { display: grid; gap: 16px; grid-template-columns: 132px 1fr; }
+  .links .pipes { display: flex; justify-content: space-around; }
+  .pipe { display: flex; flex-direction: column; align-items: center; height: 54px; justify-content: center; position: relative; }
+  .pipe::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; width: 2px; margin-left: -1px;
+                  background: linear-gradient(var(--blue-border), var(--blue)); }
+  .pipe::after { content: ""; position: absolute; bottom: -1px; left: 50%; margin-left: -6px;
+                 border: 6px solid transparent; border-top-color: var(--blue); border-bottom: 0; }
+  .pipe.both .cap { position: absolute; top: -1px; left: 50%; margin-left: -6px;
+                    border: 6px solid transparent; border-bottom-color: #93C5FD; border-top: 0; }
+  .pipe span { position: relative; z-index: 1; background: #fff; border: 1px solid var(--blue-border); color: var(--blue-dark);
+               font-size: 12px; font-weight: 800; border-radius: 999px; padding: 2px 10px; white-space: nowrap; }
+  .bottom { display: grid; gap: 16px; grid-template-columns: 1fr 2fr; }
+  .subbox { display: flex; flex-direction: column; gap: 8px; }
+  .subhead { font-size: 12.5px; font-weight: 800; color: var(--blue-dark); letter-spacing: .5px; }
+  .bottom-links { display: grid; gap: 16px; grid-template-columns: 1fr 2fr; }
+  .bottom-links .pipe { margin: 0 auto; }
+  .db { flex: 1; background: #fff; border: 1.5px solid var(--blue); border-radius: 14px; padding: 14px; text-align: center;
+        display: flex; flex-direction: column; justify-content: center; }
+  .db .cyl { width: 54px; height: 54px; margin: 0 auto 6px; color: var(--blue-dark); }
+  .db b { display: block; color: var(--blue-deep); font-size: 15px; }
+  .db small { color: var(--muted); font-size: 12px; display: block; line-height: 1.5; }
+  .ext-grid { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .ext-grid .node { padding: 10px 8px; }
+  .ext-grid .node .ico { width: 30px; height: 30px; border-radius: 9px; background: #F0FDFA; color: var(--teal); }
+  .ext-grid .node .ico svg { width: 17px; height: 17px; }
+  .ext-grid .node.dim { opacity: .6; border-style: dashed; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; font-size: 12.5px; color: var(--slate); }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  @media (max-width: 900px) {
+    .mods { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .nodes { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  }
+  @media (max-width: 640px) {
+    .tier, .links { grid-template-columns: 1fr; }
+    .links > div:first-child { display: none; }
+    .tier-label { flex-direction: row; align-items: baseline; gap: 8px; padding: 8px 12px; }
+    .nodes { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .bottom, .bottom-links { grid-template-columns: 1fr; }
+    .bottom-links .pipe:last-child { display: none; }
+    .ext-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .nodes .node:last-child { grid-column: span 2; }
+    .links .pipes { gap: 10px; }
+    .pipe { height: auto; min-height: 58px; padding: 12px 0; }
+    .pipe span { white-space: normal; text-align: center; max-width: 150px; }
+  }
+  /* ---------- 系統總流程（手工排版） ---------- */
+  .fa { display: flex; flex-direction: column; align-items: center; max-width: 1000px; margin: 0 auto; }
+  .fa-node { background: #fff; border: 1.5px solid var(--blue); border-radius: 14px; padding: 10px 18px; text-align: center;
+             display: flex; flex-direction: column; gap: 1px; min-width: 240px; }
+  .fa-node b { font-size: 15px; color: var(--blue-deep); }
+  .fa-node small { font-size: 12.5px; color: var(--slate); }
+  .fa-start { background: linear-gradient(135deg,#3B82F6,#1D4ED8); border-color: transparent; border-radius: 999px; }
+  .fa-start b, .fa-start small { color: #fff; }
+  .fa-decide { border-style: dashed; background: var(--blue-soft); }
+  .fa-decide b::before { content: "◆ "; color: var(--blue); font-size: 12px; }
+  .fa-admin { border-color: #94A3B8; background: #F8FAFC; min-width: 0; }
+  .fa-admin b { color: #334155; }
+  .fa-home { border-width: 2px; box-shadow: 0 6px 18px rgba(37,99,235,.10); }
+  .fa-v { width: 2px; height: 34px; background: var(--blue); position: relative; display: flex; align-items: center; justify-content: center; }
+  .fa-v::after { content: ""; position: absolute; bottom: -1px; left: -5px; border: 6px solid transparent; border-top-color: var(--blue); border-bottom: 0; }
+  .fa-v span, .fa-h span { position: absolute; white-space: nowrap; background: #fff; border: 1px solid var(--blue-border); color: var(--blue-dark);
+                           font-size: 12px; font-weight: 800; border-radius: 999px; padding: 1px 9px; }
+  .fa-login { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; width: 100%; }
+  .fa-login .fa-decide { grid-column: 2; }
+  .fa-login .fa-side { grid-column: 3; display: flex; align-items: center; }
+  .fa-h { flex: 0 0 64px; height: 2px; background: #94A3B8; position: relative; display: flex; justify-content: center; }
+  .fa-h::after { content: ""; position: absolute; right: -1px; top: -5px; border: 6px solid transparent; border-left-color: #94A3B8; border-right: 0; }
+  .fa-h span { top: -24px; border-color: #CBD5E1; color: #334155; }
+  .fa-split, .fa-merge { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; width: 100%; }
+  .fa-split { height: 46px; }
+  .fa-merge { height: 72px; }
+  .fa-split::before, .fa-merge::before { content: ""; position: absolute; left: 50%; width: 2px; margin-left: -1px; background: var(--blue); }
+  .fa-split::before { top: 0; height: 50%; }
+  .fa-merge::before { top: 50%; bottom: 0; }
+  .fa-split::after, .fa-merge::after { content: ""; position: absolute; top: 50%; height: 2px; margin-top: -1px; background: var(--blue);
+                                       left: calc((100% - 36px) / 6); right: calc((100% - 36px) / 6); }
+  .fa-split i, .fa-merge i { position: relative; display: flex; justify-content: center; font-style: normal; }
+  .fa-split i::before, .fa-merge i::before { content: ""; position: absolute; left: 50%; width: 2px; margin-left: -1px; background: var(--blue); }
+  .fa-split i::before { top: 50%; bottom: 0; }
+  .fa-merge i::before { top: 0; height: 50%; }
+  .fa-split i::after { content: ""; position: absolute; bottom: -1px; left: 50%; margin-left: -6px; border: 6px solid transparent; border-top-color: var(--blue); border-bottom: 0; }
+  .fa-merge > span { position: absolute; bottom: -1px; left: 50%; margin-left: -6px; border: 6px solid transparent; border-top-color: var(--blue); border-bottom: 0; }
+  .fa-merge i b { position: relative; z-index: 1; align-self: flex-start; margin-top: 4px; background: #FFFBEB; border: 1px solid #FCD34D; color: #92400E;
+                  font-size: 12px; font-weight: 800; border-radius: 999px; padding: 1px 10px; white-space: nowrap; }
+  .fa-lanes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; width: 100%; }
+  .fa-lane { border: 1px solid var(--blue-border); background: #F8FBFF; border-radius: 18px; padding: 12px 14px 16px;
+             display: flex; flex-direction: column; align-items: stretch; }
+  .fa-lane-h { align-self: center; font-size: 13px; font-weight: 900; color: #fff; background: var(--blue); border-radius: 999px;
+               padding: 3px 14px; margin-bottom: 12px; letter-spacing: .5px; }
+  .fa-lane.green { background: #F3FCF7; border-color: #BBF7D0; }
+  .fa-lane.green .fa-lane-h { background: #059669; }
+  .fa-lane.indigo { background: #F5F7FF; border-color: #C7D2FE; }
+  .fa-lane.indigo .fa-lane-h { background: #4F46E5; }
+  .fa-step { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 9px 12px; text-align: center;
+             font-size: 14px; font-weight: 700; color: var(--ink); line-height: 1.45; }
+  .fa-step small { display: block; font-size: 12px; font-weight: 500; color: var(--muted); }
+  .fa-step.coin { background: #FFFBEB; border-color: #FCD34D; color: #92400E; }
+  .fa-step.coin small { color: #B45309; }
+  .fa-step.link { border-style: dashed; color: #4F46E5; border-color: #A5B4FC; background: #fff; }
+  .fa-dn { align-self: center; width: 2px; height: 20px; background: #93C5FD; position: relative; }
+  .fa-dn::after { content: ""; position: absolute; bottom: -1px; left: -4px; border: 5px solid transparent; border-top-color: #60A5FA; border-bottom: 0; }
+  .fa-wallet { border-color: #F59E0B; background: linear-gradient(135deg,#FFFBEB,#fff); min-width: 320px; }
+  .fa-wallet b { color: #92400E; }
+  .fa-wallet small { color: #B45309; }
+  @media (max-width: 640px) {
+    .fa-node { min-width: 0; }
+    .fa-login { grid-template-columns: 1fr; justify-items: center; gap: 10px; }
+    .fa-login .fa-decide, .fa-login .fa-side { grid-column: 1; }
+    .fa-h { flex-basis: 36px; }
+    .fa-lanes { grid-template-columns: 1fr; }
+    .fa-split, .fa-merge { grid-template-columns: 1fr; }
+    .fa-split::after, .fa-merge::after, .fa-split i:not(:nth-child(2)) { display: none; }
+    .fa-merge { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; height: auto; padding: 10px 0 30px; }
+    .fa-merge::before { top: auto; height: 22px; }
+    .fa-merge i::before { display: none; }
+  }
+
+  /* ---------- ER Model（手工排版） ---------- */
+  .er-wrap { overflow-x: auto; }
+  .er { position: relative; margin: 0 auto; }
+  .er svg.er-lines { position: absolute; left: 0; top: 0; overflow: visible; }
+  .ent { position: absolute; background: #fff; border: 1.5px solid var(--blue); border-radius: 12px; overflow: hidden;
+         box-shadow: 0 4px 14px rgba(37,99,235,.08); z-index: 1; }
+  .ent-h { background: linear-gradient(135deg,#3B82F6,#1D4ED8); color: #fff; padding: 6px 12px; display: flex; align-items: baseline; gap: 8px; white-space: nowrap; }
+  .ent-h b { font-size: 13px; letter-spacing: .3px; font-family: "SF Mono", Consolas, monospace; }
+  .ent-h span { font-size: 12px; opacity: .9; }
+  .ent table { margin: 0; font-size: 12px; width: 100%; }
+  .ent td { padding: 3px 10px; border-bottom: 1px solid #EEF2F7; white-space: nowrap; }
+  .ent tr:last-child td { border-bottom: 0; }
+  .ent tr:hover td { background: transparent; }
+  .ent td.ty { color: #94A3B8; padding-right: 4px; font-family: "SF Mono", Consolas, monospace; font-size: 11px; }
+  .ent td.nm { color: var(--ink); font-family: "SF Mono", Consolas, monospace; font-size: 11.5px; }
+  .ent td.k { text-align: right; padding-left: 4px; }
+  .ent td.k i { font-style: normal; font-size: 10px; font-weight: 900; border-radius: 5px; padding: 0 5px; }
+  .ent td.k i.pk { background: #FEF3C7; color: #92400E; }
+  .ent td.k i.fk { background: var(--blue-soft); color: var(--blue-dark); }
+  .ent td.k i.uk { background: #F1F5F9; color: #334155; }
+  .er-rel { position: absolute; z-index: 2; transform: translate(-50%, -50%); background: #fff; border: 1px solid var(--blue-border);
+            color: var(--blue-dark); font-size: 11.5px; font-weight: 800; border-radius: 999px; padding: 0 8px; white-space: nowrap; line-height: 18px; }
+  .er-note { position: absolute; z-index: 1; border: 1px solid var(--line); background: #FAFCFF; border-radius: 12px; padding: 10px 12px;
+             font-size: 12px; color: var(--slate); line-height: 1.7; white-space: nowrap; }
+  .er-note b { color: var(--blue-deep); display: block; font-size: 12.5px; margin-bottom: 2px; }
+  .er-note svg { vertical-align: middle; margin-right: 6px; }
+  /* ---------- 回饋訂單狀態（手工排版） ---------- */
+  .st { display: flex; flex-direction: column; align-items: center; width: 640px; max-width: 100%; margin: 6px auto 0; }
+  .st-dot { width: 18px; height: 18px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 5px var(--blue-soft); }
+  .st-arrow { width: 2px; height: 54px; background: var(--blue); position: relative; }
+  .st-arrow::after, .st-split i::after { content: ""; position: absolute; bottom: -1px; left: 50%; margin-left: -6px;
+                                         border: 6px solid transparent; border-top-color: var(--blue); border-bottom: 0; }
+  .st-arrow span { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); white-space: nowrap;
+                   font-size: 13px; font-weight: 700; color: var(--slate); }
+  .st-node { min-width: 210px; text-align: center; border: 1.5px solid var(--blue); background: var(--blue-soft);
+             border-radius: 14px; padding: 10px 18px; }
+  .st-node b { display: block; font-size: 16px; color: var(--blue-deep); }
+  .st-node small { font-size: 12px; color: var(--muted); }
+  .st-node code { font-size: 11.5px; }
+  .st-node.ok { border-color: #16A34A; background: #F0FDF4; }
+  .st-node.ok b { color: #166534; }
+  .st-node.no { border-color: #DC2626; background: #FEF2F2; }
+  .st-node.no b { color: #991B1B; }
+  .st-split { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 100%; height: 84px; }
+  .st-split::before { content: ""; position: absolute; left: 50%; top: 0; height: 22px; width: 2px; margin-left: -1px; background: var(--blue); }
+  .st-split::after { content: ""; position: absolute; top: 21px; height: 2px; background: var(--blue);
+                     left: calc((100% - 40px) / 4); right: calc((100% - 40px) / 4); }
+  .st-split i { position: relative; font-style: normal; }
+  .st-split i::before { content: ""; position: absolute; left: 50%; top: 22px; bottom: 0; width: 2px; margin-left: -1px; background: var(--blue); }
+  .st-split i span { position: absolute; top: 32px; font-size: 12.5px; font-weight: 700; color: var(--slate); line-height: 1.45; white-space: nowrap; }
+  .st-split i:first-child span { right: calc(50% + 12px); text-align: right; color: #166534; }
+  .st-split i:last-child span { left: calc(50% + 12px); color: #991B1B; }
+  .st-row { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; width: 100%; }
+  .st-row .st-node { justify-self: center; min-width: 0; width: 100%; max-width: 250px; }
+  @media (max-width: 640px) {
+    .st-split i span { font-size: 11.5px; }
+    .st-split { gap: 16px; }
+    .st-split::after { left: calc((100% - 16px) / 4); right: calc((100% - 16px) / 4); }
+    .st-row { gap: 16px; }
+  }
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 30px 20px 50px; }
+  @media (max-width: 640px) {
+    .hero h1 { font-size: 26px; }
+    .card { padding: 18px 16px; border-radius: 18px; }
+    th, td { padding: 8px 6px; font-size: 13px; }
+  }
+  @media print {
+    nav.toc { display: none; }
+    .panel { display: block !important; page-break-inside: avoid; }
+    .tabs { display: none; }
+    .card { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>GiftSense 智慧關懷送禮</h1>
+    <p>心意，醫觸即達 · 系統架構、流程、技術、資料模型、點數回饋與 Demo 腳本</p>
+    <div class="meta">
+      <span class="pill">版本：2026/10/13</span>
+      <span class="pill">網站：giftsense-vjbu.onrender.com</span>
+      <span class="pill">網頁 · Android · iPhone · LINE</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="wrap">
+    <a href="#overview">系統概述</a>
+    <a href="#arch">系統架構圖</a>
+    <a href="#flow">系統流程圖</a>
+    <a href="#tech">技術運用</a>
+    <a href="#er">ER Model</a>
+    <a href="#points">點數回饋計算</a>
+    <a href="#demo">Demo 腳本</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ===================== 1. 系統概述 ===================== -->
+<section id="overview" class="card">
+  <h2><span class="num">1</span>系統概述</h2>
+  <p class="sub">GiftSense 讓家人用一個平台照顧遠方的親友：每日依天氣與病況產生關懷提醒、用 AI 守護助理檢查保健品是否撞藥、從連鎖藥局比價挑選合適商品，並透過 LINE 把關懷卡送到親友手上。</p>
+  <div class="grid g4">
+    <div class="stat"><b>4 種</b><span>使用端：網頁、Android、iPhone、親友 LINE</span></div>
+    <div class="stat"><b>54 支</b><span>後端 REST API</span></div>
+    <div class="stat"><b>12 項</b><span>暖心選物商品（四大藥局官網實際查價）</span></div>
+    <div class="stat"><b>15 篇</b><span>實證文獻＋8 條 TFDA 交互作用規則</span></div>
+  </div>
+  <h3>主要功能</h3>
+  <table>
+    <tr><th>模組</th><th>說明</th></tr>
+    <tr><td>今日守護</td><td>中央氣象署即時天氣、依親友病況與語氣（撒嬌／台語／端莊）產生關懷叮嚀、3 秒發送關懷卡、連續守護天數、用藥安全雷達與專屬快速提問。</td></tr>
+    <tr><td>AI 守護助理</td><td>RAG 檢索實證文獻 ＋ TFDA 交互作用規則，判斷保健品與親友用藥是否衝突，給出機轉、引用與安全的商品建議；每日 3 次，可用暖幣兌換。</td></tr>
+    <tr><td>暖心選物</td><td>依親友病況比對商品（主要病況加權、禁忌病況排除），固定推薦 3 項，四大連鎖藥局比價並標示同規格最低價；購物回饋（ShopBack 模式，模擬）。</td></tr>
+    <tr><td>傳情小站</td><td>家人 × 親友的一對一聊天室；訊息同步推播到親友 LINE，親友從 LINE 回覆會回到聊天室。</td></tr>
+    <tr><td>暖幣存摺</td><td>關懷卡、小熊互動、購物回饋累積點數；1 點可折抵 $1（與回饋比例一致），也可兌換 AI 守護詢問次數，效期 3 年。</td></tr>
+    <tr><td>管理後台</td><td>系統總覽、實證文獻庫（新增／編輯／刪除即時更新 RAG）、RAG 測試台（測試情境＋深度題、不限次數）、後端設定。</td></tr>
+  </table>
+</section>
+
+<!-- ===================== 2. 系統架構圖 ===================== -->
+<section id="arch" class="card">
+  <h2><span class="num">2</span>系統架構圖</h2>
+  <p class="sub">由上到下分為三層：使用者端 → Render 應用服務層 → 資料層與外部服務；箭頭只畫層與層之間的連線，模組上的綠色標記代表會呼叫外部服務。前端以 Flutter 一套程式碼產出網頁版與 Android App。</p>
+  <div class="arch">
+
+    <div class="tier">
+      <div class="tier-label"><span>LAYER 1</span><b>使用者端</b><small>Flutter 一套程式碼</small></div>
+      <div class="nodes">
+        <div class="node"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div><b>網頁版</b><small>Flutter Web</small></div>
+        <div class="node"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></div><b>Android App</b><small>Flutter APK</small></div>
+        <div class="node"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10 5h4"/></svg></div><b>iPhone</b><small>Safari 加入主畫面</small></div>
+        <div class="node slate"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div><b>管理員</b><small>管理後台</small></div>
+        <div class="node green"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg></div><b>親友</b><small>LINE 官方帳號</small></div>
+      </div>
+    </div>
+
+    <div class="links">
+      <div></div>
+      <div class="pipes">
+        <div class="pipe both"><i class="cap"></i><span>HTTPS · JSON（/api）</span></div>
+        <div class="pipe both"><i class="cap"></i><span>LINE Webhook ／ Reply · Push</span></div>
+      </div>
+    </div>
+
+    <div class="tier">
+      <div class="tier-label"><span>LAYER 2</span><b>應用服務層</b><small>Render 免費方案</small></div>
+      <div class="core-body">
+        <div class="gateway"><b>FastAPI 後端</b><span>54 支 REST API</span><span>提供 Flutter 網頁</span><span>管理員 HMAC 通行證</span><span>台灣時間</span></div>
+        <div class="mods">
+          <div class="mod teal"><b>會員／第三方登入</b><code>social_auth</code><em class="ext">連 Google · Facebook · Apple</em></div>
+          <div class="mod"><b>AI 守護 RAG</b><code>vector_store · rag_engine</code><em>TF-IDF 檢索實證文獻</em></div>
+          <div class="mod"><b>交互作用規則</b><code>tfda_service</code><em>8 條 TFDA 規則把關</em></div>
+          <div class="mod teal"><b>暖心選物推薦</b><code>product_catalog</code><em class="ext">病況比對 · 連藥局官網</em></div>
+          <div class="mod"><b>點數與購物回饋</b><code>database</code><em>暖幣存摺 · 回饋入帳</em></div>
+          <div class="mod teal"><b>LINE Bot</b><code>line_messages</code><em class="ext">連 LINE Messaging API</em></div>
+          <div class="mod teal"><b>天氣服務</b><code>weather_service</code><em class="ext">連中央氣象署</em></div>
+          <div class="mod"><b>關懷語生成</b><code>greeting_generator</code><em>依病況與語氣產生</em></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="links">
+      <div></div>
+      <div class="bottom-links">
+        <div class="pipe both"><i class="cap"></i><span>SQL（libSQL）</span></div>
+        <div class="pipe both"><i class="cap"></i><span>HTTPS 呼叫外部 API</span></div>
+      </div>
+    </div>
+
+    <div class="tier">
+      <div class="tier-label"><span>LAYER 3</span><b>資料與<br>外部服務</b><small>雲端免費方案</small></div>
+      <div class="bottom">
+        <div class="subbox">
+          <div class="subhead">資料層</div>
+          <div class="db">
+            <svg class="cyl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="5.5" rx="7" ry="2.5"/><path d="M5 5.5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-13M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/></svg>
+            <b>Turso 雲端資料庫</b>
+            <small>libSQL（SQLite 相容）<br>帳號 · 親友 · 聊天 · 點數 · 文獻<br>未設定時退回本機 SQLite</small>
+          </div>
+        </div>
+        <div class="subbox">
+          <div class="subhead">外部服務</div>
+          <div class="ext-grid">
+            <div class="node"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18z"/></svg></div><b>中央氣象署</b><small>開放資料 API</small></div>
+            <div class="node"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg></div><b>LINE</b><small>Messaging API</small></div>
+            <div class="node"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 9l1.5-5h13L20 9M4 9h16v11H4zM10 20v-6h4v6"/></svg></div><b>四大連鎖藥局</b><small>官方網站</small></div>
+            <div class="node"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l2 2"/></svg></div><b>Google</b><small>OAuth 登入</small></div>
+            <div class="node"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l2 2"/></svg></div><b>Facebook</b><small>Graph API 登入</small></div>
+            <div class="node dim"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l2 2"/></svg></div><b>Apple</b><small>登入（待開通）</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <span><i style="background:var(--blue)"></i>系統內部模組</span>
+      <span><i style="background:#14B8A6"></i>會呼叫外部服務的模組</span>
+      <span><i style="background:#fff;border:1.5px dashed #94A3B8"></i>尚未開通</span>
+      <span>部署：推送 GitHub main 分支 → Render 自動部署</span>
+    </div>
+  </div>
+  <div class="grid g2" style="margin-top:14px">
+    <div>
+      <h3>部署與資料</h3>
+      <table>
+        <tr><th>元件</th><th>說明</th></tr>
+        <tr><td>GitHub</td><td>推送 main 分支後 Render 自動部署（約 4 分鐘）。</td></tr>
+        <tr><td>Render 免費方案</td><td>執行 FastAPI 並提供 Flutter 網頁；閒置約 15 分鐘會休眠，首次喚醒約 30–60 秒。</td></tr>
+        <tr><td>Turso 免費方案</td><td>雲端 libSQL 資料庫，資料不會因 Render 重啟而消失；未設定時退回本機 SQLite。</td></tr>
+        <tr><td>環境變數</td><td><code>TURSO_DATABASE_URL</code> <code>TURSO_AUTH_TOKEN</code> <code>CWA_API_KEY</code> <code>ADMIN_PASSWORD</code> <code>LINE_CHANNEL_*</code> <code>FACEBOOK_APP_*</code></td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>安全設計</h3>
+      <table>
+        <tr><th>項目</th><th>做法</th></tr>
+        <tr><td>第三方登入</td><td>後端驗證 Google／Facebook／Apple 的憑證，不信任前端傳來的身分。</td></tr>
+        <tr><td>管理員</td><td>密碼由 <code>ADMIN_PASSWORD</code> 設定；登入後核發 HMAC 簽章通行證（7 天），RAG 測試台憑證不限次數。</td></tr>
+        <tr><td>LINE</td><td>Webhook 驗證 <code>X-Line-Signature</code>；一個 LINE 帳號只綁定一位親友。</td></tr>
+        <tr><td>隱私</td><td>網頁版 Cookie 同意（必要／第三方登入）、公開隱私權政策 <code>/privacy</code>；聊天只看得到自己與親友的對話。</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 3. 系統流程圖 ===================== -->
+<section id="flow" class="card">
+  <h2><span class="num">3</span>系統流程圖</h2>
+  <p class="sub">「總流程」是整個系統的使用路徑；其他分頁是各功能的詳細流程。</p>
+  <div class="tabs" data-group="flow">
+    <button class="active" data-panel="f-all">總流程</button>
+    <button data-panel="f-login">登入</button>
+    <button data-panel="f-care">每日關懷 × LINE</button>
+    <button data-panel="f-bind">LINE 綁定</button>
+    <button data-panel="f-rag">AI 守護助理</button>
+    <button data-panel="f-shop">暖心選物推薦</button>
+    <button data-panel="f-cash">購物回饋</button>
+    <button data-panel="f-streak">連續守護</button>
+  </div>
+
+  <div class="panel active" data-group="flow" id="f-all">
+<!-- flow-all:start -->
+<div class="fa">
+  <div class="fa-node fa-start"><b>開啟 GiftSense</b><small>網頁 · Android · iPhone</small></div>
+  <div class="fa-v"></div>
+  <div class="fa-login">
+    <div class="fa-node fa-decide"><b>登入</b><small>帳號密碼 · Google · Facebook</small></div>
+    <div class="fa-side"><div class="fa-h"><span>管理員</span></div>
+      <div class="fa-node fa-admin"><b>管理後台</b><small>系統總覽 · 文獻庫 · RAG 測試台</small></div></div>
+  </div>
+  <div class="fa-v" style="height:44px"><span>一般會員</span></div>
+  <div class="fa-node fa-home"><b>今日守護首頁</b><small>每日打卡 · 中央氣象署天氣 · 依病況產生關懷叮嚀</small></div>
+  <div class="fa-split"><i></i><i></i><i></i></div>
+  <div class="fa-lanes">
+    <div class="fa-lane green">
+      <div class="fa-lane-h">每日關懷</div>
+      <div class="fa-step">發送關懷卡</div><i class="fa-dn"></i>
+      <div class="fa-step">LINE 推播給親友<small>Flex 關懷卡</small></div><i class="fa-dn"></i>
+      <div class="fa-step">親友在 LINE 回覆</div><i class="fa-dn"></i>
+      <div class="fa-step">傳情小站聊天室<small>家人 × 親友對話同步</small></div>
+    </div>
+    <div class="fa-lane">
+      <div class="fa-lane-h">AI 守護助理</div>
+      <div class="fa-step">輸入症狀或保健品</div><i class="fa-dn"></i>
+      <div class="fa-step">實證文獻檢索<small>TF-IDF 向量相似度</small></div><i class="fa-dn"></i>
+      <div class="fa-step">TFDA 撞藥判斷<small>親友用藥 × 保健成分</small></div><i class="fa-dn"></i>
+      <div class="fa-step link">安全的商品建議 → 暖心選物</div>
+    </div>
+    <div class="fa-lane indigo">
+      <div class="fa-lane-h">暖心選物</div>
+      <div class="fa-step">依病況推薦 3 項<small>四大藥局比價 · 同規格最低價</small></div><i class="fa-dn"></i>
+      <div class="fa-step">前往藥局購買</div><i class="fa-dn"></i>
+      <div class="fa-step">回到 GiftSense<small>確認完成購買</small></div><i class="fa-dn"></i>
+      <div class="fa-step coin">購物回饋入帳<small>回饋 $1 ＝ 1 點</small></div>
+    </div>
+  </div>
+  <div class="fa-merge"><i><b>關懷卡 +10 點</b></i><i><b>50 點兌換 3 次詢問</b></i><i><b>購物回饋 +N 點</b></i><span></span></div>
+  <div class="fa-node fa-wallet"><b>暖幣存摺</b><small>1 點可折抵 $1 · 效期 3 年</small></div>
+</div>
+<!-- flow-all:end -->
+  </div>
+
+  <div class="panel" data-group="flow" id="f-login">
+    <pre class="mermaid">
+flowchart TD
+  S(["開啟 GiftSense"]) --> K{"網頁版且&lt;br/&gt;尚未選擇 Cookie？"}
+  K -- 是 --> CK["同意橫幅：接受全部／僅限必要／自訂"] --> L
+  K -- 否 --> L{"選擇登入方式"}
+  L -- 帳號密碼 --> P["POST /api/auth/login"]
+  L -- Google / Facebook --> T{"已同意第三方 Cookie？"}
+  T -- 否 --> Q["詢問是否同意"] -->|同意| SDK
+  T -- 是 --> SDK["取得平台憑證"]
+  SDK --> V["POST /api/auth/social&lt;br/&gt;後端向 Google / Facebook 驗證"]
+  V --> U["找到或建立會員&lt;br/&gt;新會員 +100 點、帶入大頭照"]
+  L -- Apple --> AP["顯示「Apple 登入尚未開放」"]
+  P --> R{"角色"}
+  U --> H
+  R -- 一般會員 --> H["今日守護首頁&lt;br/&gt;每日打卡（連續天數）"]
+  R -- 管理員 --> AD["核發管理員通行證&lt;br/&gt;進入管理後台"]
+    </pre>
+  </div>
+
+  <div class="panel" data-group="flow" id="f-care">
+    <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant F as 家人（GiftSense）
+  participant S as FastAPI 後端
+  participant W as 中央氣象署
+  participant D as Turso 資料庫
+  participant L as LINE 平台
+  participant E as 親友（LINE）
+  F->>S: 取得天氣 GET /api/weather
+  S->>W: 預報 F-C0032-001 ＋ 觀測 O-A0003-001
+  W-->>S: 溫度、降雨、濕度、測站
+  F->>S: 產生關懷叮嚀（天氣 × 病況 × 語氣）
+  F->>S: 發送關懷卡 POST /api/messages
+  S->>D: 寫入 chat_messages（台灣時間）
+  S->>L: Push Flex 關懷卡
+  L->>E: 顯示關懷卡
+  F->>S: 領取點數 POST /api/rewards/claim（+10）
+  E->>L: 回覆「謝謝」
+  L->>S: Webhook（驗證簽章）
+  S->>D: 存入 chat_messages（from_role = elder）
+  S->>L: Reply「已轉達給 家人」
+  F->>S: 聊天室每 15 秒同步 GET /api/messages
+  S-->>F: 新訊息（最新在最下方）
+    </pre>
+  </div>
+
+  <div class="panel" data-group="flow" id="f-bind">
+    <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant F as 家人（GiftSense）
+  participant S as FastAPI 後端
+  participant D as Turso 資料庫
+  participant E as 親友（LINE）
+  F->>S: 產生綁定碼 POST /api/recipients/{id}/line-bind
+  S->>D: 儲存 6 位數綁定碼（24 小時有效）
+  S-->>F: 顯示綁定碼
+  F-->>E: 把綁定碼告訴親友
+  E->>S: 在 LINE 傳送「綁定 123456」（Webhook）
+  S->>D: 驗證綁定碼 → 寫入 line_user_id&lt;br/&gt;並解除這個 LINE 在其他親友上的舊綁定
+  S-->>E: Flex 卡片「綁定成功」＋圖文選單功能
+    </pre>
+  </div>
+
+  <div class="panel" data-group="flow" id="f-rag">
+    <pre class="mermaid">
+flowchart TD
+  Q(["輸入症狀或保健品"]) --> A{"持有有效的&lt;br/&gt;管理員通行證？"}
+  A -- 是 --> V
+  A -- 否 --> B{"今日剩餘次數 &gt; 0？"}
+  B -- 否 --> R["提示：用 50 點兌換 3 次"]
+  B -- 是 --> V["TF-IDF 向量檢索&lt;br/&gt;實證文獻 Top 3（餘弦相似度）"]
+  V --> T{"TFDA 交互作用規則&lt;br/&gt;親友病況用藥 × 成分"}
+  T -- 撞藥 --> X["紅色警示：機轉、臨床建議、官方引用"]
+  X --> C1{"替代品在暖心選物&lt;br/&gt;且不在禁忌名單？"}
+  C1 -- 是 --> P1["顯示實際查價的商品卡"]
+  C1 -- 否 --> N1["暫不推薦，請諮詢醫師或藥師"]
+  T -- 相容 --> C2{"文獻成分有對應商品？"}
+  C2 -- 是 --> P2["推薦商品卡（四大藥局比價）"]
+  C2 -- 否 --> N2["尚未收錄，不顯示價格"]
+  P1 --> G["（選用）Gemini 整理回覆"]
+  P2 --> G
+    </pre>
+  </div>
+
+  <div class="panel" data-group="flow" id="f-shop">
+    <pre class="mermaid">
+flowchart TD
+  C(["親友病況，例：慢性腎臟病 未洗腎"]) --> E{"命中商品的禁忌病況？&lt;br/&gt;（「未洗腎」不算提到洗腎）"}
+  E -- 是 --> X["排除該商品"]
+  E -- 否 --> S["計算比對分數&lt;br/&gt;Σ 關鍵字長度 × 3（主要病況）或 × 1"]
+  S --> O["依分數高 → 價格低排序"]
+  O --> T["取相關商品前 3 名&lt;br/&gt;第 1 名標示「最推薦」"]
+  T --> F{"不足 3 項？"}
+  F -- 是 --> D["以「日常保養」商品補滿&lt;br/&gt;（同樣套用禁忌排除）"]
+  F -- 否 --> OUT
+  D --> OUT["顯示 3 項：相關商品＋日常保養推薦&lt;br/&gt;四大藥局比價、同規格最低價標示"]
+    </pre>
+  </div>
+
+  <div class="panel" data-group="flow" id="f-cash">
+    <pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant U as 會員
+  participant A as GiftSense
+  participant S as FastAPI 後端
+  participant P as 藥局網站
+  U->>A: 點「前往購買」
+  A->>S: POST /api/pharmacy/referral-click
+  S-->>A: 建立回饋追蹤（狀態：追蹤中）
+  A->>P: 開啟藥局商品頁
+  U->>P: 瀏覽／購買
+  U->>A: 回到 GiftSense（偵測回到前景）
+  A-->>U: 「歡迎回來！完成購買了嗎？」
+  U->>A: 已完成購買（輸入實付金額）
+  A->>S: simulate-purchase（狀態：回饋待確認）
+  A->>S: simulate-confirm（模擬藥局確認）
+  S->>S: 寫入點數明細、更新暖幣（狀態：已入帳）
+  S-->>A: +N 點
+  A-->>U: 「購物回饋已存入暖幣存摺」
+    </pre>
+  </div>
+
+  <div class="panel" data-group="flow" id="f-streak">
+    <pre class="mermaid">
+flowchart TD
+  O(["當天第一次開啟首頁"]) --> C["POST /api/user/checkin"]
+  C --> D{"上次上線日期（台灣時間）"}
+  D -- 今天 --> K["維持原天數"]
+  D -- 昨天 --> P["連續天數 +1"]
+  D -- 更早或從未 --> R["重新從第 1 天計算"]
+  K --> M{"是否為里程碑&lt;br/&gt;3、6、7、9、30、60、90、100、365、730 天"}
+  P --> M
+  R --> M
+  M -- 是 --> H["顯示里程碑提示"]
+  M -- 否 --> N["顯示距離下一個里程碑天數"]
+    </pre>
+  </div>
+</section>
+
+<!-- ===================== 4. 技術運用 ===================== -->
+<section id="tech" class="card">
+  <h2><span class="num">4</span>技術運用</h2>
+  <p class="sub">全部採用免費方案與開源套件。</p>
+  <div class="grid g2">
+    <div>
+      <h3>前端（Flutter 3.44 · Dart）</h3>
+      <table>
+        <tr><th>技術</th><th>用途</th></tr>
+        <tr><td>Flutter Web / Android</td><td>一套程式碼產出網頁版與 APK；RWD 版面（桌面滿版、手機底部導覽列）</td></tr>
+        <tr><td>Material 3 自訂主題</td><td>藍色主調、漸層、進場／浮起／呼吸光暈／數字跳動等動畫</td></tr>
+        <tr><td>google_sign_in · flutter_facebook_auth · sign_in_with_apple</td><td>第三方登入</td></tr>
+        <tr><td>image_picker</td><td>換頭貼（相簿／拍照），上傳前縮成 512px</td></tr>
+        <tr><td>url_launcher · AppLifecycleListener</td><td>開啟藥局網站、偵測回到 App 以完成購物回饋</td></tr>
+        <tr><td>shared_preferences · http · audioplayers</td><td>登入狀態與 Cookie 同意、API 呼叫、LINE 語音播放</td></tr>
+        <tr><td>PWA</td><td>iPhone「加入主畫面」：GiftSense 圖示、全螢幕、啟動畫面</td></tr>
+      </table>
+    </div>
+    <div>
+      <h3>後端（Python · FastAPI）</h3>
+      <table>
+        <tr><th>技術</th><th>用途</th></tr>
+        <tr><td>FastAPI · Uvicorn · Pydantic</td><td>54 支 REST API、資料驗證</td></tr>
+        <tr><td>libsql（Turso）／sqlite3</td><td>雲端資料庫；自寫轉接層讓 SQLite 語法直接運作</td></tr>
+        <tr><td>TF-IDF ＋ 餘弦相似度</td><td>實證文獻向量檢索（中文單字＋雙字詞）</td></tr>
+        <tr><td>規則引擎</td><td>8 條 TFDA 交互作用規則、商品禁忌排除、否定詞判斷</td></tr>
+        <tr><td>line-bot-sdk · Flex Message</td><td>LINE 關懷卡、圖文選單、Webhook</td></tr>
+        <tr><td>PyJWT[crypto] · HMAC</td><td>Apple 憑證驗證、管理員通行證簽章</td></tr>
+        <tr><td>requests · 自訂 TLS Adapter</td><td>串接中央氣象署（相容 TWCA 憑證）</td></tr>
+        <tr><td>google-generativeai（選用）</td><td>Gemini 整理 AI 回覆、產生快速提問</td></tr>
+      </table>
+    </div>
+  </div>
+  <h3>外部資料與服務</h3>
+  <table>
+    <tr><th>服務</th><th>用途</th><th>方案</th></tr>
+    <tr><td>中央氣象署開放資料</td><td>F-C0032-001 36 小時預報、O-A0003-001 即時觀測（各縣市代表測站），快取 10 分鐘</td><td>免費</td></tr>
+    <tr><td>LINE Messaging API</td><td>推播關懷卡、接收親友回覆與語音</td><td>免費額度</td></tr>
+    <tr><td>Turso</td><td>雲端資料庫（帳號、親友、聊天、點數…）</td><td>免費</td></tr>
+    <tr><td>Render</td><td>後端與網頁代管、GitHub 自動部署</td><td>免費</td></tr>
+    <tr><td>四大連鎖藥局官網</td><td>大樹、杏一、啄木鳥、丁丁的商品實際售價（2026/10/13 查價）</td><td>公開資料</td></tr>
+  </table>
+</section>
+
+<!-- ===================== 5. ER Model ===================== -->
+<section id="er" class="card">
+  <h2><span class="num">5</span>ER Model</h2>
+  <p class="sub">以會員帳號（account）串連各資料表；USERS 下方的匯流排連到六張子表，商品與文獻在右下。</p>
+<!-- er:start -->
+<div class="er-wrap">
+  <div class="er" id="erDiagram">
+    <svg class="er-lines"></svg>
+    <div class="er-note" data-id="NOTE"><b>符號說明</b>
+      <svg width="34" height="14"><line x1="0" y1="7" x2="34" y2="7" stroke="#2563EB" stroke-width="1.6"/><line x1="22" y1="1" x2="22" y2="13" stroke="#2563EB" stroke-width="1.6"/><line x1="27" y1="1" x2="27" y2="13" stroke="#2563EB" stroke-width="1.6"/></svg>一筆（必有）<br>
+      <svg width="34" height="14"><line x1="0" y1="7" x2="34" y2="7" stroke="#2563EB" stroke-width="1.6"/><circle cx="14" cy="7" r="4" fill="#fff" stroke="#2563EB" stroke-width="1.6"/><line x1="20" y1="7" x2="34" y2="1" stroke="#2563EB" stroke-width="1.6"/><line x1="20" y1="7" x2="34" y2="13" stroke="#2563EB" stroke-width="1.6"/></svg>零到多筆<br>
+      <i style="font-style:normal;font-size:10px;font-weight:900;background:#FEF3C7;color:#92400E;border-radius:5px;padding:0 5px">PK</i> 主鍵
+      <i style="font-style:normal;font-size:10px;font-weight:900;background:#EFF6FF;color:#1D4ED8;border-radius:5px;padding:0 5px">FK</i> 外鍵
+      <i style="font-style:normal;font-size:10px;font-weight:900;background:#F1F5F9;color:#334155;border-radius:5px;padding:0 5px">UK</i> 唯一
+    </div>
+    <div class="er-note" data-id="DB"><b>Turso 雲端資料庫（libSQL）</b>9 張主要資料表，以會員帳號 account 串連<br>關聯為邏輯外鍵，由應用程式層維護</div>
+    <div class="ent" data-id="USERS"><div class="ent-h"><b>USERS</b><span>會員</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="uk">UK</i></td></tr><tr><td class="ty">string</td><td class="nm">password_hash</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">name</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">role</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">points</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">auth_provider</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">social_id</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">avatar</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">social_avatar_url</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">last_active_date</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">login_streak</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="RECIPIENTS"><div class="ent-h"><b>RECIPIENTS</b><span>親友</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">user_account</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">string</td><td class="nm">name</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">condition</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">line_user_id</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">line_bind_code</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">line_bind_expires</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">quick_tags_json</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="CHAT_MESSAGES"><div class="ent-h"><b>CHAT_MESSAGES</b><span>傳情訊息</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">owner_account</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">string</td><td class="nm">elder</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">string</td><td class="nm">sender</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">content</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">type</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">timestamp</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">from_role</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="POINTS_LEDGER"><div class="ent-h"><b>POINTS_LEDGER</b><span>暖幣明細</span></div><table><tr><td class="ty">int</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">int</td><td class="nm">amount</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">title</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">date_str</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">expire_str</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">type</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="REWARD_CLAIMS"><div class="ent-h"><b>REWARD_CLAIMS</b><span>回饋領取</span></div><table><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">claim_key</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">int</td><td class="nm">amount</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="AI_GUARD_USAGE"><div class="ent-h"><b>AI_GUARD_USAGE</b><span>AI 詢問額度</span></div><table><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">date_str</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">int</td><td class="nm">used</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">bonus</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="CASHBACK_ORDERS"><div class="ent-h"><b>CASHBACK_ORDERS</b><span>購物回饋訂單</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">string</td><td class="nm">pharmacy</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">product_name</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">est_price</td><td class="k"></td></tr><tr><td class="ty">real</td><td class="nm">rate</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">status</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">order_amount</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">points</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">created_at</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">settled_at</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="RECOMMENDATION_PRODUCTS"><div class="ent-h"><b>RECOMMENDATION_PRODUCTS</b><span>暖心選物商品</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">product_name</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">match_conditions_json</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">primary_conditions_json</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">exclude_conditions_json</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">best_price</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">pharmacy_comparison_json</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">price_checked_at</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="CLINICAL_KNOWLEDGE"><div class="ent-h"><b>CLINICAL_KNOWLEDGE</b><span>實證文獻</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">title</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">ingredient</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">evidence_level</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">contraindications</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">target_symptoms_json</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">citation</td><td class="k"></td></tr></table></div>
+  </div>
+</div>
+<script>
+  // ER Model：依實際表格大小排版，再用 SVG 畫出關聯線（避免自動排版線條交錯）
+  function layoutER() {
+    const root = document.getElementById("erDiagram");
+    if (!root) return;
+    root.style.zoom = 1;
+    const E = id => root.querySelector(`[data-id="${id}"]`);
+    const size = id => ({ w: E(id).offsetWidth, h: E(id).offsetHeight });
+    const P = {};
+    const place = (id, x, y) => { const s = size(id); P[id] = { x, y, w: s.w, h: s.h, cx: x + s.w / 2 };
+                                  E(id).style.left = x + "px"; E(id).style.top = y + "px"; };
+    const PAD = 14, TRUNK = 30, DROP = 70;
+    const row = ["RECIPIENTS", "CHAT_MESSAGES", "POINTS_LEDGER", "REWARD_CLAIMS", "AI_GUARD_USAGE", "CASHBACK_ORDERS"];
+    const gaps = [96, 30, 30, 30, 30];
+    const users = size("USERS");
+    const busY = PAD + users.h + TRUNK, childY = busY + DROP;
+    let x = PAD;
+    row.forEach((id, i) => { place(id, x, childY); x += P[id].w + (gaps[i] || 0); });
+    const right = P.CASHBACK_ORDERS.x + P.CASHBACK_ORDERS.w;
+    const midX = (P.RECIPIENTS.cx + P.CASHBACK_ORDERS.cx) / 2;
+    place("USERS", Math.round(midX - users.w / 2), PAD);
+    place("NOTE", PAD, PAD);
+    place("DB", right - size("DB").w, PAD);
+    const rowBottom = Math.max(...row.map(id => P[id].y + P[id].h));
+    const prod = size("RECOMMENDATION_PRODUCTS");
+    const prodY = rowBottom + 84;
+    place("RECOMMENDATION_PRODUCTS", Math.min(right - prod.w, Math.round(P.CASHBACK_ORDERS.cx - prod.w / 2)), prodY);
+    place("CLINICAL_KNOWLEDGE", P.RECOMMENDATION_PRODUCTS.x - 150 - size("CLINICAL_KNOWLEDGE").w, prodY);
+    const W = Math.max(right, P.RECOMMENDATION_PRODUCTS.x + P.RECOMMENDATION_PRODUCTS.w) + PAD;
+    const H = Math.max(P.RECOMMENDATION_PRODUCTS.y + P.RECOMMENDATION_PRODUCTS.h, P.CLINICAL_KNOWLEDGE.y + P.CLINICAL_KNOWLEDGE.h) + PAD;
+    root.style.width = W + "px"; root.style.height = H + "px";
+
+    // ---- 連線 ----
+    const C = "#2563EB";
+    let out = "";
+    const line = (x1, y1, x2, y2) => { out += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${C}" stroke-width="1.6"/>`; };
+    // one：端點 (x,y)、d 為朝向資料表的方向
+    const one = (x, y, dx, dy) => { [9, 14].forEach(t => { const px = x - dx * t, py = y - dy * t;
+                                    line(px - dy * 7, py - dx * 7, px + dy * 7, py + dx * 7); }); };
+    const many = (x, y, dx, dy) => { const bx = x - dx * 14, by = y - dy * 14;
+      line(bx, by, x + dy * 8, y + dx * 8); line(bx, by, x, y); line(bx, by, x - dy * 8, y - dx * 8);
+      out += `<circle cx="${x - dx * 21}" cy="${y - dy * 21}" r="4.5" fill="#fff" stroke="${C}" stroke-width="1.6"/>`; };
+    root.querySelectorAll(".er-rel").forEach(n => n.remove());
+    const label = (text, lx, ly) => { const n = document.createElement("span"); n.className = "er-rel"; n.textContent = text;
+                                      n.style.left = lx + "px"; n.style.top = ly + "px"; root.appendChild(n); };
+    // USERS → 六張子表（匯流排）
+    const uB = P.USERS.y + P.USERS.h;
+    line(P.USERS.cx, uB, P.USERS.cx, busY); one(P.USERS.cx, uB, 0, -1);
+    line(P.RECIPIENTS.cx, busY, P.CASHBACK_ORDERS.cx, busY);
+    const rel = { RECIPIENTS: "守護", CHAT_MESSAGES: "擁有對話", POINTS_LEDGER: "點數明細",
+                  REWARD_CLAIMS: "領取紀錄", AI_GUARD_USAGE: "每日詢問額度", CASHBACK_ORDERS: "購物回饋" };
+    row.forEach(id => { line(P[id].cx, busY, P[id].cx, childY); many(P[id].cx, childY, 0, 1); label(rel[id], P[id].cx, busY + 22); });
+    // RECIPIENTS → CHAT_MESSAGES
+    const ry = childY + 64, rx1 = P.RECIPIENTS.x + P.RECIPIENTS.w, rx2 = P.CHAT_MESSAGES.x;
+    line(rx1, ry, rx2, ry); one(rx1, ry, -1, 0); many(rx2, ry, 1, 0); label("對話對象", (rx1 + rx2) / 2, ry - 16);
+    // RECOMMENDATION_PRODUCTS → CASHBACK_ORDERS
+    const vx = P.CASHBACK_ORDERS.cx, cB = P.CASHBACK_ORDERS.y + P.CASHBACK_ORDERS.h;
+    line(vx, prodY, vx, cB); one(vx, prodY, 0, 1); many(vx, cB, 0, -1); label("購買商品", vx, (prodY + cB) / 2 + 12);
+    // CLINICAL_KNOWLEDGE ↔ RECOMMENDATION_PRODUCTS
+    const ky = prodY + 64, kx1 = P.CLINICAL_KNOWLEDGE.x + P.CLINICAL_KNOWLEDGE.w, kx2 = P.RECOMMENDATION_PRODUCTS.x;
+    line(kx1, ky, kx2, ky); many(kx1, ky, -1, 0); many(kx2, ky, 1, 0); label("成分對應", (kx1 + kx2) / 2, ky - 16);
+    const svg = root.querySelector("svg.er-lines");
+    svg.setAttribute("width", W); svg.setAttribute("height", H); svg.innerHTML = out;
+    // 版面不夠寬時等比例縮小
+    const avail = root.parentElement.clientWidth;
+    if (avail && avail < W) root.style.zoom = avail / W;
+  }
+  layoutER();
+  window.addEventListener("load", layoutER);
+  window.addEventListener("resize", layoutER);
+</script>
+<!-- er:end -->
+  <h3>資料表說明</h3>
+  <table>
+    <tr><th>資料表</th><th>用途</th></tr>
+    <tr><td><code>users</code></td><td>會員與管理員；頭貼優先順序：自行上傳 &gt; 第三方大頭照 &gt; 預設圖示</td></tr>
+    <tr><td><code>recipients</code></td><td>受守護的親友；LINE 綁定碼、專屬快速提問</td></tr>
+    <tr><td><code>chat_messages</code></td><td>傳情小站訊息（家人 × 單一親友）</td></tr>
+    <tr><td><code>points_ledger</code></td><td>暖幣收支明細</td></tr>
+    <tr><td><code>cashback_orders</code></td><td>購物回饋訂單與狀態</td></tr>
+    <tr><td><code>reward_claims</code></td><td>每日／每週回饋領取紀錄（防重複領取）</td></tr>
+    <tr><td><code>ai_guard_usage</code></td><td>AI 守護助理每日次數與兌換加碼</td></tr>
+    <tr><td><code>recommendation_products</code></td><td>暖心選物商品、比對規則、四大藥局比價</td></tr>
+    <tr><td><code>clinical_knowledge</code></td><td>實證文獻（RAG 來源，管理員可編輯）</td></tr>
+    <tr><td><code>system_config</code> · <code>pharmacy_cache</code></td><td>RAG 參數與一次性資料遷移旗標；藥局搜尋快取</td></tr>
+    <tr><td><code>*_archive</code></td><td>2026/10/13 清除測試資料時的封存（點數、回饋、聊天）</td></tr>
+  </table>
+</section>
+
+<!-- ===================== 6. 點數回饋計算 ===================== -->
+<section id="points" class="card">
+  <h2><span class="num">6</span>點數回饋計算（暖幣）</h2>
+  <p class="sub">所有點數由後端計算與控管上限，前端只負責顯示。</p>
+
+  <h3>獲得點數</h3>
+  <table>
+    <tr><th>項目</th><th>點數</th><th>規則與上限</th></tr>
+    <tr><td><span class="tag t-blue">註冊</span>新會員註冊獎勵</td><td><b>+100</b></td><td>帳密註冊或第一次用 Google／Facebook 登入時發放一次</td></tr>
+    <tr><td><span class="tag t-blue">關懷</span>發送關懷卡</td><td><b>+10</b></td><td>每位親友每天 1 次；每天最多 5 張（領取鍵 <code>care_card:日期:親友</code>）</td></tr>
+    <tr><td><span class="tag t-blue">互動</span>小熊每週加碼</td><td><b>+50</b></td><td>點首頁小熊兩下；每週（ISO 週）1 次</td></tr>
+    <tr><td><span class="tag t-amber">購物</span>購物回饋</td><td><b>依金額</b></td><td>見下方公式；須完成購買並經藥局確認才入帳</td></tr>
+  </table>
+
+  <h3>購物回饋公式</h3>
+  <div class="formula">回饋點數 ＝ 四捨五入（實付金額 × 藥局回饋比例）　·　回饋 $1 ＝ 1 點 ＝ 折抵 $1</div>
+  <table style="margin-top:10px">
+    <tr><th>藥局</th><th>回饋比例</th><th>計算範例</th><th>回饋點數</th></tr>
+    <tr><td>大樹藥局</td><td>5%</td><td>挺立 UC-II $849 × 5% = 42.45</td><td><b>42 點</b></td></tr>
+    <tr><td>杏一醫療</td><td>4%</td><td>亞培勝補納 $2,790 × 4% = 111.6</td><td><b>112 點</b></td></tr>
+    <tr><td>啄木鳥藥局</td><td>3%</td><td>桂格完膳 $1,390 × 3% = 41.7</td><td><b>42 點</b></td></tr>
+    <tr><td>丁丁藥局</td><td>3%</td><td>桂格完膳 $1,368 × 3% = 41.04</td><td><b>41 點</b></td></tr>
+  </table>
+  <p class="sub" style="margin-top:6px">其他藥局預設 3%。四捨五入採 Python <code>round()</code>（剛好 .5 時取偶數）。</p>
+
+  <h3>回饋訂單狀態</h3>
+<!-- state:start -->
+<div class="st">
+  <div class="st-dot"></div>
+  <div class="st-arrow"><span>點「前往購買」</span></div>
+  <div class="st-node"><b>追蹤中</b><small><code>tracked</code> 已開啟藥局網站</small></div>
+  <div class="st-arrow"><span>回到 GiftSense，完成購買（輸入實付金額）</span></div>
+  <div class="st-node"><b>回饋待確認</b><small><code>pending</code> 等待藥局確認訂單</small></div>
+  <div class="st-split"><i><span>藥局確認<br>寫入點數明細</span></i><i><span>退貨或取消<br>不給點</span></i></div>
+  <div class="st-row">
+    <div class="st-node ok"><b>已入帳</b><small><code>confirmed</code> 存入暖幣存摺</small></div>
+    <div class="st-node no"><b>訂單取消</b><small><code>rejected</code> 不給點</small></div>
+  </div>
+</div>
+<!-- state:end -->
+  <div class="ok" style="margin-top:10px">防重複入帳：確認時以「狀態仍為待確認」作為更新條件，同一筆訂單只會入帳一次。</div>
+
+  <h3>使用點數</h3>
+  <table>
+    <tr><th>項目</th><th>規則</th></tr>
+    <tr><td>AI 守護助理詢問</td><td>每個帳號每天 3 次；<b>50 點兌換 3 次</b>（當天有效）；管理員持通行證不限次數</td></tr>
+    <tr><td>折抵</td><td><b>1 點 = $1</b>，與購物回饋相同比例（回饋 $1 = 1 點，折抵時 1 點 = $1）；暖幣存摺與帳號選單顯示「可折抵 $X」</td></tr>
+    <tr><td>點數效期</td><td>每筆獲得的點數自入帳日起 <b>3 年</b></td></tr>
+  </table>
+
+  <h3>連續守護天數</h3>
+  <p>每天第一次開啟首頁時打卡（台灣時間）：昨天有上線 +1 天；中間斷掉就從第 1 天重新計算。里程碑：3、6、7、9、30、60、90、100、365、730 天。</p>
+</section>
+
+<!-- ===================== 7. Demo 腳本 ===================== -->
+<section id="demo" class="card">
+  <h2><span class="num">7</span>Demo 腳本</h2>
+  <p class="sub">建議順序：網頁版（完整功能＋管理後台）→ Android 模擬器 → iPhone。總長約 18–20 分鐘。</p>
+
+  <h3>事前準備</h3>
+  <ul class="check">
+    <li>上台前 3 分鐘先開啟網站，喚醒 Render（免費方案閒置會休眠，第一次載入約 30–60 秒）。</li>
+    <li>會員帳號：已建立親友（例如「家宜（熬夜）」）並完成 LINE 綁定。</li>
+    <li>管理員帳號：<code>admin</code>，密碼為 Render 的 <code>ADMIN_PASSWORD</code>（不要寫在簡報上）。</li>
+    <li>一支手機登入已綁定的 LINE，扮演「親友」。</li>
+    <li>確認首頁天氣顯示「中央氣象署 · 臺北站 hh:mm 觀測」。</li>
+    <li>Android：啟動模擬器 <code>Giftsense_Pixel_7</code>，安裝最新 APK，先在模擬器相機拍一張照片（換頭貼用）。</li>
+    <li>iPhone：Safari 已開過網站並「加入主畫面」（或現場示範加入）。</li>
+  </ul>
+
+  <div class="tabs" data-group="demo" style="margin-top:16px">
+    <button class="active" data-panel="d-web">網頁版</button>
+    <button data-panel="d-android">Android 模擬器</button>
+    <button data-panel="d-ios">iPhone</button>
+    <button data-panel="d-qa">常見提問</button>
+  </div>
+
+  <div class="panel active" data-group="demo" id="d-web">
+    <ol class="steps">
+      <li><span class="time">1 分</span><span class="step-title">登入頁與隱私</span>
+        <div>開啟網站 → 下方出現 Cookie 同意橫幅 → 點「自訂設定」展示必要／第三方登入兩類 → 「接受全部」。點 Apple 按鈕展示「尚未開放」，再用帳號密碼登入。</div>
+        <div class="say">網頁版尊重使用者的 Cookie 選擇，沒有廣告追蹤；隱私權政策有公開網頁 /privacy。</div>
+        <div class="expect">藍色流動背景、登入卡片淡入。</div></li>
+      <li><span class="time">2 分</span><span class="step-title">今日守護（首頁滿版）</span>
+        <div>介紹天氣卡（中央氣象署即時觀測與測站時間）→ 整合關懷叮嚀切換「撒嬌／台語／端莊」、按「換一句」→ 點小熊兩下領 +50 → 安全雷達的專屬快速提問。</div>
+        <div class="say">每位親友、每天、每種語氣的叮嚀都不同，會結合當地天氣與病況。</div>
+        <div class="expect">一頁塞滿不用捲動，卡片依序進場。</div></li>
+      <li><span class="time">2 分</span><span class="step-title">發送關懷卡 × LINE</span>
+        <div>按「3 秒發送健康關懷卡」→ 成功視窗（+10 點）→ 「前往傳情小站」。拿出扮演親友的手機：LINE 收到 Flex 關懷卡 → 在 LINE 回覆「謝謝」。</div>
+        <div class="say">親友不需要安裝 App，用熟悉的 LINE 就能收到並回覆。</div>
+        <div class="expect">約 15 秒內，「謝謝」出現在聊天室左側，時間正確、最新在最下方。</div></li>
+      <li><span class="time">2 分</span><span class="step-title">AI 守護助理</span>
+        <div>點專屬快速提問（例如「常熬夜要補什麼？」）→ 顯示實證文獻、安全雷達、對應商品卡（實際查價）。說明每日 3 次、50 點兌換 3 次。</div>
+        <div class="say">結合 RAG 實證文獻與 TFDA 交互作用規則，先檢查會不會撞藥。</div>
+        <div class="expect">回覆附文獻引用與四大藥局比價。</div></li>
+      <li><span class="time">3 分</span><span class="step-title">暖心選物 × 購物回饋</span>
+        <div>展示「最推薦」商品、同規格最低價（米黃標示）、「日常保養推薦」補滿 3 項 → 點「前往最低價」開啟藥局網站 → 切回 GiftSense → 「完成購買了嗎？」→ 已完成購買 → 藥局確認中 → +N 點 → 開暖幣存摺看明細。</div>
+        <div class="say">商品依病況比對，有禁忌的不推薦（例如服用抗凝血劑不推薦魚油）；回饋採 ShopBack 模式，目前為模擬流程。</div>
+        <div class="expect">金幣動畫與點數跳動，存摺出現「已入帳」。</div></li>
+      <li><span class="time">1 分</span><span class="step-title">個人資料與頭貼</span>
+        <div>帳號選單 → 個人資料設定 → 點頭貼上傳照片；說明 Google／Facebook 會自動帶入大頭照。</div>
+        <div class="expect">右上角頭貼立即更新。</div></li>
+      <li><span class="time">3 分</span><span class="step-title">管理後台</span>
+        <div>登出 → 用 <code>admin</code> 登入 → 系統總覽（統計數字跳動）→ 實證文獻庫新增一篇文獻 → RAG 測試台切換「服用 Warfarin 抗凝血」情境 → 點「Warfarin＋納豆激酶」。</div>
+        <div class="say">管理員畫面與客戶端分開；文獻改動即時更新 AI 檢索；測試台不限次數。</div>
+        <div class="expect">紅色撞藥警示，替代品顯示「暫不推薦，請諮詢醫師或藥師」。</div></li>
+    </ol>
+  </div>
+
+  <div class="panel" data-group="demo" id="d-android">
+    <ol class="steps">
+      <li><span class="time">0.5 分</span><span class="step-title">App 圖示與啟動</span>
+        <div>模擬器桌面點 GiftSense 圖示（愛心心電圖 logo）。</div>
+        <div class="say">同一套 Flutter 程式碼編譯成 Android App。</div></li>
+      <li><span class="time">1 分</span><span class="step-title">登入</span>
+        <div>帳號密碼登入；點 Apple 展示「尚未開放」。手機版不會出現 Cookie 橫幅（只有網頁版需要）。</div></li>
+      <li><span class="time">1 分</span><span class="step-title">手機版首頁</span>
+        <div>底部導覽列（選中分頁藍色漸層、圖示彈跳）、卡片進場動畫、天氣與關懷叮嚀。</div>
+        <div class="expect">手機版可上下捲動，導覽列與網頁版一致。</div></li>
+      <li><span class="time">1 分</span><span class="step-title">換頭貼</span>
+        <div>帳號選單 → 個人資料設定 → 點頭貼 → Android 相簿選剛拍的照片。</div></li>
+      <li><span class="time">1.5 分</span><span class="step-title">購物回饋（真的開啟瀏覽器）</span>
+        <div>暖心選物 → 前往購買 → 開啟 Chrome 藥局頁 → 按返回鍵回到 GiftSense → 完成購買 → 點數入帳。</div>
+        <div class="say">App 從背景回到前景時自動詢問，流程跟真正的回饋平台一樣。</div></li>
+      <li><span class="time">1 分</span><span class="step-title">傳情小站</span>
+        <div>手機版聊天室：上方切換親友、快速問候語、圓形送出鍵。</div></li>
+    </ol>
+  </div>
+
+  <div class="panel" data-group="demo" id="d-ios">
+    <ol class="steps">
+      <li><span class="time">1 分</span><span class="step-title">加入主畫面</span>
+        <div>iPhone Safari 開啟網站 → 下方出現「把 GiftSense 加入主畫面」提示 → 分享 → 加入主畫面。</div>
+        <div class="say">免費方案下，iPhone 以 PWA 方式使用，不需上架 App Store。</div>
+        <div class="expect">主畫面出現 GiftSense 圖示。</div></li>
+      <li><span class="time">0.5 分</span><span class="step-title">全螢幕啟動</span>
+        <div>從主畫面開啟：GiftSense 啟動畫面 → 全螢幕執行，沒有 Safari 網址列。</div></li>
+      <li><span class="time">1 分</span><span class="step-title">首頁與小熊</span>
+        <div>登入 → 首頁、天氣、小熊（點兩下）。</div></li>
+      <li><span class="time">1 分</span><span class="step-title">換頭貼</span>
+        <div>個人資料設定 → 點頭貼 → iOS 選擇「照片圖庫」或「拍照」。</div></li>
+      <li><span class="time">1 分</span><span class="step-title">說明原生 iOS 規劃</span>
+        <div>原生 iOS 專案已設定好（圖示、相簿權限、Facebook 設定），可在 Mac 以免費 Apple ID 安裝到自己的 iPhone；Apple 登入需加入 Apple Developer Program，因此目前顯示「尚未開放」。</div></li>
+    </ol>
+  </div>
+
+  <div class="panel" data-group="demo" id="d-qa">
+    <table>
+      <tr><th>可能被問到</th><th>建議回答</th></tr>
+      <tr><td>資料會不會因為伺服器重啟消失？</td><td>資料存在 Turso 雲端資料庫，Render 休眠或重新部署都不影響。</td></tr>
+      <tr><td>AI 的建議可靠嗎？</td><td>以實證文獻（NIH、AHA、TFDA 等）做 RAG 檢索，再套用 TFDA 交互作用規則；有疑慮一律建議諮詢醫師，不提供未查價或有禁忌的商品。</td></tr>
+      <tr><td>價格從哪裡來？</td><td>2026/10/13 逐一到四家連鎖藥局官網查價；包裝不同或缺貨的報價會顯示但不參與比價。</td></tr>
+      <tr><td>點數怎麼算？</td><td>關懷卡 +10、小熊每週 +50、購物回饋依藥局 3–5% 換算（回饋 $1 = 1 點），經確認才入帳；折抵也是 1 點 = $1，兩邊一致。</td></tr>
+      <tr><td>親友一定要裝 App 嗎？</td><td>不用，親友用 LINE 官方帳號輸入綁定碼即可接收關懷卡與回覆。</td></tr>
+      <tr><td>隱私怎麼保護？</td><td>聊天只看得到自己與親友的對話；網頁版 Cookie 可自行選擇；管理後台需管理員密碼與簽章通行證。</td></tr>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<footer>GiftSense 智慧關懷送禮 · 系統說明文件 · 2026/10/13</footer>
+
+<script>
+  // 導覽列：用 JS 捲動（在預覽視窗、iframe 中錨點連結會失效），並標示目前所在章節
+  (function () {
+    const links = Array.from(document.querySelectorAll('nav.toc a[href^="#"]'));
+    links.forEach(a => a.addEventListener("click", e => {
+      const target = document.getElementById(a.getAttribute("href").slice(1));
+      if (!target) return;
+      e.preventDefault();
+      const top = target.getBoundingClientRect().top + window.scrollY - 60;
+      window.scrollTo({ top, behavior: "smooth" });
+      try { history.replaceState(null, "", a.getAttribute("href")); } catch (_) {}
+    }));
+    if (!("IntersectionObserver" in window)) return;
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (!en.isIntersecting) return;
+        links.forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + en.target.id));
+      });
+    }, { rootMargin: "-45% 0px -50% 0px" });
+    links.forEach(a => { const t = document.getElementById(a.getAttribute("href").slice(1)); if (t) io.observe(t); });
+  })();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: "base",
+    securityLevel: "loose",
+    themeVariables: {
+      primaryColor: "#EFF6FF",
+      primaryBorderColor: "#2563EB",
+      primaryTextColor: "#0F172A",
+      lineColor: "#3B82F6",
+      secondaryColor: "#DBEAFE",
+      tertiaryColor: "#F8FAFF",
+      clusterBkg: "#F4F8FF",
+      clusterBorder: "#BFDBFE",
+      actorBkg: "#EFF6FF",
+      actorBorder: "#2563EB",
+      signalColor: "#1D4ED8",
+      noteBkgColor: "#FFFBEB",
+      fontFamily: '-apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif',
+      fontSize: "14px"
+    },
+    flowchart: { curve: "basis", htmlLabels: true }
+  });
+
+  // 隱藏中的分頁先不繪製，切換時才繪製（避免圖表尺寸計算錯誤）
+  async function renderVisible() {
+    const nodes = Array.from(document.querySelectorAll("pre.mermaid:not([data-processed])"))
+      .filter(el => el.offsetParent !== null);
+    if (nodes.length) await mermaid.run({ nodes });
+  }
+
+  document.querySelectorAll(".tabs").forEach(tabs => {
+    const group = tabs.dataset.group;
+    tabs.querySelectorAll("button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        tabs.querySelectorAll("button").forEach(b => b.classList.toggle("active", b === btn));
+        document.querySelectorAll(`.panel[data-group="${group}"]`).forEach(p =>
+          p.classList.toggle("active", p.id === btn.dataset.panel));
+        renderVisible();
+      });
+    });
+  });
+
+  window.addEventListener("load", renderVisible);
+  window.addEventListener("beforeprint", () => mermaid.run());
+</script>
+</body>
+</html>
