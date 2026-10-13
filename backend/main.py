@@ -4,31 +4,48 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from datetime import datetime
+import base64
+import hashlib
+import hmac
+import threading
 import time
 import random
+import re
 import requests
 
 from database import (
     authenticate_user, register_user, get_user_profile,
-    get_all_recipients, add_recipient, update_recipient, delete_recipient,
+    get_all_recipients, get_recipient_by_id, add_recipient, update_recipient,
+    update_recipient_quick_tags, delete_recipient,
     get_all_orders, create_order, cancel_order,
     get_points_ledger, add_points_transaction,
     get_all_clinical_knowledge, save_clinical_knowledge, batch_save_clinical_knowledge,
     delete_clinical_knowledge, reset_clinical_knowledge_to_defaults,
     get_system_config, set_system_config, get_database_stats, export_full_database,
-    get_db, update_recipient_line_id, update_user_profile_in_db, get_user_profile_by_account
+    get_db, update_recipient_line_id, update_user_profile_in_db, get_user_profile_by_account,
+    get_ai_guard_quota, consume_ai_guard_quota, add_ai_guard_bonus,
+    find_or_create_social_user, create_line_bind_code, bind_line_by_code, bind_line_by_exact_name,
+    unbind_recipient_line, find_recipient_line_id, find_recipient_name_by_line_id, claim_reward
 )
+from social_auth import verify_social_token, SocialAuthError
 from rag_engine import query_rag_engine, CLINICAL_LITERATURES
 from vector_store import global_vector_store
 from tfda_service import global_tfda_service
-from pharmacy_crawler import search_pharmacy_products, get_recommended_products_by_condition
+from pharmacy_crawler import search_pharmacy_products, get_recommended_products_by_condition, warmup_pharmacy_cache
 from auto_order import execute_auto_order
 from weather_service import get_live_weather
 from greeting_generator import generate_ai_greeting
+from chips_generator import get_clinical_rule_chips, generate_ai_recipient_chips
+
+# AI 守護助理每日免費詢問次數；可用關懷點數兌換額外次數
+AI_GUARD_DAILY_LIMIT = 3
+AI_GUARD_REDEEM_COST = 50
+AI_GUARD_REDEEM_EXTRA = 3
 
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
@@ -53,8 +70,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-LINE_CHANNEL_ACCESS_TOKEN = "xKlKMiLS8T7bm2m4Are0ztmzeUxFPU41UIknxVmaQDK8NzJu6gpvGnjog5/7Cj+SjHAKFITOQt99ni5rQtQy/CMjJBFxyWL6Ioi48VN6up3EenRoMmEwaMrtoSQISvzxxRnEgGM7mzyZz6klFR0jqQdB04t89/1O/w1cDnyilFU="
-LINE_CHANNEL_SECRET = "98c83668779c7c870958d335b2b4de76"
+@app.on_event("startup")
+def startup_warmup_cache():
+    # 💡 預熱藥局快取改在背景執行緒進行，避免爬蟲逾時拖慢伺服器啟動
+    def _warmup():
+        try:
+            warmup_pharmacy_cache()
+        except Exception as exc:
+            print(f"Pharmacy cache warmup failed: {exc}")
+    threading.Thread(target=_warmup, daemon=True).start()
+
+# 💡 優先讀取環境變數（Render Environment / backend/.env），未設定時沿用原本的值
+LINE_CHANNEL_ACCESS_TOKEN = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN") or "xKlKMiLS8T7bm2m4Are0ztmzeUxFPU41UIknxVmaQDK8NzJu6gpvGnjog5/7Cj+SjHAKFITOQt99ni5rQtQy/CMjJBFxyWL6Ioi48VN6up3EenRoMmEwaMrtoSQISvzxxRnEgGM7mzyZz6klFR0jqQdB04t89/1O/w1cDnyilFU="
+LINE_CHANNEL_SECRET = os.environ.get("LINE_CHANNEL_SECRET") or "98c83668779c7c870958d335b2b4de76"
+ANDROID_PACKAGE_NAME = os.environ.get("ANDROID_PACKAGE_NAME", "com.example.giftsense")
+_line_bot_basic_id_cache = {"value": os.environ.get("LINE_BOT_BASIC_ID", "")}
+
+def _get_line_bot_basic_id() -> str:
+    """取得 LINE 官方帳號 ID（如 @123abcde），用來產生加好友連結"""
+    if _line_bot_basic_id_cache["value"]:
+        return _line_bot_basic_id_cache["value"]
+    try:
+        res = requests.get(
+            "https://api.line.me/v2/bot/info",
+            headers={"Authorization": f"Bearer {LINE_CHANNEL_ACCESS_TOKEN}"},
+            timeout=6
+        )
+        if res.status_code == 200:
+            _line_bot_basic_id_cache["value"] = res.json().get("basicId", "")
+    except Exception as e:
+        print("取得 LINE 官方帳號 ID 失敗:", e)
+    return _line_bot_basic_id_cache["value"]
+
+def _verify_line_signature(body: bytes, signature: str) -> bool:
+    digest = hmac.new(LINE_CHANNEL_SECRET.encode("utf-8"), body, hashlib.sha256).digest()
+    return hmac.compare_digest(base64.b64encode(digest).decode("utf-8"), signature or "")
 
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
@@ -75,6 +125,10 @@ class GuardQueryRequest(BaseModel):
     elder_condition: str = "日常養生"
     api_key: Optional[str] = None
     model: Optional[str] = "gemini-1.5-flash"
+    account: Optional[str] = None
+
+class GuardRedeemRequest(BaseModel):
+    account: str
 
 class AutoOrderRequest(BaseModel):
     product_name: str
@@ -93,6 +147,13 @@ class RecipientUpdateRequest(BaseModel):
     condition: Optional[str] = None
     phone: Optional[str] = None
     birthday: Optional[str] = None
+    quick_tags: Optional[List[Dict[str, Any]]] = None
+
+class GenerateChipsRequest(BaseModel):
+    elder_name: Optional[str] = None
+    elder_condition: Optional[str] = None
+    api_key: Optional[str] = None
+    model: Optional[str] = "gemini-1.5-flash"
 
 class OrderCreateRequest(BaseModel):
     order_id: str
@@ -113,11 +174,12 @@ class GreetingGenerateRequest(BaseModel):
     weather_temp: str = "26 ~ 36°C"
     weather_temp_diff: int = 10
     weather_condition: str = "晴朗"
-    weather_humidity: int = 65
+    weather_humidity: Optional[int] = 65
     elder_status: str = "normal"
     tone: str = "spoiled"
     api_key: Optional[str] = None
     model: Optional[str] = "gemini-1.5-flash"
+    variant: Optional[int] = 0
 
 class FamilyMessageRequest(BaseModel):
     sender: str = "我"
@@ -179,7 +241,7 @@ def health_check():
     db_stats = get_database_stats()
     return {
         "status": "ok",
-        "service": "CareGift 2.0 Real Python Backend",
+        "service": "GiftSense 2.0 Real Python Backend",
         "version": "2.0.0",
         "database": "SQLite (caregift.db) Connected",
         "sqlite_stats": db_stats,
@@ -209,14 +271,60 @@ def api_user_profile(account: str = "test"):
         raise HTTPException(status_code=404, detail="User not found")
     return {"success": True, "profile": profile}
 
+def _guard_quota_key(account: Optional[str], request: Request) -> str:
+    # 💡 有登入帳號時依帳號計算；未登入才退回以來源 IP 計算
+    if account and account.strip():
+        return account.strip()
+    forwarded = request.headers.get("x-forwarded-for", "")
+    client_ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "unknown")
+    return f"ip:{client_ip}"
+
 @app.post("/api/guard/query")
-def guard_query(req: GuardQueryRequest):
+def guard_query(req: GuardQueryRequest, request: Request):
     if not req.query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty")
-    return query_rag_engine(
+
+    allowed, quota = consume_ai_guard_quota(_guard_quota_key(req.account, request), AI_GUARD_DAILY_LIMIT)
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=f"今日 AI 守護助理已達上限：{quota['limit']} 次/天，可使用 {AI_GUARD_REDEEM_COST} 點兌換 {AI_GUARD_REDEEM_EXTRA} 次，或明天再試。"
+        )
+
+    result = query_rag_engine(
         query=req.query, elder_name=req.elder_name,
         elder_condition=req.elder_condition, api_key=req.api_key, model=req.model or "gemini-1.5-flash"
     )
+    if isinstance(result, dict):
+        result["quota"] = quota
+    return result
+
+@app.get("/api/guard/quota")
+def guard_quota(request: Request, account: Optional[str] = None):
+    quota = get_ai_guard_quota(_guard_quota_key(account, request), AI_GUARD_DAILY_LIMIT)
+    return {
+        "success": True,
+        "quota": quota,
+        "redeem_cost": AI_GUARD_REDEEM_COST,
+        "redeem_extra": AI_GUARD_REDEEM_EXTRA
+    }
+
+@app.post("/api/guard/redeem")
+def guard_redeem(req: GuardRedeemRequest):
+    profile = get_user_profile(req.account)
+    if not profile:
+        raise HTTPException(status_code=404, detail="User not found")
+    if (profile.get("points") or 0) < AI_GUARD_REDEEM_COST:
+        return {"success": False, "message": f"點數不足，兌換需要 {AI_GUARD_REDEEM_COST} 點"}
+
+    add_points_transaction(account=req.account, amount=-AI_GUARD_REDEEM_COST, title=f"兌換 AI 守護助理詢問 {AI_GUARD_REDEEM_EXTRA} 次")
+    quota = add_ai_guard_bonus(req.account, AI_GUARD_REDEEM_EXTRA, AI_GUARD_DAILY_LIMIT)
+    return {
+        "success": True,
+        "message": f"已使用 {AI_GUARD_REDEEM_COST} 點兌換 {AI_GUARD_REDEEM_EXTRA} 次詢問！",
+        "quota": quota,
+        "new_points": profile["points"] - AI_GUARD_REDEEM_COST
+    }
 
 @app.post("/api/tfda/check")
 def tfda_check(req: TFDACheckRequest):
@@ -263,10 +371,7 @@ def weather_forecast(city: str = "台北市", key: Optional[str] = None):
 
 @app.get("/api/recipients")
 def list_recipients(account: str = "test"):
-    conn = get_db()
-    rows = conn.execute("SELECT * FROM recipients WHERE user_account = ?", (account,)).fetchall()
-    conn.close()
-    return {"success": True, "recipients": [dict(r) for r in rows]}
+    return {"success": True, "recipients": get_all_recipients(user_account=account)}
 
 @app.post("/api/recipients")
 def create_new_recipient(request: Request, data: dict):
@@ -277,13 +382,15 @@ def create_new_recipient(request: Request, data: dict):
         phone = data.get("phone", "")
         birthday = data.get("birthday", "")
         user_account = data.get("user_account", "test")
+        quick_tags = data.get("quick_tags")
 
         rec = add_recipient(
             name=name,
             condition=condition,
             phone=phone,
             birthday=birthday,
-            user_account=user_account
+            user_account=user_account,
+            quick_tags=quick_tags
         )
         return {"success": True, "recipient": rec}
     except Exception as e:
@@ -291,24 +398,78 @@ def create_new_recipient(request: Request, data: dict):
 
 @app.put("/api/recipients/{rec_id}")
 def edit_recipient(rec_id: str, req: RecipientUpdateRequest):
-    conn = get_db()
-    row = conn.execute("SELECT * FROM recipients WHERE id = ?", (rec_id,)).fetchone()
-    conn.close()
+    row = get_recipient_by_id(rec_id)
     if not row:
         raise HTTPException(status_code=404, detail="Recipient not found")
-    
+
     new_name = req.name if req.name is not None else row["name"]
     new_condition = req.condition if req.condition is not None else row["condition"]
-    new_phone = req.phone if req.phone is not None else (row["phone"] if "phone" in row.keys() else "")
-    new_birthday = req.birthday if req.birthday is not None else (row["birthday"] if "birthday" in row.keys() else "")
-    
-    rec = update_recipient(rec_id=rec_id, name=new_name, condition=new_condition, phone=new_phone, birthday=new_birthday)
+    new_phone = req.phone if req.phone is not None else (row.get("phone") or "")
+    new_birthday = req.birthday if req.birthday is not None else (row.get("birthday") or "")
+    # 病況沒變且未指定晶片時保留原本的晶片（可能是 AI 產生的）
+    new_tags = req.quick_tags
+    if new_tags is None and new_condition == row["condition"]:
+        new_tags = row.get("quick_tags") or None
+
+    rec = update_recipient(rec_id=rec_id, name=new_name, condition=new_condition, phone=new_phone, birthday=new_birthday, quick_tags=new_tags)
     return {"success": True, "recipient": rec}
 
 @app.delete("/api/recipients/{rec_id}")
 def remove_recipient(rec_id: str):
     delete_recipient(rec_id=rec_id)
     return {"success": True, "deleted_id": rec_id}
+
+# 親友專屬快速提問晶片（臨床規則 + AI 雙軌）
+@app.get("/api/recipients/{rec_id}/chips")
+def get_recipient_chips_endpoint(rec_id: str):
+    rec = get_recipient_by_id(rec_id)
+    if not rec:
+        raise HTTPException(status_code=404, detail="Recipient not found")
+    chips = rec.get("quick_tags")
+    if not chips:
+        chips = get_clinical_rule_chips(rec["condition"], rec["name"])
+        update_recipient_quick_tags(rec_id, chips)
+    return {
+        "success": True,
+        "recipient_id": rec_id,
+        "elder_name": rec["name"],
+        "elder_condition": rec["condition"],
+        "source": "sqlite_cache",
+        "chips": chips
+    }
+
+@app.post("/api/recipients/{rec_id}/generate-chips")
+def generate_recipient_chips_endpoint(rec_id: str, req: GenerateChipsRequest):
+    rec = get_recipient_by_id(rec_id)
+    elder_name = req.elder_name or (rec["name"] if rec else "親友")
+    elder_condition = req.elder_condition or (rec["condition"] if rec else "日常養生")
+
+    chips = generate_ai_recipient_chips(
+        elder_name=elder_name,
+        elder_condition=elder_condition,
+        api_key=req.api_key,
+        model=req.model or "gemini-1.5-flash"
+    )
+    if rec:
+        update_recipient_quick_tags(rec_id, chips)
+    return {
+        "success": True,
+        "recipient_id": rec_id,
+        "elder_name": elder_name,
+        "elder_condition": elder_condition,
+        "source": "ai_generated",
+        "chips": chips
+    }
+
+@app.get("/api/chips/suggested")
+def get_suggested_chips_query(condition: str = "日常養生", name: str = "親友"):
+    return {
+        "success": True,
+        "elder_name": name,
+        "elder_condition": condition,
+        "source": "clinical_rules",
+        "chips": get_clinical_rule_chips(condition=condition, name=name)
+    }
 
 @app.get("/api/orders")
 def list_orders():
@@ -367,7 +528,7 @@ def remove_clinical_knowledge(item_id: str):
 def get_rag_configuration():
     cfg = get_system_config("rag_config", default={
         "topK": 3, "simThreshold": 0.25, "temperature": 0.3, "model": "builtin", "apiKey": "",
-        "systemPrompt": "你是一位嚴謹客觀的臨床醫療與保健營養專家。"
+        "systemPrompt": "你是一位嚴謹客觀的臨床醫療與保健營養專家。請根據檢索到的國家級文獻 [1][2] 提供建議，嚴禁編造事實。若親友有服用處方藥，必須嚴格審核抗凝血與撞藥禁忌，並附上醫療免責聲明。"
     })
     return {"success": True, "config": cfg}
 
@@ -390,8 +551,9 @@ def greeting_generate(req: GreetingGenerateRequest):
         elder_name=req.elder_name, elder_condition=req.elder_condition,
         weather_city=req.weather_city, weather_temp=req.weather_temp,
         weather_temp_diff=req.weather_temp_diff, weather_condition=req.weather_condition,
-        weather_humidity=req.weather_humidity, elder_status=req.elder_status,
-        tone=req.tone, api_key=req.api_key, model=req.model or "gemini-1.5-flash"
+        weather_humidity=req.weather_humidity if req.weather_humidity is not None else 65,
+        elder_status=req.elder_status, tone=req.tone, api_key=req.api_key,
+        model=req.model or "gemini-1.5-flash", variant=req.variant or 0
     )
 
 @app.get("/api/messages")
@@ -433,11 +595,8 @@ def post_family_message(req: FamilyMessageRequest):
     family_messages_store.insert(0, new_msg)
     
     if req.sender != req.elder:
-        conn = get_db()
-        row = conn.execute("SELECT line_user_id FROM recipients WHERE name = ?", (req.elder,)).fetchone()
-        conn.close()
-        
-        target_line_id = row["line_user_id"] if row and row["line_user_id"] else None
+        # 💡 只推播給寄件者帳號底下的這位親友，避免不同使用者的同名親友收到別人的訊息
+        target_line_id = find_recipient_line_id(req.elder, req.sender)
         if target_line_id:
             url = "https://api.line.me/v2/bot/message/push"
             headers = {
@@ -460,7 +619,12 @@ async def line_webhook(request: Request):
     signature = request.headers.get('X-Line-Signature', '')
     body = await request.body()
     body_str = body.decode('utf-8')
-    
+
+    # 💡 驗證請求確實來自 LINE 平台
+    if not _verify_line_signature(body, signature):
+        print("LINE webhook 簽章驗證失敗，已忽略此請求")
+        raise HTTPException(status_code=400, detail="Invalid signature")
+
     try:
         import json
         data = json.loads(body_str)
@@ -479,9 +643,9 @@ async def line_webhook(request: Request):
                     )
                     welcome_msg_2 = (
                         "📌 【 快速開通綁定步驟 】\n"
-                        "為了讓系統能準時同步您的專屬對話，請直接回傳您的名字進行身份綁定：\n\n"
-                        "👉 請回傳：【我是 您的名字】\n"
-                        "（例如：【我是 媽媽】 或 🌱 【我是 王小明】）\n\n"
+                        "請向家人索取 GiftSense App 上顯示的 6 位數綁定碼，直接回傳：\n\n"
+                        "👉 【綁定 123456】\n"
+                        "（請把 123456 換成家人給您的綁定碼）\n\n"
                         "💡 綁定成功後，您就能直接在此聊天室與家人雙向對話、接收語音或查看用藥提醒喔！"
                     )
                     _send_line_reply(user_id, welcome_msg_1)
@@ -497,28 +661,29 @@ async def line_webhook(request: Request):
                 
                 if msg.get("type") == "text":
                     content = msg.get("text", "").strip()
-                    
-                    if content.startswith("我是"):
-                        target_name = content.replace("我是", "").strip()
-                        conn = get_db()
-                        rows = conn.execute("SELECT id, name FROM recipients").fetchall()
-                        conn.close()
-                        
-                        matched_id = None
-                        matched_real_name = ""
-                        for r in rows:
-                            db_name = r["name"].strip()
-                            if target_name in db_name or db_name in target_name:
-                                matched_id = r["id"]
-                                matched_real_name = db_name
-                                break
-                        
-                        if matched_id:
-                            update_recipient_line_id(matched_real_name, user_id)
-                            reply_text = f"綁定成功！您好，{matched_real_name}。家人傳送的健康關懷與用藥叮嚀將會即時同步給您！"
+                    bind_match = re.match(r"^【?\s*綁定\s*(\d{6})\s*】?$", content)
+
+                    if bind_match:
+                        rec = bind_line_by_code(bind_match.group(1), user_id)
+                        if rec:
+                            owner = f"{rec['owner_name']} " if rec.get("owner_name") else "家人"
+                            reply_text = f"綁定成功！您好，{rec['name']}。{owner}傳送的健康關懷與用藥叮嚀將會即時同步給您！"
                         else:
-                            reply_text = f"綁定失敗：系統的親友健康資料庫中找不到「{target_name}」，請確認家人的 App 中是否已新增您的名字。"
-                        
+                            reply_text = "綁定失敗：綁定碼錯誤或已過期（有效 24 小時），請家人在 App 重新產生綁定碼後再試一次。"
+                        _send_line_reply(user_id, reply_text)
+                        continue
+
+                    if content.startswith("我是"):
+                        # 舊版綁定方式：只在名字完全相同且唯一時才綁定，否則請改用綁定碼
+                        target_name = content.replace("我是", "").strip("【】 ")
+                        rec = bind_line_by_exact_name(target_name, user_id)
+                        if rec:
+                            reply_text = f"綁定成功！您好，{rec['name']}。家人傳送的健康關懷與用藥叮嚀將會即時同步給您！"
+                        else:
+                            reply_text = (
+                                f"無法用名字「{target_name}」完成綁定（找不到或有同名親友）。\n"
+                                "請向家人索取 App 上的 6 位數綁定碼，回傳【綁定 123456】即可。"
+                            )
                         _send_line_reply(user_id, reply_text)
                         continue
 
@@ -530,7 +695,7 @@ async def line_webhook(request: Request):
                             "2. 隨時語音與文字留言\n"
                             "   直接傳送訊息，系統會自動同步至家人的控制台。\n\n"
                             "3. 常用指令快捷：\n"
-                            "   - 輸入「我是 您的名字」重新綁定身份\n"
+                            "   - 輸入「綁定 6位數綁定碼」重新綁定身份\n"
                             "   - 點擊下方選單查看用藥提醒或發送求助"
                         )
                         _send_line_reply(user_id, help_text)
@@ -573,11 +738,7 @@ async def line_webhook(request: Request):
                     msg_type = "sticker"
                     content = "🎨 [LINE 貼圖]"
                 
-                conn = get_db()
-                row = conn.execute("SELECT name FROM recipients WHERE line_user_id = ?", (user_id,)).fetchone()
-                conn.close()
-                
-                elder_name = row["name"] if row else "未綁定親友"
+                elder_name = find_recipient_name_by_line_id(user_id) or "未綁定親友"
                 new_msg = {
                     "id": f"msg_line_{int(datetime.now().timestamp() * 1000)}",
                     "sender": elder_name,
@@ -647,9 +808,18 @@ def api_update_user_profile(req: dict):
 
 class SocialLoginRequest(BaseModel):
     provider: str
-    email: str
-    name: str
-    social_id: str
+    # Google: id_token（Android/iOS）或 access_token（Web）；Facebook: access_token；Apple: id_token (identityToken)
+    id_token: Optional[str] = None
+    access_token: Optional[str] = None
+    # 以下僅作為顯示名稱參考，身分一律以平台驗證結果為準
+    name: Optional[str] = None
+    email: Optional[str] = None
+    social_id: Optional[str] = None
+
+class RewardClaimRequest(BaseModel):
+    account: str
+    action: str
+    recipient: Optional[str] = ""
 
 class ForgotPasswordRequest(BaseModel):
     email: str
@@ -665,31 +835,77 @@ def api_forgot_password(req: ForgotPasswordRequest):
         
     return {"success": True, "message": f"重設密碼信件已發送至 {req.email}，請至信箱查收！"}
 
-@app.api_route("/api/auth/social", methods=["GET", "POST"])
-def api_social_login(req: Optional[SocialLoginRequest] = None):
-    if req is None or not req.email:
-        return {"success": False, "message": "請透過 POST 傳遞社群驗證資料"}
-    
-    conn = get_db()
-    # 💡 修正：嚴格使用當前 Google 傳過來的真實 email 作為獨立帳號辨識，避免不同帳號互抓資料
-    account = req.email.strip()
-    user = conn.execute("SELECT * FROM users WHERE email = ? OR account = ?", (account, account)).fetchone()
-    
-    if not user:
-        now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        conn.execute(
-            "INSERT INTO users (account, name, email, auth_provider, points, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-            (account, req.name, req.email, req.provider, 2500, now_str)
-        )
-        conn.commit()
-        user = conn.execute("SELECT * FROM users WHERE email = ? OR account = ?", (account, account)).fetchone()
-    
-    conn.close()
+@app.post("/api/auth/social")
+def api_social_login(req: SocialLoginRequest):
+    # 💡 向 Google / Facebook / Apple 驗證 token 後才建立或登入會員，不再相信前端傳來的 email
+    try:
+        identity = verify_social_token(req.provider, req.id_token, req.access_token)
+    except SocialAuthError as e:
+        return {"success": False, "message": str(e)}
+
+    user = find_or_create_social_user(
+        provider=identity["provider"],
+        social_id=identity["social_id"],
+        email=identity.get("email", ""),
+        email_verified=identity.get("email_verified", False),
+        name=identity.get("name") or (req.name or "")
+    )
     return {
-        "success": True, 
-        "message": f"透過 {req.provider.capitalize()} 登入成功！", 
-        "user": dict(user)
+        "success": True,
+        "message": f"透過 {identity['provider'].capitalize()} 登入成功！",
+        "user": user
     }
+
+@app.post("/api/auth/apple/callback")
+async def api_apple_android_callback(request: Request):
+    # Android 版 Sign in with Apple 走網頁流程：Apple 把結果 POST 到這裡，再轉回 App
+    body = (await request.body()).decode("utf-8")
+    return RedirectResponse(
+        f"intent://callback?{body}#Intent;package={ANDROID_PACKAGE_NAME};scheme=signinwithapple;end",
+        status_code=307
+    )
+
+# LINE 個人帳號綁定：App 產生綁定碼，親友在 LINE 官方帳號傳「綁定 123456」
+@app.post("/api/recipients/{rec_id}/line-bind")
+def create_recipient_line_bind(rec_id: str):
+    rec = get_recipient_by_id(rec_id)
+    if not rec:
+        raise HTTPException(status_code=404, detail="Recipient not found")
+    bind = create_line_bind_code(rec_id)
+    basic_id = _get_line_bot_basic_id()
+    add_friend_url = f"https://line.me/R/ti/p/{basic_id}" if basic_id else ""
+    invite_text = (
+        f"{rec['name']}您好！請先加入 GiftSense 的 LINE 好友"
+        + (f"：{add_friend_url}" if add_friend_url else "")
+        + f"\n加入後在聊天室傳送「綁定 {bind['code']}」，就能收到我的關懷卡與用藥叮嚀喔❤️（綁定碼 24 小時內有效）"
+    )
+    return {
+        "success": True,
+        "recipient_id": rec_id,
+        "code": bind["code"],
+        "expires_at": bind["expires_at"],
+        "bot_basic_id": basic_id,
+        "add_friend_url": add_friend_url,
+        "invite_text": invite_text,
+        "line_bound": rec.get("line_bound", False)
+    }
+
+@app.delete("/api/recipients/{rec_id}/line-bind")
+def remove_recipient_line_bind(rec_id: str):
+    if not get_recipient_by_id(rec_id):
+        raise HTTPException(status_code=404, detail="Recipient not found")
+    unbind_recipient_line(rec_id)
+    return {"success": True, "recipient_id": rec_id, "line_bound": False}
+
+# 回饋點數：由後端判斷每日／每週上限後才發點
+@app.post("/api/rewards/claim")
+def api_claim_reward(req: RewardClaimRequest):
+    if not get_user_profile(req.account):
+        raise HTTPException(status_code=404, detail="User not found")
+    result = claim_reward(req.account, req.action, req.recipient or "")
+    profile = get_user_profile(req.account)
+    result["new_points"] = profile["points"] if profile else None
+    return result
 
 # 💡 統一使用絕對路徑確保 FastAPI 絕對找得到靜態資料夾，且只掛載一次
 web_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "web")

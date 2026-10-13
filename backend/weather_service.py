@@ -18,6 +18,16 @@ def load_env():
 
 load_env()
 
+
+def _get_cwa_parameter(weather_elements, element_name, default=""):
+    for elem in weather_elements:
+        if elem.get("elementName") == element_name:
+            times = elem.get("time", [])
+            if times:
+                return times[0].get("parameter", {}).get("parameterName", default)
+    return default
+
+
 def get_live_weather(city: str = "台北市", cwa_api_key: str = None):
     """
     中央氣象署 (CWA) 官方即時天氣觀測與預報 API
@@ -36,11 +46,17 @@ def get_live_weather(city: str = "台北市", cwa_api_key: str = None):
                 records = data.get("records", {}).get("location", [])
                 if records:
                     weather_elements = records[0].get("weatherElement", [])
-                    wx = next((e for e in weather_elements if e["elementName"] == "Wx"), {}).get("time", [{}])[0].get("parameter", {}).get("parameterName", "晴時多雲")
-                    min_t = next((e for e in weather_elements if e["elementName"] == "MinT"), {}).get("time", [{}])[0].get("parameter", {}).get("parameterName", "22")
-                    max_t = next((e for e in weather_elements if e["elementName"] == "MaxT"), {}).get("time", [{}])[0].get("parameter", {}).get("parameterName", "28")
-                    pop = next((e for e in weather_elements if e["elementName"] == "PoP"), {}).get("time", [{}])[0].get("parameter", {}).get("parameterName", "20")
-                    ci = next((e for e in weather_elements if e["elementName"] == "CI"), {}).get("time", [{}])[0].get("parameter", {}).get("parameterName", "舒適")
+                    wx = _get_cwa_parameter(weather_elements, "Wx", "晴時多雲")
+                    min_t = _get_cwa_parameter(weather_elements, "MinT", "22")
+                    max_t = _get_cwa_parameter(weather_elements, "MaxT", "28")
+                    pop = _get_cwa_parameter(weather_elements, "PoP", "20")
+                    rh = _get_cwa_parameter(weather_elements, "RH", "60")
+                    ci = _get_cwa_parameter(weather_elements, "CI", "舒適")
+
+                    try:
+                        humidity_value = int(float(rh))
+                    except (TypeError, ValueError):
+                        humidity_value = 60
 
                     return {
                         "source": "中央氣象署 (CWA) 官方即時觀測",
@@ -49,8 +65,9 @@ def get_live_weather(city: str = "台北市", cwa_api_key: str = None):
                         "temperature": f"{min_t}°C ~ {max_t}°C",
                         "condition": wx,
                         "comfort": ci,
+                        "humidity": humidity_value,
                         "rain_prob": f"{pop}%",
-                        "alert": generate_weather_alert(int(min_t), int(max_t), int(pop))
+                        "alert": generate_weather_alert(int(min_t), int(max_t), int(pop), humidity_value)
                     }
         except Exception as e:
             print("CWA API 連線異常，啟用本地安全備援:", e)
@@ -63,17 +80,20 @@ def get_live_weather(city: str = "台北市", cwa_api_key: str = None):
         "temperature": "24°C ~ 28°C",
         "condition": "多雲時晴 🌤️",
         "comfort": "舒適",
+        "humidity": 65,
         "rain_prob": "20%",
         "alert": "早晚溫差適中，提醒親友早起散步適時加薄外套、多補充溫開水。"
     }
 
-def generate_weather_alert(min_t, max_t, pop):
-    """依據當日氣溫差、降雨機率與低溫，自動產生親友健康關懷叮嚀"""
+def generate_weather_alert(min_t, max_t, pop, humidity=None):
+    """依據當日氣溫差、降雨機率、濕度與低溫，自動產生親友健康關懷叮嚀"""
     diff = max_t - min_t
     if diff >= 7:
         return f"⚠️ 今日早晚溫差高達 {diff:.1f}°C！高血壓親友晨間外出務必戴帽子保暖。"
     elif pop >= 60:
         return f"🌧️ 今日降雨機率 {pop}%，天雨路滑，請叮嚀親友居家防跌避免走濕滑磁磚。"
+    elif humidity is not None and humidity >= 80:
+        return f"💧 今日濕度達 {humidity}% 偏高，提醒親友避免長時間悶熱與過度出汗，室內記得通風保持舒適。"
     elif min_t <= 16:
         return f"❄️ 今日氣溫偏低 (最低 {min_t:.1f}°C)，提醒親友注意末梢血液循環與保暖。"
     else:

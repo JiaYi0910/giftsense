@@ -14,7 +14,7 @@
 
 ```
                     ┌────────────────────────────────────────────────────────┐
-                    │               CareGift Client (SPA)                    │
+                    │               GiftSense Client (SPA)                   │
                     │   - Vanilla JS + CSS3 (MUJI Design Tokens)             │
                     │   - Local State Engine & Real-time SQLite Console      │
                     └───────────────────────────┬────────────────────────────┘
@@ -116,7 +116,7 @@
 care_gifting_app/
 ├── index.html               # 前端核心 SPA 主頁面 (4,200+ 行精簡結構)
 ├── style.css                # 獨立 CSS 樣式庫 (MUJI 日系設計系統，900+ 行)
-├── bear.png                 # 脈脈小熊官方 Mascot 與頭像資產
+├── bear.png                 # 小熊官方 Mascot 與頭像資產
 ├── run_backend.bat          # Windows 一鍵啟動後端批次檔
 ├── README.md                # 系統架構與技術說明文件 (本檔案)
 └── backend/                 # Python 後端服務目錄
@@ -219,6 +219,6 @@ docker compose down
 
 ---
 
-*文檔維護人員：CareGift 全棧架構工程師 (System & Solution Architect)*  
+*文檔維護人員：GiftSense 全棧架構工程師 (System & Solution Architect)*  
 *最後更新日期：2026 年 09 月*
 

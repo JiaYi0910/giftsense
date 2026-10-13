@@ -15,9 +15,14 @@ venv/
 
 # SQLite Database (Runtime Data)
 *.sqlite3
+*.db-shm
+*.db-wal
 
 # IDE & Editor Settings
 .vscode/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Pharmacy crawler JSON cache (runtime data)
+backend/pharmacy_cache.json

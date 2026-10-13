@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html lang="zh-TW">
 
@@ -10,14 +10,16 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>CareGift 脈脈關懷 - 晨曦蔚藍 (Harmonious Ocean Blue) 智慧送禮版</title>
+  <title>GiftSense - 晨曦蔚藍 (Harmonious Ocean Blue) 智慧送禮版</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
 
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <link
+
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap"
+
     rel="stylesheet">
 
   <link rel="stylesheet" href="style.css?v=20260923_v5">
@@ -40,13 +42,16 @@
 
       <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
 
-        <div class="brand-logo-desktop" style="display:none;" onclick="openPage('p-daily')" title="返回 CareGift 首頁">
+        <div class="brand-logo-desktop" style="display:none;" onclick="openPage('p-daily')" title="返回 GiftSense 首頁">
 
           <img src="bear.png"
+
             style="width:28px; height:28px; border-radius:50%; border:1.5px solid var(--muji-primary); background:#fff;"
-            alt="CareGift Logo">
+
+            alt="GiftSense Logo">
 
           <span
+
             style="font-size:14px; font-weight:900; color:var(--muji-primary); letter-spacing:0.5px; white-space:nowrap;">Giftsense
 
           </span>
@@ -114,6 +119,7 @@
         <!-- View Mode Switcher Button (Desktop vs Mobile APP) -->
 
         <button class="view-mode-toggle-btn" id="viewModeToggleBtn" onclick="toggleViewMode()"
+
           title="點擊切換 網頁寬螢幕 / 手機 APP 排版">
 
           <span id="viewModeIcon">📱</span>
@@ -141,9 +147,10 @@
         <div class="user-menu-wrapper" style="position:relative;">
 
           <button class="user-profile-capsule" id="userProfileMenuBtn" onclick="toggleUserDropdown(event)"
+
             title="個人中心與設定">
 
-            <img src="bear.png" class="user-capsule-avatar" alt="脈脈小熊">
+            <img src="bear.png" class="user-capsule-avatar" alt="小熊">
 
             <span id="userAccountLabel" class="user-capsule-name">小心肝</span>
 
@@ -161,7 +168,7 @@
 
             <div class="user-dropdown-header">
 
-              <img src="bear.png" class="user-dropdown-avatar-large" alt="脈脈小熊">
+              <img src="bear.png" class="user-dropdown-avatar-large" alt="小熊">
 
               <div style="flex:1; min-width:0;">
 
@@ -174,6 +181,7 @@
                 </div>
 
                 <div id="dropdownUserPoints"
+
                   style="font-size:11px; color:var(--muji-primary); font-weight:800; margin-top:2px;">
 
                   🪙 2,500 點 · 可折抵 $5
@@ -307,7 +315,8 @@
           <div style="margin-bottom: 8px;">
 
             <img src="bear.png" class="mascot-banner-img" style="width: 96px; height: auto;"
-              onclick="interactWithMascot('auth')" title="點擊讓脈脈小熊動起來！" alt="脈脈小熊吉祥物">
+
+              onclick="interactWithMascot('auth')" title="點擊讓小熊動起來！" alt="小熊吉祥物">
 
           </div>
 
@@ -356,6 +365,7 @@
 
 
             <button type="button" id="btnLoginSubmit" class="btn-primary"
+
               style="margin-top: 14px; font-size: 15px; font-weight: 900; letter-spacing: 2px;" onclick="doUserLogin()">
 
               進入
@@ -389,7 +399,9 @@
 
 
             <button type="button" id="btnRegisterSubmit" class="btn-primary"
+
               style="margin-top: 14px; font-size: 15px; font-weight: 900; letter-spacing: 2px;"
+
               onclick="doUserRegister()">
 
               進入
@@ -419,6 +431,7 @@
             <!-- HEADER: TODAY'S HEALTH DIGEST BAR -->
 
             <div class="bubble-card"
+
               style="background: linear-gradient(135deg, #F8FAFC 0%, #E2EDF8 100%); border: 1.5px solid var(--border-highlight); position: relative; padding: 18px 20px; margin-bottom: 14px;">
 
               <!-- Top Row: Date & Active Elder Badge -->
@@ -434,6 +447,7 @@
                     <span class="card-tag tag-muji" style="margin:0; font-size:9.5px;">TODAY'S HEALTH DIGEST</span>
 
                     <div style="font-size:14px; font-weight:900; color:var(--muji-dark); margin-top:2px;"
+
                       id="dailyDigestDateLabel">
 
                       今日親友健康快報
@@ -449,6 +463,7 @@
                 <!-- Switch Elder Button -->
 
                 <button class="recipient-select-btn" onclick="openRecipientModal()"
+
                   style="padding:5px 10px; font-size:10px; background:#FFFFFF;" title="切換或修改關懷對象">
 
                   <span id="dailyElderBadge">爺爺 (高血壓Warfarin)</span> ▼
@@ -462,6 +477,7 @@
               <!-- Weather & Environment Health Bar -->
 
               <div
+
                 style="background: rgba(255,255,255,0.75); backdrop-filter: blur(10px); border-radius: 16px; padding: 10px 14px; border: 1px solid var(--border-subtle); display:flex; justify-content:space-between; align-items:center;">
 
                 <div style="flex:1; padding-right:8px;">
@@ -473,6 +489,7 @@
                   </div>
 
                   <div style="font-size:10px; font-weight:900; color:var(--muji-red); margin-top:2px;"
+
                     id="digestWeatherAlertLabel">
 
                     ⚠️ 溫差警戒：氣溫急遽變化，高血壓親友心血管波動風險提高
@@ -484,7 +501,9 @@
 
 
                 <select id="cwaCitySelector" class="input-text"
+
                   style="width: auto; margin:0; padding:2px 6px; height:28px; font-size:10px; font-weight:800; border-color:var(--border-highlight); background:#FFFFFF;"
+
                   onchange="changeCWACity(this.value)">
 
                   <option value="臺北市">臺北市</option>
@@ -530,6 +549,7 @@
             <!-- HERO COMPONENT: 今日健康行動卡 (TODAY'S ACTION CARD) -->
 
             <div class="bubble-card"
+
               style="padding: 20px; border: 1.5px solid var(--muji-primary); box-shadow: 0 10px 30px rgba(37, 99, 235, 0.08);">
 
               <!-- Action Card Header -->
@@ -538,57 +558,7 @@
 
                 <div style="display:flex; align-items:center; gap:6px;">
 
-                  <span class="evidence-badge" id="digestEvidenceBadge">AHA / FDA 臨床實證叮嚀</span>
-
-                </div>
-
-                <span style="font-size:10px; color:var(--text-muted); font-weight:800;">
-
-                  ✨ 今日行動卡
-
-                </span>
-
-              </div>
-
-
-
-              <!-- 1. Interactive Elder Quick Status Check (今日親友狀態回報) -->
-
-              <div style="margin-bottom: 12px;">
-
-                <div style="font-size: 11px; font-weight: 800; color: var(--text-main); margin-bottom: 6px;">
-
-                  親友今日狀況：
-
-                </div>
-
-                <div style="display:flex; gap:6px; flex-wrap:wrap;" id="elderStatusPillGroup">
-
-                  <button class="sample-chip active"
-                    style="margin:0; font-weight:800; border-color:var(--muji-primary); color:var(--muji-primary);"
-                    onclick="selectElderStatus('good', this)">
-
-                    🟢 狀況良好穩定
-
-                  </button>
-
-                  <button class="sample-chip" style="margin:0;" onclick="selectElderStatus('joint_pain', this)">
-
-                    🟡 膝蓋酸痛/關節卡
-
-                  </button>
-
-                  <button class="sample-chip" style="margin:0;" onclick="selectElderStatus('insomnia', this)">
-
-                    🟠 昨晚失眠/沒睡好
-
-                  </button>
-
-                  <button class="sample-chip" style="margin:0;" onclick="selectElderStatus('high_bp', this)">
-
-                    🔴 頭暈/血壓偏高
-
-                  </button>
+                  <span style="font-size:11px; font-weight:800; color:var(--muji-primary);">今日關懷提醒</span>
 
                 </div>
 
@@ -596,9 +566,10 @@
 
 
 
-              <!-- 2. Evidence-Based Integrated Care Message Box -->
+              <!-- 2. Integrated Care Message Box -->
 
               <div
+
                 style="background: var(--bg-card-elevated); border: 1px solid var(--border-subtle); border-radius: 18px; padding: 16px; margin: 10px 0 14px; position:relative;">
 
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
@@ -614,12 +585,15 @@
                   <div style="display:flex; gap:4px;">
 
                     <button class="bubble-pill active" style="padding:3px 8px; font-size:9px;"
+
                       onclick="changeTone('spoiled', this)">撒嬌</button>
 
                     <button class="bubble-pill" style="padding:3px 8px; font-size:9px;"
+
                       onclick="changeTone('taiwanese', this)">台語</button>
 
                     <button class="bubble-pill" style="padding:3px 8px; font-size:9px;"
+
                       onclick="changeTone('reserved', this)">端莊</button>
 
                   </div>
@@ -629,45 +603,10 @@
 
 
                 <div style="font-size: 12.5px; color: var(--text-main); line-height: 1.7; font-weight: 500;"
+
                   id="dailyMessage">
 
                   載入今日整合關懷叮嚀中...
-
-                </div>
-
-
-
-                <!-- Dynamic RAG Mini Insight Box inside the card (Collapsible) -->
-
-                <div id="digestRAGInsightBox"
-                  style="margin-top:10px; padding:10px 12px; background:rgba(214,159,61,0.08); border-left:3px solid var(--muji-amber); border-radius:10px; font-size:11px; color:var(--text-muted); line-height:1.5;">
-
-                  <div style="display:flex; justify-content:space-between; align-items:flex-start; cursor:pointer;"
-                    onclick="toggleDigestRAGDetail()">
-
-                    <div>
-
-                      <strong style="color:var(--muji-primary);">🔬 臨床實證叮嚀：</strong>
-
-                      <span id="digestRAGInsightText">美國心臟學會 (AHA) 指引提醒：服用抗凝血劑親友，遇溫差大時應留意血壓變化，避免劇烈活血食材。</span>
-
-                    </div>
-
-                    <span id="digestRAGArrow"
-                      style="font-size:10px; color:var(--muji-primary); font-weight:800; margin-left:6px; white-space:nowrap;">出處
-
-                      ▾</span>
-
-                  </div>
-
-                  <div id="digestRAGDetail"
-                    style="display:none; margin-top:6px; padding-top:6px; border-top:1px dashed rgba(214,159,61,0.3); font-size:9.5px; color:var(--text-subtle);">
-
-                    <div id="digestRAGDetailAuthority"> 權威指引：AHA / TFDA 臨床安全指引</div>
-
-                    <div id="digestRAGDetailCitation" style="margin-top:1px;">出處：Circulation. 2019;140:e673–e691.</div>
-
-                  </div>
 
                 </div>
 
@@ -678,12 +617,15 @@
               <!-- 4. Primary Action Button -->
 
               <button class="btn-primary"
+
                 style="padding:14px; font-size:13px; letter-spacing:1px; display:flex; justify-content:center; align-items:center; gap:6px;"
+
                 onclick="sendPureDailyCare()">
 
                 <span> 3 秒發送健康關懷卡</span>
 
                 <span
+
                   style="font-size:10px; opacity:0.85; background:rgba(255,255,255,0.2); padding:2px 8px; border-radius:10px;">+10
 
                   點獎勵</span>
@@ -697,6 +639,7 @@
               <div style="text-align:center; margin-top:12px;">
 
                 <a href="javascript:void(0)" onclick="openPage('p-ai-guard')"
+
                   style="font-size:11px; color:var(--muji-primary); font-weight:800; text-decoration:none; display:inline-flex; align-items:center; gap:4px;">
 
                   <span> 想針對親友狀況諮詢或檢驗保健品？交給 AI 守護助理 ›</span>
@@ -718,6 +661,7 @@
             <!-- CARE STREAK & MASCOT COMPANION -->
 
             <div class="bubble-card"
+
               style="margin-bottom: 14px; background: var(--muji-soft-bg); border: 1px solid var(--border-highlight); padding: 16px 18px;">
 
               <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -749,7 +693,8 @@
                 <div style="position:relative; margin-left: 10px;">
 
                   <img src="bear.png" id="mascotMainImg" class="mascot-banner-img" style="width:62px;"
-                    title="點擊讓脈脈小熊動起來！" onclick="interactWithMascot('banner')" alt="脈脈小熊吉祥物">
+
+                    title="點擊讓小熊動起來！" onclick="interactWithMascot('banner')" alt="小熊吉祥物">
 
                 </div>
 
@@ -764,6 +709,7 @@
             <!-- Points & Passports Mini Widget -->
 
             <div class="bubble-card"
+
               style="margin-bottom: 14px; padding: 16px 18px; background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%); border: 1px solid rgba(217, 119, 6, 0.25);">
 
               <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -779,7 +725,9 @@
                 </div>
 
                 <button class="btn-primary"
+
                   style="width:auto; padding:6px 14px; font-size:10.5px; background:var(--muji-amber); border-radius:12px;"
+
                   onclick="openPointsPassModal()">
 
                   點數護照 ›
@@ -811,6 +759,7 @@
       <div id="p-store" class="spa-page">
 
         <div class="bubble-card"
+
           style="background: linear-gradient(135deg, #F8FAFC 0%, #E2EDF8 100%); border: 1.5px solid var(--border-highlight); padding:16px 18px;">
 
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -858,6 +807,7 @@
       <div id="p-inbox" class="spa-page">
 
         <div class="bubble-card"
+
           style="background: var(--muji-soft-bg); border: 1px solid var(--border-highlight); padding: 16px 18px; margin-bottom: 12px;">
 
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -871,7 +821,9 @@
             </div>
 
             <button type="button" onclick="clearCurrentInbox()"
+
               style="background:#FFFFFF; border:1px solid var(--border-highlight); color:var(--text-muted); font-size:10.5px; font-weight:700; padding:4px 10px; border-radius:14px; cursor:pointer;"
+
               title="清空目前對話紀錄">
 
               🧹 清空對話
@@ -885,6 +837,7 @@
           <!-- Recipient Filter Tabs -->
 
           <div style="display:flex; gap:6px; overflow-x:auto; margin-top:12px; padding-bottom:2px;"
+
             id="inboxFilterTabs">
 
             <!-- Dynamically populated tabs -->
@@ -904,6 +857,7 @@
           <input type="text" class="input-text" id="quickMsgInput" placeholder="給親友傳句簡單問候..." style="margin:0;">
 
           <button class="btn-primary" style="width:85px; padding:0; font-size:12px;"
+
             onclick="sendQuickMsg()">傳送</button>
 
         </div>
@@ -927,19 +881,21 @@
             <!-- Top Status Card -->
 
             <div class="bubble-card"
+
               style="background: linear-gradient(135deg, #F8FAFC 0%, #E2EDF8 100%); border: 1.5px solid var(--border-highlight); padding: 16px 18px; margin-bottom: 12px;">
 
               <div style="display:flex; justify-content:space-between; align-items:center;">
 
                 <div>
 
-                  <span class="card-tag tag-muji" style="font-size:9.5px; padding:2px 8px;">CARE AI · 實證諮詢 & 撞藥防錯</span>
+                  <span class="card-tag tag-muji" style="font-size:9.5px; padding:2px 8px;">GiftSense · 實證諮詢 & 撞藥防錯</span>
 
                   <div style="font-weight: 900; font-size: 15px; margin-top: 2px;">AI 守護助理</div>
 
                 </div>
 
                 <span class="evidence-badge" id="aiGuardEngineBadge"
+
                   style="font-size:9px; background:#EBF4F0; color:#2E6B56;">
 
                   🔬 RAG 文獻庫連動中
@@ -949,6 +905,7 @@
               </div>
 
               <div
+
                 style="font-size: 11px; color: var(--text-muted); margin-top: 6px; display: flex; align-items: center; justify-content:space-between;">
 
                 <div>
@@ -964,74 +921,78 @@
                 <div style="display:flex; align-items:center; gap:8px;">
 
                   <span style="font-size:10px; color:var(--muji-primary); font-weight:800; cursor:pointer;"
+
                     onclick="openEditActiveRecipientModal()">✏️ 修改病例</span>
 
                   <span style="font-size:10px; color:var(--muji-primary); font-weight:800; cursor:pointer;"
+
                     onclick="openRecipientModal()">切換親友 ›</span>
 
                 </div>
 
               </div>
 
+              <div style="margin-top:8px; font-size:10px; color:var(--text-muted); display:flex; justify-content:flex-end; align-items:center; gap:6px; flex-wrap:wrap;">
+
+                <button type="button" id="aiGuardRedeemBtn" class="sample-chip"
+
+                  style="display:none; margin:0; font-size:10px; padding:3px 10px; font-weight:800; border-color:var(--muji-amber); color:var(--muji-dark); background:#FFFFFF;"
+
+                  onclick="redeemAIGuardQuota()" title="使用關懷點數兌換 AI 守護助理詢問次數">
+
+                  🪙 用 50 點兌換 3 次
+
+                </button>
+
+                <span id="aiGuardQuotaLabel" style="font-weight:800; color:var(--muji-primary); background: rgba(37,99,235,0.08); border:1px solid rgba(37,99,235,0.16); border-radius: 999px; padding: 3px 8px;">
+
+                  今日剩餘 3 次
+
+                </span>
+
+              </div>
+
             </div>
 
 
 
-            <!-- Quick Sample Chips for Young Adults -->
+            <!-- Dynamic Quick Chips (臨床對症連動 + AI 專屬晶片) -->
 
             <div class="bubble-card" style="padding: 16px; margin-bottom: 12px;">
 
-              <div style="font-size: 11px; font-weight: 800; color: var(--muji-primary); margin-bottom: 8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom: 8px;">
 
-                💡 快速症狀與常見保健品檢驗：
+                <div style="font-size: 11px; font-weight: 800; color: var(--muji-primary);">
 
-              </div>
+                  💡 快速症狀與常見保健品檢驗：
 
-              <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                </div>
 
-                <div class="sample-chip" style="margin:0;" onclick="fillAIGuardQuery('肩頸痠痛怎麼辦？')">肩頸痠痛舒緩</div>
+                <button type="button" id="btnAIGenerateChips" class="sample-chip"
 
-                <div class="sample-chip" style="margin:0;" onclick="fillAIGuardQuery('紅麴降膽固醇安全嗎？')">紅麴+降血脂(TFDA)</div>
+                  style="margin:0; font-size:10px; padding:4px 10px; font-weight:800; border-color:var(--muji-primary); color:var(--muji-primary); background:#FFFFFF; white-space:nowrap;"
 
-                <div class="sample-chip" style="margin:0;" onclick="fillAIGuardQuery('吃抗凝血藥可以吃納豆嗎？')">抗凝血+納豆(TFDA)</div>
+                  onclick="triggerAIGenerateChips()" title="依當前親友病況由 AI 重新產生專屬提問">
 
-                <div class="sample-chip" style="margin:0;" onclick="fillAIGuardQuery('膝蓋關節無力卡卡')">膝關節無力卡卡</div>
+                  <span>✨ AI 專屬重整</span>
 
-                <div class="sample-chip" style="margin:0;" onclick="fillAIGuardQuery('親友失眠睡不好，吃什麼安全？')">失眠睡不好吃什麼？</div>
-
-                <div class="sample-chip" style="margin:0;" onclick="fillAIGuardQuery('半夜小腿容易抽筋怎麼辦？')">半夜小腿抽筋</div>
-
-                <div class="sample-chip" style="margin:0;" onclick="fillAIGuardQuery('Costco 深海魚油 (EPA/DHA)')">Costco 魚油
-
-                  (外購)</div>
-
-                <div class="sample-chip" style="margin:0;" onclick="fillAIGuardQuery('結晶型硫酸鹽葡萄糖胺')">硫酸鹽葡萄糖胺 (本平台)</div>
+                </button>
 
               </div>
+
+              <span class="evidence-badge" id="aiGuardChipsSourceBadge"
+
+                style="font-size:9px; background:#EBF4F0; color:#2E6B56; margin-bottom: 8px;">
+
+                ⚡ 臨床對症連動
+
+              </span>
+
+              <div id="aiGuardQuickChipsContainer" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
 
             </div>
 
 
-
-            <!-- TFDA Black Box Regulatory Banner -->
-
-            <div class="bubble-card"
-              style="padding: 14px 16px; background:var(--muji-soft-bg); border:1px solid var(--border-highlight); margin-bottom: 12px;">
-
-              <div
-                style="font-size:11px; font-weight:800; color:var(--muji-dark); display:flex; align-items:center; gap:5px;">
-
-                <span>🏛️ TFDA 黑盒子即時攔截防護</span>
-
-              </div>
-
-              <div style="font-size:9.5px; color:var(--text-muted); margin-top:4px; line-height:1.5;">
-
-                本助理具備雙軌研判引擎：先由臨床實證指引 (US FDA/NIH/Cochrane) 檢索有效成分，再經台灣 TFDA 藥品交互作用黑盒子庫嚴格審核！
-
-              </div>
-
-            </div>
 
           </div>
 
@@ -1044,6 +1005,7 @@
             <!-- Unified AI Guard Chat & Stream Container -->
 
             <div class="bubble-card"
+
               style="padding: 18px; min-height: 480px; display: flex; flex-direction: column; height: 100%;">
 
               <div class="rag-chat-container" id="aiGuardChatBox">
@@ -1059,8 +1021,6 @@
                     <span style="font-size:9px; color:var(--text-subtle);">全天候守護</span>
 
                   </div>
-
-                  您好！我是結合了 <strong>美國 FDA、NIH、考科藍 (Cochrane) 及 衛福部 TFDA</strong> 臨床實證指引的智慧守護助理。
 
                   <div style="margin-top:6px; font-size:11.5px; color:var(--text-muted); line-height:1.6;">
 
@@ -1085,6 +1045,7 @@
               <!-- Loading Indicator -->
 
               <div id="aiGuardLoadingBox"
+
                 style="display:none; padding: 12px; text-align: center; font-size: 11px; color: var(--muji-primary); font-weight: 800;">
 
                 🔍 正在比對親友病史、處方藥與 RAG 國家級文獻庫...
@@ -1096,13 +1057,21 @@
               <!-- Unified Query Input Box -->
 
               <div
-                style="margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border-subtle); display: flex; gap: 8px;">
 
-                <input type="text" id="aiGuardQueryInput" class="input-text"
-                  placeholder="輸入親友症狀 (如: 膝蓋痛) 或 保健品 (如: Costco 魚油)..." style="margin:0; height:42px;"
-                  onkeydown="if(event.key==='Enter') executeAIGuardQuery()">
+                style="margin-top: auto; padding-top: 12px; border-top: 1px solid var(--border-subtle); display: flex; gap: 8px; align-items: center;">
 
-                <button class="btn-primary" style="width: 86px; padding: 0; font-size: 12px;"
+                <div style="flex: 1;">
+
+                  <input type="text" id="aiGuardQueryInput" class="input-text"
+
+                    placeholder="輸入親友症狀 (如: 膝蓋痛) 或 保健品 (如: Costco 魚油)..." style="margin:0; height:42px;"
+
+                    onkeydown="if(event.key==='Enter') executeAIGuardQuery()">
+
+                </div>
+
+                <button class="btn-primary" id="aiGuardQueryBtn" style="width: 110px; height: 42px; padding: 0; font-size: 13px; font-weight: 800;"
+
                   onclick="executeAIGuardQuery()">
 
                   守護查詢
@@ -1126,6 +1095,7 @@
       <div id="p-knowledge" class="spa-page">
 
         <div class="bubble-card"
+
           style="background: var(--muji-soft-bg); border: 1px solid var(--border-highlight); padding: 16px;">
 
           <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1143,6 +1113,7 @@
             </div>
 
             <button class="btn-primary" style="width: auto; padding: 6px 12px; font-size: 10px; border-radius: 14px;"
+
               onclick="openAddLiteratureModal()">
 
               + 新增臨床文獻
@@ -1166,6 +1137,7 @@
         <div style="margin: 8px 0 12px;">
 
           <input type="text" id="kbSearchInput" class="input-text"
+
             placeholder="🔍 搜尋成分、疾病、適應症或機構 (例如：葉黃素、Warfarin、FDA)..." style="margin:0;" oninput="filterKnowledgeBase()">
 
         </div>
@@ -1233,8 +1205,7 @@
         </div>
 
         <!-- SQLite Real-time Metrics Card -->
-        <div class="bubble-card"
-          style="margin-top: 12px; padding: 18px; background: #FFFFFF; border: 1.5px solid var(--border-highlight);">
+        <div class="bubble-card" style="margin-top: 12px; padding: 18px; background: #FFFFFF; border: 1.5px solid var(--border-highlight);">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
             <div style="font-size: 13px; font-weight: 900; color: var(--muji-primary);">
               📊 SQLite 資料庫指標與數據總覽
@@ -1243,44 +1214,35 @@
           </div>
 
           <!-- Quick Metrics Badges Grid -->
-          <div
-            style="display:grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap:8px; margin-bottom: 14px;">
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap:8px; margin-bottom: 14px;">
             <div style="background:var(--muji-soft-bg); padding:10px; border-radius:12px; text-align:center;">
               <div style="font-size:10px; color:var(--text-muted); font-weight:700;">📚 臨床實證文獻</div>
-              <div id="sqliteLitCountBadge"
-                style="font-size:16px; font-weight:900; color:var(--muji-primary); margin-top:2px;">15 筆</div>
+              <div id="sqliteLitCountBadge" style="font-size:16px; font-weight:900; color:var(--muji-primary); margin-top:2px;">15 筆</div>
             </div>
             <div style="background:var(--muji-soft-bg); padding:10px; border-radius:12px; text-align:center;">
               <div style="font-size:10px; color:var(--text-muted); font-weight:700;">👥 親友健康庫</div>
-              <div id="sqliteRecCountBadge"
-                style="font-size:16px; font-weight:900; color:var(--muji-primary); margin-top:2px;">3 位</div>
+              <div id="sqliteRecCountBadge" style="font-size:16px; font-weight:900; color:var(--muji-primary); margin-top:2px;">3 位</div>
             </div>
             <div style="background:var(--muji-soft-bg); padding:10px; border-radius:12px; text-align:center;">
               <div style="font-size:10px; color:var(--text-muted); font-weight:700;">📦 配送訂單</div>
-              <div id="sqliteOrdCountBadge"
-                style="font-size:16px; font-weight:900; color:var(--muji-primary); margin-top:2px;">24 筆</div>
+              <div id="sqliteOrdCountBadge" style="font-size:16px; font-weight:900; color:var(--muji-primary); margin-top:2px;">24 筆</div>
             </div>
             <div style="background:var(--muji-soft-bg); padding:10px; border-radius:12px; text-align:center;">
               <div style="font-size:10px; color:var(--text-muted); font-weight:700;">🎫 關懷點數明細</div>
-              <div id="sqlitePtsCountBadge"
-                style="font-size:16px; font-weight:900; color:var(--muji-primary); margin-top:2px;">25 筆</div>
+              <div id="sqlitePtsCountBadge" style="font-size:16px; font-weight:900; color:var(--muji-primary); margin-top:2px;">25 筆</div>
             </div>
             <div style="background:var(--muji-soft-bg); padding:10px; border-radius:12px; text-align:center;">
               <div style="font-size:10px; color:var(--text-muted); font-weight:700;">💊 藥局爬蟲快取</div>
-              <div id="sqliteCacheCountBadge"
-                style="font-size:16px; font-weight:900; color:var(--muji-primary); margin-top:2px;">49 項</div>
+              <div id="sqliteCacheCountBadge" style="font-size:16px; font-weight:900; color:var(--muji-primary); margin-top:2px;">49 項</div>
             </div>
           </div>
 
           <!-- SQLite Operations Buttons -->
           <div style="display:flex; flex-wrap:wrap; gap:8px;">
-            <button class="btn-primary" style="flex:1; min-width:140px; font-size:11px; padding:10px 14px;"
-              onclick="syncLiteraturesToSQLite()">
+            <button class="btn-primary" style="flex:1; min-width:140px; font-size:11px; padding:10px 14px;" onclick="syncLiteraturesToSQLite()">
               🔄 一鍵同步資料至 SQLite
             </button>
-            <button class="sample-chip"
-              style="margin:0; font-size:11px; padding:10px 14px; font-weight:800; border-color:var(--muji-primary); color:var(--muji-primary); background:#FFFFFF;"
-              onclick="exportSQLiteJSON()">
+            <button class="sample-chip" style="margin:0; font-size:11px; padding:10px 14px; font-weight:800; border-color:var(--muji-primary); color:var(--muji-primary); background:#FFFFFF;" onclick="exportSQLiteJSON()">
               📥 匯出 SQLite 完整備份 (JSON)
             </button>
           </div>
@@ -1386,6 +1348,7 @@
         <div class="modal-drawer">
 
           <div
+
             style="width:40px; height:4px; background:var(--border-highlight); border-radius:2px; margin:0 auto 16px;">
 
           </div>
@@ -1405,6 +1368,7 @@
 
 
           <div
+
             style="background: var(--bg-card-elevated); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; margin-bottom: 14px;">
 
             <div style="font-size: 13px; font-weight: 900; color: var(--muji-primary); margin-bottom: 8px;">快速新增親友檔案入庫
@@ -1412,12 +1376,15 @@
             </div>
 
             <input type="text" id="newRecName" class="input-text" style="margin-bottom:8px;"
+
               placeholder="親友稱呼 (例如：外婆、媽媽、大伯)">
 
             <input type="text" id="newRecCondition" class="input-text" style="margin-bottom:10px;"
+
               placeholder="特定疾病或創傷 (例如：糖尿病、骨折、膝關節退化)">
 
             <button class="btn-primary" style="padding:12px; font-size:12px;"
+
               onclick="addRecipientToDB()">儲存新親友至健康資料庫</button>
 
           </div>
@@ -1425,7 +1392,9 @@
 
 
           <button
+
             style="width: 100%; background: transparent; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer;"
+
             onclick="closeRecipientModal()">
 
             關閉
@@ -1445,6 +1414,7 @@
         <div class="modal-drawer">
 
           <div
+
             style="width:40px; height:4px; background:var(--border-highlight); border-radius:2px; margin:0 auto 16px;">
 
           </div>
@@ -1470,9 +1440,11 @@
 
 
           <div
+
             style="background: var(--bg-card-elevated); border: 1px solid var(--border-subtle); border-radius: 20px; padding: 16px; margin-bottom: 14px;">
 
             <label
+
               style="font-size: 10.5px; font-weight: 800; color: var(--text-muted); display:block; margin-bottom:4px;">
 
               親友稱呼：
@@ -1480,11 +1452,13 @@
             </label>
 
             <input type="text" id="editRecName" class="input-text" style="margin-bottom:12px;"
+
               placeholder="例如：媽媽、外婆、爺爺">
 
 
 
             <label
+
               style="font-size: 10.5px; font-weight: 800; color: var(--text-muted); display:block; margin-bottom:4px;">
 
               特定病例 / 疾病創傷狀況與用藥：
@@ -1492,6 +1466,7 @@
             </label>
 
             <input type="text" id="editRecCondition" class="input-text" style="margin-bottom:10px;"
+
               placeholder="例如：高血壓Warfarin、糖尿病血糖、手燙傷創面">
 
 
@@ -1507,30 +1482,39 @@
             <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;">
 
               <button type="button" class="sample-chip" style="margin:0; font-size:10px; padding:3px 8px;"
+
                 onclick="fillEditConditionTag('高血壓Warfarin')">高血壓Warfarin</button>
 
               <button type="button" class="sample-chip" style="margin:0; font-size:10px; padding:3px 8px;"
+
                 onclick="fillEditConditionTag('糖尿病血糖')">糖尿病血糖</button>
 
               <button type="button" class="sample-chip" style="margin:0; font-size:10px; padding:3px 8px;"
+
                 onclick="fillEditConditionTag('手燙傷創面')">手燙傷創面</button>
 
               <button type="button" class="sample-chip" style="margin:0; font-size:10px; padding:3px 8px;"
+
                 onclick="fillEditConditionTag('退化性膝關節')">退化性膝關節</button>
 
               <button type="button" class="sample-chip" style="margin:0; font-size:10px; padding:3px 8px;"
+
                 onclick="fillEditConditionTag('高血脂心血管')">高血脂心血管</button>
 
               <button type="button" class="sample-chip" style="margin:0; font-size:10px; padding:3px 8px;"
+
                 onclick="fillEditConditionTag('痛風高尿酸')">痛風高尿酸</button>
 
               <button type="button" class="sample-chip" style="margin:0; font-size:10px; padding:3px 8px;"
+
                 onclick="fillEditConditionTag('骨折術後調養')">骨折術後調養</button>
 
               <button type="button" class="sample-chip" style="margin:0; font-size:10px; padding:3px 8px;"
+
                 onclick="fillEditConditionTag('失眠焦慮')">失眠焦慮</button>
 
               <button type="button" class="sample-chip" style="margin:0; font-size:10px; padding:3px 8px;"
+
                 onclick="fillEditConditionTag('日常養生保健')">日常養生保健</button>
 
             </div>
@@ -1538,6 +1522,7 @@
 
 
             <button class="btn-primary" style="padding:12px; font-size:13px; font-weight:800; letter-spacing:1px;"
+
               onclick="saveEditedRecipient()">
 
               💾 確認儲存修改
@@ -1549,7 +1534,9 @@
 
 
           <button
+
             style="width: 100%; background: transparent; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer; padding:8px 0;"
+
             onclick="closeEditRecipientModal()">
 
             取消返回
@@ -1571,6 +1558,7 @@
         <div class="modal-drawer">
 
           <div
+
             style="width:40px; height:4px; background:var(--border-highlight); border-radius:2px; margin:0 auto 16px;">
 
           </div>
@@ -1580,6 +1568,7 @@
           <!-- GAMIFIED BATTLE PASS HEADER CARD -->
 
           <div
+
             style="background: linear-gradient(135deg, #1E40AF 0%, #0F172A 100%); border-radius: 24px; padding: 20px; color: #FFFFFF; position: relative; box-shadow: 0 10px 28px rgba(15,23,42,0.3); margin-bottom: 16px;">
 
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -1587,11 +1576,12 @@
               <div style="display:flex; align-items:center; gap:10px;">
 
                 <img src="bear.png"
+
                   style="width:46px; height:46px; border-radius:50%; border:2px solid #D97706; background:#FFFFFF; object-fit:cover;">
 
                 <div>
 
-                  <div style="font-size:10px; font-weight:800; color:#F59E0B; letter-spacing:1px;">CAREGIFT PASS ·
+                  <div style="font-size:10px; font-weight:800; color:#F59E0B; letter-spacing:1px;">GIFTSENSE PASS ·
 
                     關懷寶藏帳戶</div>
 
@@ -1602,6 +1592,7 @@
               </div>
 
               <span
+
                 style="background: linear-gradient(90deg, #FEF3C7, #FDE68A); color:#1E293B; font-size:10px; font-weight:900; padding:4px 10px; border-radius:12px; border:1px solid #D97706;">
 
                 Lv.3 孝心護衛者
@@ -1633,10 +1624,13 @@
             <!-- XP Level Progress Bar -->
 
             <div
+
               style="margin-top:8px; background:rgba(255,255,255,0.15); height:8px; border-radius:4px; overflow:hidden;">
 
               <div
+
                 style="width: 50%; height:100%; background:linear-gradient(90deg, #D97706, #FDE68A); border-radius:4px;"
+
                 id="passLevelProgressBar"></div>
 
             </div>
@@ -1656,9 +1650,11 @@
           <!-- 3-YEAR EXPIRATION POLICY ALERT BOX -->
 
           <div
+
             style="background: rgba(214, 159, 61, 0.12); border: 1.5px solid var(--muji-amber); border-radius: 18px; padding: 14px; margin-bottom: 16px;">
 
             <div
+
               style="font-size: 11px; font-weight: 800; color: var(--muji-amber); display:flex; align-items:center; gap:6px;">
 
               <span>⏳ 點數 3 年滾動效期規範說明</span>
@@ -1672,6 +1668,7 @@
             </div>
 
             <div style="font-size: 10px; font-weight: 800; color: var(--muji-primary); margin-top: 6px;"
+
               id="passExpirationDetailLabel">
 
               📅 當前最早到期點數：2026/07 累積之點數將於 2029/07/24 到期
@@ -1693,6 +1690,7 @@
             <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
 
               <div
+
                 style="background:var(--bg-card-elevated); border:1px solid var(--border-subtle); border-radius:16px; padding:10px; text-align:center;">
 
                 <div style="font-size:20px;">🏅</div>
@@ -1704,6 +1702,7 @@
               </div>
 
               <div
+
                 style="background:var(--bg-card-elevated); border:1px solid var(--border-subtle); border-radius:16px; padding:10px; text-align:center;">
 
                 <div style="font-size:20px;">🛡️</div>
@@ -1715,6 +1714,7 @@
               </div>
 
               <div
+
                 style="background:var(--bg-card-elevated); border:1px solid var(--border-subtle); border-radius:16px; padding:10px; text-align:center;">
 
                 <div style="font-size:20px;">🎁</div>
@@ -1738,6 +1738,7 @@
           </div>
 
           <div id="passPointsLedgerList"
+
             style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px; max-height:220px; overflow-y:auto;">
 
           </div>
@@ -1745,7 +1746,9 @@
 
 
           <button
+
             style="width: 100%; background: transparent; border: none; color: var(--text-muted); font-size: 12px; cursor: pointer;"
+
             onclick="closePointsPassModal()">
 
             關閉
@@ -1765,6 +1768,7 @@
         <div class="modal-drawer">
 
           <div
+
             style="width:40px; height:4px; background:var(--border-highlight); border-radius:2px; margin:0 auto 16px;">
 
           </div>
@@ -1876,6 +1880,7 @@
           <label style="font-size: 10px; font-weight: 800; color: var(--text-muted);">作用機轉與臨床摘要：</label>
 
           <textarea id="litMechanismInput" class="input-text" style="height:70px; resize:none;"
+
             placeholder="描述該成分於人體生理作用之機轉..."></textarea>
 
 
@@ -1899,7 +1904,9 @@
           </button>
 
           <button
+
             style="width: 100%; background: transparent; border: none; color: var(--text-muted); font-size: 12px; margin-top: 10px; cursor: pointer;"
+
             onclick="closeLiteratureModal()">
 
             取消
@@ -1915,6 +1922,42 @@
 
 
     <script>
+
+      // =========================================================================
+
+      // 後端 API 位址（統一入口，置於最上方避免 const 暫時性死區 TDZ）
+
+      // 1. localStorage 'caregift_api_base' 可手動覆寫（設為空字串即走同源）
+
+      // 2. 透過 docker-compose Nginx (port 8080) 存取 → 同源反向代理 ''
+
+      // 3. 本機 localhost / 127.0.0.1 直連 → http://127.0.0.1:8000
+
+      // 4. 其他情況（含 file:// 直接開檔）→ Render 雲端後端
+
+      // =========================================================================
+
+      const BACKEND_BASE_URL = (() => {
+
+        try {
+
+          const override = localStorage.getItem('caregift_api_base');
+
+          if (override !== null) return override.trim().replace(/\/+$/, '');
+
+        } catch (e) { }
+
+        const { protocol, hostname, port } = window.location;
+
+        if (protocol.startsWith('http') && port === '8080') return '';
+
+        if (hostname === 'localhost' || hostname === '127.0.0.1') return 'http://127.0.0.1:8000';
+
+        return 'https://giftsense-vjbu.onrender.com';
+
+      })();
+
+
 
       function safeJSONParse(key, defaultValue) {
 
@@ -1938,53 +1981,15 @@
 
 
 
-      // Real-time CWA Weather Dataset for Taiwan Cities matching CWA Official MinT ~ MaxT Ranges
-
-      const cwaWeatherData = {
-
-        '臺北市': { minT: 26, maxT: 36, humidity: 75, condition: '晴朗酷熱', tip: '高溫達 36°C，正午陽光烈請戴帽子遮陽多補充水分！' },
-
-        '新北市': { minT: 26, maxT: 36, humidity: 78, condition: '晴朗炎熱', tip: '最高溫達 36°C 體感偏熱，出門行走注意水分！' },
-
-        '基隆市': { minT: 27, maxT: 34, humidity: 82, condition: '晴時多雲', tip: '海風陣陣，記得帶薄外套防曬遮風！' },
-
-        '桃園市': { minT: 26, maxT: 36, humidity: 72, condition: '晴朗多雲', tip: '溫差高達 10°C，高溫防中暑！' },
-
-        '新竹市': { minT: 27, maxT: 32, humidity: 70, condition: '多雲時晴', tip: '體感舒適宜人，適合多出門散步曬太陽！' },
-
-        '苗栗縣': { minT: 25, maxT: 33, humidity: 68, condition: '多雲', tip: '早晚 25°C 涼爽，午後外出多補充水份！' },
-
-        '臺中市': { minT: 26, maxT: 34, humidity: 65, condition: '晴朗舒適', tip: '氣候舒適宜人，適合出門運動運動補鈣！' },
-
-        '彰化縣': { minT: 27, maxT: 34, humidity: 67, condition: '晴朗多雲', tip: '陽光充沛，適時補充水分與電解質！' },
-
-        '南投縣': { minT: 25, maxT: 35, humidity: 75, condition: '多雲短暫雨', tip: '山區防午後雷陣雨，外出帶折疊傘！' },
-
-        '雲林縣': { minT: 26, maxT: 35, humidity: 66, condition: '陰多雲', tip: '最高溫達 35°C，避免高溫曝曬！' },
-
-        '嘉義市': { minT: 26, maxT: 36, humidity: 67, condition: '多雲晴', tip: '最高溫達 36°C，出門備陽傘多喝水！' },
-
-        '臺南市': { minT: 27, maxT: 32, humidity: 68, condition: '多雲', tip: '天氣穩定，提醒親友多喝水防中暑！' },
-
-        '高雄市': { minT: 27, maxT: 32, humidity: 70, condition: '多雲微熱', tip: '紫外線偏高，請多補充水分防日曬！' },
-
-        '屏東縣': { minT: 27, maxT: 32, humidity: 72, condition: '多雲', tip: '溫度適中，補充水分與電解質！' },
-
-        '宜蘭縣': { minT: 26, maxT: 33, humidity: 85, condition: '晴朗濕氣重', tip: '相對濕度 85% 較潮濕，睡前泡腳舒緩關節喔！' },
-
-        '花蓮縣': { minT: 27, maxT: 32, humidity: 80, condition: '晴時多雲', tip: '海風舒適，日夜溫差適中！' }
-
-      };
-
-
-
       let selectedCWACity = '臺北市';
+
+      let liveWeatherData = null;
 
       let currentTopicKey = '早安問候';
 
       let currentToneKey = 'spoiled';
 
-      let currentElderStatus = 'good';
+      let currentElderStatus = 'weather_only';
 
 
 
@@ -2066,13 +2071,11 @@
 
         selectedCWACity = city;
 
-        const data = cwaWeatherData[city] || cwaWeatherData['臺北市'];
-
         const cwaLabel = document.getElementById('cwaWeatherStatusLabel');
 
         if (cwaLabel) {
 
-          cwaLabel.innerText = `${city} · ${data.minT} ~ ${data.maxT}°C | 濕度 ${data.humidity}% | ${data.condition}`;
+          cwaLabel.innerText = `${city} · 載入最新天氣中...`;
 
         }
 
@@ -2088,53 +2091,21 @@
 
 
 
-      function selectElderStatus(statusKey, el) {
-
-        currentElderStatus = statusKey;
-
-        const pills = document.querySelectorAll('#elderStatusPillGroup .sample-chip');
-
-        pills.forEach(p => {
-
-          p.classList.remove('active');
-
-          p.style.borderColor = 'var(--border-subtle)';
-
-          p.style.color = 'var(--text-main)';
-
-          p.style.fontWeight = 'normal';
-
-        });
-
-        if (el) {
-
-          el.classList.add('active');
-
-          el.style.borderColor = 'var(--muji-primary)';
-
-          el.style.color = 'var(--muji-primary)';
-
-          el.style.fontWeight = '800';
-
-        }
-
-        updateDailyMessageText();
-
-      }
-
-
-
       function updateDailyMessageText() {
 
         if (!activeRecipient) return;
 
-        const data = cwaWeatherData[selectedCWACity] || cwaWeatherData['臺北市'];
+        if (!liveWeatherData) return;
+
+        const data = liveWeatherData;
 
         const rName = activeRecipient.name.replace(/^[^\w\s\u4e00-\u9fa5]+/, '').trim();
 
         const cleanCond = activeRecipient.condition ? activeRecipient.condition.replace(/^[^\w\s\u4e00-\u9fa5]+/, '').trim() : '日常養生';
 
-        const tempDiff = data.maxT - data.minT;
+        const humidityValue = Number.isFinite(data.humidity) ? data.humidity : null;
+
+        const tempDiff = (Number.isFinite(data.maxT) && Number.isFinite(data.minT)) ? data.maxT - data.minT : 0;
 
 
 
@@ -2154,7 +2125,7 @@
 
           const dayName = days[now.getDay()];
 
-          dateLabel.innerText = `今日親友健康快報 · ${m}月${d}日 ${dayName}`;
+          dateLabel.innerText = `今日關懷叮嚀 · ${m}月${d}日 ${dayName}`;
 
         }
 
@@ -2166,7 +2137,7 @@
 
         if (dailyElderBadge) {
 
-          dailyElderBadge.innerText = `${rName} (${cleanCond})`;
+          dailyElderBadge.innerText = `${rName} (今日天氣提醒)`;
 
         }
 
@@ -2178,7 +2149,9 @@
 
         if (weatherCityLabel) {
 
-          weatherCityLabel.innerText = `🌤️ ${selectedCWACity} · ${data.minT} ~ ${data.maxT}°C (溫差 ${tempDiff}°C) | 濕度 ${data.humidity}% (${data.condition})`;
+          const humidityText = humidityValue !== null ? `${humidityValue}%` : '濕度更新中';
+
+          weatherCityLabel.innerText = `🌤️ ${selectedCWACity} · ${data.minT} ~ ${data.maxT}°C (溫差 ${tempDiff}°C) | 濕度 ${humidityText} (${data.condition})${data.isFallback ? ' · 離線預估' : ''}`;
 
         }
 
@@ -2188,53 +2161,31 @@
 
         if (weatherAlertLabel) {
 
-          if (cleanCond.includes('高血壓') || cleanCond.includes('心') || cleanCond.includes('Warfarin')) {
+          if (tempDiff >= 8 || (humidityValue !== null && humidityValue >= 80)) {
 
-            if (tempDiff >= 7) {
+            const humidityText = humidityValue !== null ? `${humidityValue}%` : '較高';
 
-              weatherAlertLabel.innerText = `⚠️ 溫差警戒 (溫差 ${tempDiff}°C)：氣溫急遽變化，高血壓親友心血管波動風險提高，請定時量測！`;
-
-              weatherAlertLabel.style.color = 'var(--muji-red)';
-
-            } else {
-
-              weatherAlertLabel.innerText = `💙 心血管提醒：氣候相對平穩，請持續提醒親友規律服藥並避免突發溫差。`;
-
-              weatherAlertLabel.style.color = 'var(--muji-primary)';
-
-            }
-
-          } else if (cleanCond.includes('糖')) {
-
-            weatherAlertLabel.innerText = `⚠️ 糖友保暖叮嚀：早晚溫差 ${tempDiff}°C 末梢循環較差，出門請穿棉襪避免足部乾裂。`;
-
-            weatherAlertLabel.style.color = 'var(--muji-amber)';
-
-          } else if (cleanCond.includes('關節') || cleanCond.includes('骨') || cleanCond.includes('痛')) {
-
-            if (data.humidity >= 70) {
-
-              weatherAlertLabel.innerText = `⚠️ 潮濕警示 (濕度 ${data.humidity}%)：關節氣壓敏感易酸脹，睡前可溫敷膝蓋 15 分鐘。`;
-
-              weatherAlertLabel.style.color = 'var(--muji-red)';
-
-            } else {
-
-              weatherAlertLabel.innerText = `💙 關節守護：今日氣候適中，適度散步 15 分鐘補充維生素 D！`;
-
-              weatherAlertLabel.style.color = 'var(--muji-primary)';
-
-            }
-
-          } else if (cleanCond.includes('燙傷') || cleanCond.includes('創面') || cleanCond.includes('傷')) {
-
-            weatherAlertLabel.innerText = `⚠️ 創面照護警示：濕度 ${data.humidity}%，請保持燙傷創面乾爽清潔，按時更換無菌敷料。`;
+            weatherAlertLabel.innerText = `⚠️ 氣象提醒：今日溫差 ${tempDiff}°C、濕度 ${humidityText} 較高，請提醒親友適度保暖、避免突然受涼與出汗過多。`;
 
             weatherAlertLabel.style.color = 'var(--muji-red)';
 
+          } else if (data.minT <= 20) {
+
+            weatherAlertLabel.innerText = `💙 低溫提醒：氣候偏涼，外出記得加件衣物，避免親友受寒造成關節或血壓波動。`;
+
+            weatherAlertLabel.style.color = 'var(--muji-primary)';
+
+          } else if (data.maxT >= 32) {
+
+            weatherAlertLabel.innerText = `⚠️ 高溫提醒：今日氣溫高達 ${data.maxT}°C，請增加補水與減少長時間烈日曝曬。`;
+
+            weatherAlertLabel.style.color = 'var(--muji-amber)';
+
           } else {
 
-            weatherAlertLabel.innerText = `🌤️ 今日舒適度：早晚溫差 ${tempDiff}°C，出門建議帶件薄外套，多補充溫開水！`;
+            const humidityText = humidityValue !== null ? `${humidityValue}%` : '適中';
+
+            weatherAlertLabel.innerText = `🌤️ 今日舒適度良好：溫差 ${tempDiff}°C、濕度 ${humidityText} 屬適中範圍，適合規律散步與保養休息。`;
 
             weatherAlertLabel.style.color = 'var(--muji-primary)';
 
@@ -2258,41 +2209,29 @@
 
 
 
-        if (currentElderStatus === 'high_bp' || (cleanCond.includes('高血壓') && currentElderStatus !== 'joint_pain' && currentElderStatus !== 'insomnia')) {
+        if (data.maxT >= 32) {
 
-          badgeText = 'AHA 美國心臟學會臨床指引';
+          badgeText = 'AHA / NIH 高溫與補水指引';
 
-          insightText = '【AHA 心血管指引】溫差大時清晨血壓易驟升。若有服用 Warfarin 等抗凝血劑，需特別注意避免高劑量銀杏、維生素 K 交互作用，每日晨起請先於床邊靜坐 3 分鐘再下床。';
+          insightText = '【高溫提醒】親友在炎熱天氣中更容易脫水與心律不穩，請固定補充溫開水、減少劇烈活動，並留意頭暈與心悸。';
 
-        } else if (currentElderStatus === 'joint_pain' || cleanCond.includes('骨') || cleanCond.includes('關節')) {
+        } else if (data.minT <= 20 || tempDiff >= 8) {
 
-          badgeText = 'ESCEO 歐洲骨質疏鬆與關節指引';
+          badgeText = 'AHA / TFDA 溫差與保暖指引';
 
-          insightText = '【ESCEO 臨床指引】天冷潮濕時關節僵硬屬常見生理反應，晨起可在被窩活動腳踝；補充 UC-II / 非變性二型膠原蛋白或葡萄糖胺需持續規律，避免長時間久坐不動。';
+          insightText = '【溫差提醒】早晚溫差大時，親友容易出現血壓與關節不適，建議適度保暖、避免突然受寒與久站。';
 
-        } else if (currentElderStatus === 'insomnia') {
+        } else if (humidityValue !== null && humidityValue >= 75) {
 
-          badgeText = 'AASM 美國睡眠醫學會臨床指引';
+          badgeText = 'ESCEO / NIH 濕度與關節指引';
 
-          insightText = '【AASM 睡眠醫學指引】親友睡眠片段化或入睡困難，睡前 1 小時避免螢幕藍光；可補充洋甘菊/GABA，午後適度散步曬太陽有助褪黑激素自然分泌。';
-
-        } else if (cleanCond.includes('燙傷') || cleanCond.includes('創')) {
-
-          badgeText = 'TFDA 傷口敷料與創面修復指引';
-
-          insightText = '【衛福部 TFDA 衛教】燙傷創面癒合期最需充足熱量與優質小分子蛋白質（如乳清蛋白、水解胜肽），請勿塗抹未經核准之民間偏方，並維持無菌敷料保護。';
-
-        } else if (cleanCond.includes('糖')) {
-
-          badgeText = 'ADA 美國糖尿病學會臨床指引';
-
-          insightText = '【ADA 臨床指引】親友糖尿病控制需定時定量，若有末梢神經遲鈍，洗澡水溫切勿超過 40°C，每日洗澡後請仔細檢查雙腳是否有微小傷口。';
+          insightText = '【濕度提醒】潮濕天氣易讓關節酸脹、血管不適，建議室內保暖、適度活動並注意足部保濕與休息。';
 
         } else {
 
           badgeText = 'NIH / FDA 銀髮營養照護指引';
 
-          insightText = '【NIH 國家衛生研究院】銀髮親友每日應攝取足量水分 (1500~2000ml) 與優質蛋白質 (每公斤體重 1.2g)，搭配每日日照 15 分鐘促進維生素 D 生成。';
+          insightText = '【日常提醒】每日適量水分與規律作息是親友健康的關鍵，適度散步與保暖仍是最佳的天氣調適方式。';
 
         }
 
@@ -2310,21 +2249,17 @@
 
         if (giftLabel) {
 
-          if (currentElderStatus === 'joint_pain') {
+          if (data.maxT >= 32) {
 
-            giftLabel.innerText = '隨信附帶暖心輕禮物 ($99 舒活草本溫感熱敷貼片)';
+            giftLabel.innerText = '隨信附帶暖心輕禮物 ($99 清涼保濕補水包)';
 
-          } else if (currentElderStatus === 'insomnia') {
+          } else if (data.minT <= 20 || tempDiff >= 8) {
 
-            giftLabel.innerText = '隨信附帶暖心輕禮物 ($99 薰衣草晚安舒壓茶包)';
-
-          } else if (currentElderStatus === 'high_bp') {
-
-            giftLabel.innerText = '隨信附帶暖心輕禮物 ($99 漢方決明降壓舒心茶)';
+            giftLabel.innerText = '隨信附帶暖心輕禮物 ($99 保暖舒緩禮包)';
 
           } else {
 
-            giftLabel.innerText = '隨信附帶暖心輕禮物 ($99 養生元氣人參紅棗茶包)';
+            giftLabel.innerText = '隨信附帶暖心輕禮物 ($99 養生元氣茶包)';
 
           }
 
@@ -2346,63 +2281,61 @@
 
         if (currentToneKey === 'taiwanese') {
 
-          if (currentElderStatus === 'joint_pain') {
+          if (data.maxT >= 32) {
 
-            msg = `「${rName}早安！今仔日【${selectedCWACity}】濕度 ${data.humidity}%，風透骨頭卡酸。膝蓋若卡痛就莫行太遠，暗時早淡薄仔用溫熱水泡腳、熱敷膝頭喔！」`;
+            msg = `「${rName}早安！今仔日【${selectedCWACity}】氣溫有 ${data.maxT}°C，天氣熱著，出門記得多補水、穿輕便衣著，別曝曬太久喔！」`;
 
-          } else if (currentElderStatus === 'insomnia') {
+          } else if (data.minT <= 20 || tempDiff >= 8) {
 
-            msg = `「${rName}早安！昨暗無睏好精神甘好？今仔日中晝小歇睏一下，下晡曬曬日頭散散步，暗時早淡薄仔休息喔！」`;
+            msg = `「${rName}早安！今仔日【${selectedCWACity}】溫差有 ${tempDiff}°C，氣候較大，莫急著出門，記得穿薄外套、喝溫水，身體保暖較安心！」`;
 
-          } else if (currentElderStatus === 'high_bp') {
+          } else if (humidityValue !== null && humidityValue >= 75) {
 
-            msg = `「${rName}早安！今仔日【${selectedCWACity}】溫差有 ${tempDiff}°C，血壓愛定時量喔！若有頭暈就坐好歇睏，藥仔愛照時間食，千萬莫受風寒！」`;
+            msg = `「${rName}早安！今仔日【${selectedCWACity}】濕度 ${humidityValue}% 偏高，空氣較悶，適度散步、勤換衣服，保養身體較舒服！」`;
 
           } else {
 
-            msg = `「${rName}早安！今仔日【${selectedCWACity}】氣溫 ${data.minT} ~ ${data.maxT}°C，聽著您精神好我就安心啦！出門散步記得穿厚外套、多啉溫水喔！」`;
+            msg = `「${rName}早安！今仔日【${selectedCWACity}】氣溫 ${data.minT} ~ ${data.maxT}°C，相當舒適，記得規律作息、適度曬太陽，心情也會更好！」`;
 
           }
 
         } else if (currentToneKey === 'reserved') {
 
-          if (currentElderStatus === 'joint_pain') {
+          if (data.maxT >= 32) {
 
-            msg = `「${rName}早安，今日氣候濕度 ${data.humidity}% 較高，獲悉您膝關節偶有酸脹不適，已依臨床指引為您彙整護理要點，請適度休息並注意關節防寒熱敷。」`;
+            msg = `「${rName}早安，今日【${selectedCWACity}】高溫達 ${data.maxT}°C，請避免長時間曝曬與劇烈活動，並保持充分補水，祝您身體舒適穩定。」`;
 
-          } else if (currentElderStatus === 'insomnia') {
+          } else if (data.minT <= 20 || tempDiff >= 8) {
 
-            msg = `「${rName}早安，親友昨夜睡眠欠佳，日間請多加歇息，午後可於向陽處適度漫步，晚間保持居室通風靜謐，祝您身心寧和。」`;
+            msg = `「${rName}早安，今日【${selectedCWACity}】溫差達 ${tempDiff}°C，天氣變化較大，請注意保暖與休息，並視情況調整日程。」`;
 
-          } else if (currentElderStatus === 'high_bp') {
+          } else if (humidityValue !== null && humidityValue >= 75) {
 
-            msg = `「${rName}早安，今日氣溫溫差達 ${tempDiff}°C，血壓易受氣候波動影響。請務必遵醫囑按時服藥、定時監測血壓數據，起臥請放緩節奏。」`;
+            msg = `「${rName}早安，今日【${selectedCWACity}】濕度 ${humidityValue}% 偏高，建議適度休息並維持居室通風，養成規律作息與補水習慣。」`;
 
           } else {
 
-            msg = `「${rName}早安，【${selectedCWACity}】今日氣溫 ${data.minT} ~ ${data.maxT}°C。親友身體康泰是晚輩之福，溫差較大之際請留意添衣保暖、規律作息。」`;
+            msg = `「${rName}早安，【${selectedCWACity}】今日氣溫 ${data.minT} ~ ${data.maxT}°C，天氣適中，適合維持規律作息與適度活動，祝您每日安康。」`;
 
           }
 
         } else {
 
-          // Default: spoiled (撒嬌溫馨)
+          if (data.maxT >= 32) {
 
-          if (currentElderStatus === 'joint_pain') {
+            msg = `「${rName}早安！今天【${selectedCWACity}】真的很熱，最高 ${data.maxT}°C，熱到我都替您擔心了！記得多喝水、少待在烈日下，今天也要好好照顧自己喔❤️」`;
 
-            msg = `「${rName}早安！今天【${selectedCWACity}】濕度 ${data.humidity}% 偏潮濕，聽說您膝蓋酸卡卡的，好心疼喔！今天千萬別搬重物，晚上用熱毛巾敷敷膝蓋，乖乖聽話喔❤️」`;
+          } else if (data.minT <= 20 || tempDiff >= 8) {
 
-          } else if (currentElderStatus === 'insomnia') {
+            msg = `「${rName}早安！今天【${selectedCWACity}】溫差有 ${tempDiff}°C，氣候變化比較大，別突然受涼，記得穿薄外套、多喝溫水，乖乖照顧好自己喔❤️」`;
 
-            msg = `「${rName}早安！昨晚沒睡好是不是太想我了呀？今天【${selectedCWACity}】陽光很好，午後到陽台曬曬太陽散散步，晚上我泡杯舒壓茶給您助眠，今天別太累喔❤️」`;
+          } else if (humidityValue !== null && humidityValue >= 75) {
 
-          } else if (currentElderStatus === 'high_bp') {
-
-            msg = `「${rName}早安！今天【${selectedCWACity}】溫差有 ${tempDiff}°C 這麼大，聽到您頭暈血壓高我好擔心！請您一定要坐著休息、按時量血壓吃藥，千萬別突然用力站起來喔，答應我要好好休息❤️」`;
+            msg = `「${rName}早安！今天【${selectedCWACity}】濕度 ${humidityValue}%，空氣偏悶，別太累喔！早晚多注意保暖、室內保持通風，讓身體舒服一點❤️」`;
 
           } else {
 
-            msg = `「${rName}早安！今天【${selectedCWACity}】氣溫 ${data.minT} ~ ${data.maxT}°C (溫差有 ${tempDiff}°C 呢)，聽說您今天狀況很棒我就放心啦～但出門還是要披件薄外套多喝溫水喔，最愛您了❤️」`;
+            msg = `「${rName}早安！今天【${selectedCWACity}】氣溫 ${data.minT} ~ ${data.maxT}°C，天氣很舒服呢！適度散步、喝水、好好休息，這樣會更有精神喔❤️」`;
 
           }
 
@@ -2440,7 +2373,7 @@
 
               weather_condition: data.condition,
 
-              weather_humidity: data.humidity,
+              weather_humidity: humidityValue,
 
               elder_status: currentElderStatus,
 
@@ -3152,6 +3085,16 @@
 
         }
 
+        // 親友切換 / 修改 / 刪除 / 後端同步後，同步更新 AI 守護助理的快速提問晶片
+
+        if (typeof renderAIGuardQuickChips === 'function') {
+
+          renderAIGuardQuickChips();
+
+        }
+
+
+
       }
 
 
@@ -3202,7 +3145,7 @@
 
 
 
-        alert('已成功登出 CareGift 帳號！\n畫面已即刻退回獨立首頁登入門戶！');
+        alert('已成功登出 GiftSense 帳號！\n畫面已即刻退回獨立首頁登入門戶！');
 
       }
 
@@ -3512,6 +3455,14 @@
 
         target.label = `${newName} (${newCond})`;
 
+        if (typeof getClinicalQuickTags === 'function') {
+
+          target.quick_tags = getClinicalQuickTags(newCond, newName);
+
+          delete target.quick_tags_source;
+
+        }
+
 
 
         // If currently active recipient is this one, update activeRecipient
@@ -3532,13 +3483,13 @@
 
         try {
 
-          await fetch(`https://giftsense-vjbu.onrender.com/api/recipients/${id}`, {
+          await fetch(`${BACKEND_BASE_URL}/api/recipients/${id}`, {
 
             method: 'PUT',
 
             headers: { 'Content-Type': 'application/json' },
 
-            body: JSON.stringify({ name: newName, condition: newCond })
+            body: JSON.stringify({ name: newName, condition: newCond, quick_tags: target.quick_tags })
 
           });
 
@@ -3602,7 +3553,7 @@
 
         try {
 
-          fetch(`https://giftsense-vjbu.onrender.com/api/recipients/${recId}`, { method: 'DELETE' }).catch(() => { });
+          fetch(`${BACKEND_BASE_URL}/api/recipients/${recId}`, { method: 'DELETE' }).catch(() => { });
 
         } catch (e) { }
 
@@ -3642,6 +3593,8 @@
 
         const recId = 'rec_' + Date.now();
 
+        const initialChips = (typeof getClinicalQuickTags === 'function') ? getClinicalQuickTags(condition, name) : [];
+
         const newObj = {
 
           id: recId,
@@ -3650,7 +3603,9 @@
 
           label: `${name} (${condition})`,
 
-          condition: condition
+          condition: condition,
+
+          quick_tags: initialChips
 
         };
 
@@ -3674,13 +3629,13 @@
 
         try {
 
-          fetch('https://giftsense-vjbu.onrender.com/api/recipients', {
+          fetch(`${BACKEND_BASE_URL}/api/recipients`, {
 
             method: 'POST',
 
             headers: { 'Content-Type': 'application/json' },
 
-            body: JSON.stringify({ name: name, condition: condition })
+            body: JSON.stringify({ name: name, condition: condition, quick_tags: initialChips })
 
           }).catch(() => { });
 
@@ -4206,9 +4161,9 @@
 
       const mascotDialogues = [
 
-        "嗨！我是脈脈小熊，今天有記得提醒親友吃藥嗎？❤️",
+        "嗨！我是小熊，今天有記得提醒親友吃藥嗎？❤️",
 
-        "摸摸我！脈脈小熊送您今日關懷獎勵 +50 Pts！🎉",
+        "摸摸我！小熊送您今日關懷獎勵 +50 Pts！🎉",
 
         "中央氣象署即時連線中，別忘了關心親友穿暖暖喔！☀️",
 
@@ -4252,7 +4207,7 @@
 
           if (mascotSpeechIdx % 3 === 0) {
 
-            msg = `關心【${recName}】的小細節，就交給脈脈小熊吧！❤️`;
+            msg = `關心【${recName}】的小細節，就交給小熊吧！❤️`;
 
           }
 
@@ -4278,7 +4233,7 @@
 
         } else {
 
-          alert(`🐻 脈脈小熊對您眨眨眼：\n「${msg}」`);
+          alert(`🐻 小熊對您眨眨眼：\n「${msg}」`);
 
         }
 
@@ -4314,7 +4269,21 @@
 
         const isGiftChecked = document.getElementById('optionalGiftCheck')?.checked || false;
 
-        const msgText = document.getElementById('dailyMessage').innerText;
+        const msgEl = document.getElementById('dailyMessage');
+
+        const msgText = msgEl ? msgEl.innerText.trim() : '';
+
+        // 叮嚀仍是「載入中」佔位文字時不可送出；若天氣尚未取得則先以預設天氣產生內容
+
+        if (!msgText || msgText.includes('載入今日整合關懷叮嚀中')) {
+
+          if (!liveWeatherData) applyFallbackWeather(selectedCWACity);
+
+          alert('今日關懷叮嚀尚未載入完成，已為您準備好內容，請確認後再按一次發送。');
+
+          return;
+
+        }
 
         const cleanName = activeRecipient.name.replace(/^[^\w\s\u4e00-\u9fa5]+/, '').trim();
 
@@ -4362,7 +4331,7 @@
 
         localStorage.setItem('caregift_user_profile', JSON.stringify(userProfile));
 
-        addPointsTransaction(10, '日常關懷問候獎勵');
+        if (typeof addPointsTransaction === 'function') addPointsTransaction(10, '日常關懷問候獎勵');
 
 
 
@@ -4827,7 +4796,7 @@
             const res = await fetch(`${BACKEND_BASE_URL}/api/db/export`);
             if (res.ok) {
               const exportData = await res.json();
-              downloadJSONFile(exportData, 'caregift_sqlite_export.json');
+              downloadJSONFile(exportData, 'giftsense_sqlite_export.json');
               alert('📥 已成功從 SQLite 匯出完整 JSON 備份檔！包含文獻庫、親友檔案、訂單明細與 RAG 系統配置。');
               return;
             }
@@ -4838,7 +4807,7 @@
 
         const localSnapshot = {
           schema_version: "2.0",
-          app_name: "CareGift Medical Knowledge Base (SQLite Native)",
+          app_name: "GiftSense Medical Knowledge Base (SQLite Native)",
           generated_at: new Date().toISOString(),
           database: "SQLite (caregift.db)",
           tables: {
@@ -4847,7 +4816,7 @@
             rag_config: ragConfig
           }
         };
-        downloadJSONFile(localSnapshot, 'caregift_sqlite_export.json');
+        downloadJSONFile(localSnapshot, 'giftsense_sqlite_export.json');
         alert('📥 已成功匯出標準 SQLite JSON 備份檔！');
       }
 
@@ -5439,32 +5408,6 @@
 
       // =========================================================================
 
-      function toggleDigestRAGDetail() {
-
-        const detail = document.getElementById('digestRAGDetail');
-
-        const arrow = document.getElementById('digestRAGArrow');
-
-        if (!detail) return;
-
-        if (detail.style.display === 'none' || !detail.style.display) {
-
-          detail.style.display = 'block';
-
-          if (arrow) arrow.innerText = '收起 ▴';
-
-        } else {
-
-          detail.style.display = 'none';
-
-          if (arrow) arrow.innerText = '出處 ▾';
-
-        }
-
-      }
-
-
-
       function toggleCitationDetail(id) {
 
         const el = document.getElementById(`citationDetail_${id}`);
@@ -5553,17 +5496,442 @@
 
       // =========================================================================
 
+      // DUAL-TRACK DYNAMIC SYMPTOMS & SUPPLEMENT CHECK CHIPS (雙軌臨床與AI連動)
+
+      // =========================================================================
+
+      function safeEscapeHtml(str) {
+
+        if (!str) return '';
+
+        return String(str)
+
+          .replace(/&/g, '&amp;')
+
+          .replace(/</g, '&lt;')
+
+          .replace(/>/g, '&gt;')
+
+          .replace(/"/g, '&quot;')
+
+          .replace(/'/g, '&#039;');
+
+      }
+
+
+
+            function getClinicalQuickTags(condition, name) {
+
+        const cond = (condition || '').toLowerCase().trim();
+
+        const elderName = (name || '親友').replace(/^[^\w\s\u4e00-\u9fa5]+/, '').trim();
+
+        const chunk = (items) => items.filter(Boolean);
+
+        let chips = [];
+
+        if (cond.includes('warfarin') || cond.includes('抗凝血')) {
+          chips = chunk([
+            { label: '✅ 適合：低劑量魚油 / 高鈣營養品', query: `${elderName}服用Warfarin時，哪些保健品偏安全？有沒有低劑量魚油或高鈣營養品適合？`, badge: '適合' },
+            { label: '⚠️ 危險：納豆激酶、銀杏、強效魚油', query: `Warfarin合併納豆激酶、銀杏或高劑量魚油，會增加出血風險嗎？`, badge: 'TFDA禁忌' },
+            { label: '✅ 適合：UC-II / 硫酸鹽葡萄糖胺（遵醫囑）', query: `${elderName}膝蓋關節退化可選UC-II或硫酸鹽葡萄糖胺嗎？服用Warfarin要注意什麼？`, badge: '推薦' }
+          ]);
+        } else if (cond.includes('血壓') || cond.includes('心血管')) {
+          chips = chunk([
+            { label: '✅ 適合：低鈉、低GI營養品', query: `${elderName}高血壓適合補充低鈉、高鈣或低GI營養品嗎？`, badge: '推薦' },
+            { label: '⚠️ 危險：紅麴、草本降壓產品', query: `${elderName}吃降血壓藥時，紅麴或草本降壓保健品會不會影響藥效？`, badge: 'TFDA警示' },
+            { label: '✅ 適合：輔酶Q10 / EPA-DHA（依醫師）', query: `${elderName}高血壓適合補充輔酶Q10或深海魚油嗎？`, badge: '推薦' }
+          ]);
+        } else if (cond.includes('糖') || cond.includes('低gi') || cond.includes('胰島素')) {
+          chips = chunk([
+            { label: '✅ 適合：低GI無糖奶粉 / 葉黃素', query: `${elderName}血糖偏高，低GI無糖奶粉、葉黃素或B群有哪些適合的保健品？`, badge: '推薦' },
+            { label: '⚠️ 危險：紅麴、苦瓜胜肽 + 降糖藥', query: `糖尿病親友吃紅麴或苦瓜胜肽時，會造成低血糖或肝腎風險嗎？`, badge: 'TFDA警示' },
+            { label: '✅ 適合：鉻酵母 / 膳食纖維（醫囑）', query: `${elderName}糖尿病可補充鉻酵母或膳食纖維改善代謝嗎？`, badge: '推薦' }
+          ]);
+        } else if (cond.includes('膝') || cond.includes('關節') || cond.includes('退化') || cond.includes('軟骨')) {
+          chips = chunk([
+            { label: '✅ 適合：UC-II / 硫酸鹽葡萄糖胺', query: `${elderName}膝關節退化適合UC-II或硫酸鹽葡萄糖胺嗎？`, badge: '推薦' },
+            { label: '⚠️ 危險：活血化瘀成分 / 強效魚油', query: `${elderName}關節保養搭配活血藥材或高劑量魚油，會有出血或刺激風險嗎？`, badge: '警示' }
+          ]);
+        } else if (cond.includes('眠') || cond.includes('睡') || cond.includes('焦慮')) {
+          chips = chunk([
+            { label: '✅ 適合：GABA / 芝麻素 / 鈣鎂', query: `${elderName}失眠淺眠適合補充GABA、芝麻素或鈣鎂嗎？`, badge: '推薦' },
+            { label: '⚠️ 危險：安眠藥 + 褪黑激素 / GABA', query: `${elderName}如果有吃安眠藥，能不能再吃褪黑激素或GABA？`, badge: '撞藥警示' }
+          ]);
+        } else if (cond.includes('眼') || cond.includes('視力') || cond.includes('黃斑') || cond.includes('白內障')) {
+          chips = chunk([
+            { label: '✅ 適合：葉黃素 + 玉米黃素', query: `${elderName}視力保養適合補充葉黃素和玉米黃素嗎？怎麼挑？`, badge: '推薦' },
+            { label: '⚠️ 危險：高劑量維生素A / 過量補品', query: `${elderName}吃太多高劑量維生素A或眼部保健品，會不會傷肝或影響健康？`, badge: '警示' }
+          ]);
+        } else {
+          chips = chunk([
+            { label: '✅ 適合：低GI無糖營養品', query: `${elderName}日常保養適合選擇低GI無糖營養品嗎？`, badge: '推薦' },
+            { label: '⚠️ 危險：草本降壓 / 高劑量魚油', query: `${elderName}日常保健品若搭配草本降壓或高劑量魚油，值得注意什麼？`, badge: '警示' }
+          ]);
+        }
+
+        const seen = new Set();
+        const unique = [];
+
+        for (const c of chips) {
+          if (!seen.has(c.label)) {
+            seen.add(c.label);
+            unique.push(c);
+          }
+        }
+
+        return unique.slice(0, 5);
+      }
+
+      function getAIGuardChipStyle(chip) {
+
+        const label = (chip && chip.label) || '';
+
+        const badgeText = (chip && chip.badge) || '';
+
+        const isWarning = label.includes('⚠️') || ['TFDA禁忌', '撞藥防錯', 'TFDA警示', '撞藥警示', '警示'].includes(badgeText);
+
+        const isRecommendation = label.includes('✅') || ['推薦', '適合'].includes(badgeText);
+
+        let customStyle = 'margin:0; transition:all 0.2s ease; cursor:pointer;';
+
+        if (isWarning) {
+
+          customStyle += 'border:1px solid #FECACA; background:#FEF2F2; color:#991B1B; font-weight:700;';
+
+        } else if (isRecommendation) {
+
+          customStyle += 'border:1px solid #BBF7D0; background:#F0FDF4; color:#166534; font-weight:700;';
+
+        } else {
+
+          customStyle += 'border:1px solid #E5E7EB; background:#F3F4F6; color:#374151; font-weight:600;';
+
+        }
+
+        return customStyle;
+
+      }
+
+
+
+      // 以 DOM API 建立晶片並用 addEventListener 綁定點擊（不再拼接 onclick 字串，避免查詢文字中的引號破壞屬性或被注入）
+
+      function renderAIGuardChipList(container, chips) {
+
+        container.innerHTML = '';
+
+        const frag = document.createDocumentFragment();
+
+        (Array.isArray(chips) ? chips : []).forEach(c => {
+
+          if (!c) return;
+
+          const label = String(c.label || c.query || '').trim();
+
+          const query = String(c.query || c.label || '').trim();
+
+          if (!label || !query) return;
+
+          const chipEl = document.createElement('div');
+
+          chipEl.className = 'sample-chip';
+
+          chipEl.style.cssText = getAIGuardChipStyle(c);
+
+          chipEl.textContent = label;
+
+          chipEl.title = query;
+
+          chipEl.dataset.query = query;
+
+          chipEl.addEventListener('click', () => fillAIGuardQuery(chipEl.dataset.query));
+
+          frag.appendChild(chipEl);
+
+        });
+
+        container.appendChild(frag);
+
+      }
+
+
+
+      function renderAIGuardQuickChips() {
+
+        const container = document.getElementById('aiGuardQuickChipsContainer');
+
+        const badge = document.getElementById('aiGuardChipsSourceBadge');
+
+        if (!container) return;
+
+
+
+        if (!activeRecipient) {
+
+          if (badge) {
+
+            badge.innerText = '⚠️ 請先選擇親友';
+
+            badge.style.background = '#fef3c7';
+
+            badge.style.color = '#92400e';
+
+          }
+
+          renderAIGuardChipList(container, getClinicalQuickTags('日常養生', '親友'));
+
+          return;
+
+        }
+
+
+
+        const cleanName = activeRecipient.name.replace(/^[^\w\s一-龥]+/, '').trim();
+
+        const cleanCond = (activeRecipient.condition || '日常養生').replace(/^[^\w\s一-龥]+/, '').trim();
+
+
+
+        // 優先使用親友本身的 quick_tags（後端 SQLite 同步或 AI 產生），沒有才用前端臨床規則
+
+        let chips = [];
+
+        if (Array.isArray(activeRecipient.quick_tags) && activeRecipient.quick_tags.length > 0) {
+
+          chips = activeRecipient.quick_tags;
+
+        } else if (activeRecipient.quick_tags_json) {
+
+          try {
+
+            const parsed = JSON.parse(activeRecipient.quick_tags_json);
+
+            chips = Array.isArray(parsed) ? parsed : [];
+
+          } catch (e) {
+
+            chips = [];
+
+          }
+
+        }
+
+        if (!chips || chips.length === 0) {
+
+          chips = getClinicalQuickTags(cleanCond, cleanName);
+
+        }
+
+        const isAiGenerated = activeRecipient.quick_tags_source === 'ai_generated';
+
+
+
+        if (badge) {
+
+          if (isAiGenerated) {
+
+            badge.innerText = `✨ AI 專屬推演 · ${cleanName} (${cleanCond})`;
+
+            badge.style.background = '#EDE9FE';
+
+            badge.style.color = '#6D28D9';
+
+          } else {
+
+            badge.innerText = `⚡ 臨床對症連動 · ${cleanName} (${cleanCond})`;
+
+            badge.style.background = '#EBF4F0';
+
+            badge.style.color = '#2E6B56';
+
+          }
+
+        }
+
+
+
+        renderAIGuardChipList(container, chips);
+
+      }
+
+
+
+      async function triggerAIGenerateChips() {
+
+        if (!activeRecipient) {
+
+          alert('請先選擇或新增關懷親友！');
+
+          openRecipientModal();
+
+          return;
+
+        }
+
+
+
+        // 先鎖定本次要產生晶片的親友，避免等待期間切換親友而寫錯對象
+
+        const targetRec = activeRecipient;
+
+        const btn = document.getElementById('btnAIGenerateChips');
+
+        const badge = document.getElementById('aiGuardChipsSourceBadge');
+
+        const container = document.getElementById('aiGuardQuickChipsContainer');
+
+        const cleanName = targetRec.name.replace(/^[^\w\s一-龥]+/, '').trim();
+
+        const cleanCond = (targetRec.condition || '日常養生').replace(/^[^\w\s一-龥]+/, '').trim();
+
+
+
+        if (btn) {
+
+          btn.disabled = true;
+
+          btn.innerHTML = `<span>⏳ AI 推演中...</span>`;
+
+        }
+
+        if (badge) {
+
+          badge.innerText = `🤖 AI 深度分析【${cleanName}】病況中...`;
+
+          badge.style.background = '#FEF3C7';
+
+          badge.style.color = '#92400E';
+
+        }
+
+        if (container) {
+
+          container.style.opacity = '0.5';
+
+        }
+
+
+
+        try {
+
+          let newChips = null;
+
+          let chipsSource = 'clinical_rules';
+
+
+
+          if (window.isBackendOnline) {
+
+            try {
+
+              const res = await fetch(`${BACKEND_BASE_URL}/api/recipients/${encodeURIComponent(targetRec.id)}/generate-chips`, {
+
+                method: 'POST',
+
+                headers: { 'Content-Type': 'application/json' },
+
+                body: JSON.stringify({
+
+                  elder_name: cleanName,
+
+                  elder_condition: cleanCond,
+
+                  api_key: ragConfig.apiKey || null,
+
+                  model: ragConfig.model || 'gemini-1.5-flash'
+
+                })
+
+              });
+
+              if (res.ok) {
+
+                const data = await res.json();
+
+                if (Array.isArray(data.chips) && data.chips.length > 0) {
+
+                  newChips = data.chips;
+
+                  chipsSource = data.source || 'ai_generated';
+
+                }
+
+              }
+
+            } catch (err) {
+
+              console.warn('Backend generate-chips error:', err);
+
+            }
+
+          }
+
+
+
+          if (!newChips || newChips.length === 0) {
+
+            newChips = getClinicalQuickTags(cleanCond, cleanName);
+
+            chipsSource = 'clinical_rules';
+
+          }
+
+
+
+          targetRec.quick_tags = newChips;
+
+          targetRec.quick_tags_source = chipsSource;
+
+          const targetInDb = recipientsDB.find(r => r.id === targetRec.id);
+
+          if (targetInDb && targetInDb !== targetRec) {
+
+            targetInDb.quick_tags = newChips;
+
+            targetInDb.quick_tags_source = chipsSource;
+
+          }
+
+          saveUserScopeData();
+
+        } catch (e) {
+
+          console.error('triggerAIGenerateChips error:', e);
+
+        } finally {
+
+          if (btn) {
+
+            btn.disabled = false;
+
+            btn.innerHTML = `<span>✨ AI 專屬重整</span>`;
+
+          }
+
+          if (container) {
+
+            container.style.opacity = '1';
+
+          }
+
+          // 由 renderAIGuardQuickChips 依實際來源（AI / 臨床規則）更新徽章與晶片
+
+          renderAIGuardQuickChips();
+
+        }
+
+      }
+
+
+
+      // =========================================================================
+
       // PYTHON BACKEND INTEGRATION CLIENT (REAL DATA & LIVE SCRAPING)
 
       // =========================================================================
 
-      // 自動偵測後端位址：若透過 Nginx 容器 (8080/80) 存取走同源反向代理，若是檔案或本機直連則連向 8000
-
-      const BACKEND_BASE_URL = (window.location.protocol.startsWith('http') && (window.location.port === '8080' || window.location.port === '80'))
-
-        ? ''
-
-        : 'http://127.0.0.1:8000';
+      // 後端位址 BACKEND_BASE_URL 已統一定義於 <script> 最上方
 
       window.isBackendOnline = false;
 
@@ -5591,6 +5959,8 @@
 
             syncBackendSQLiteData();
 
+            refreshAIGuardQuota();
+
           } else {
 
             window.isBackendOnline = false;
@@ -5598,6 +5968,10 @@
             updateBackendBadgeUI(false);
 
             loadRecommendedProductsForActiveElder();
+
+            fetchLiveWeatherFromBackend(selectedCWACity);
+
+            updateAIGuardLimitUI();
 
           }
 
@@ -5608,6 +5982,12 @@
           updateBackendBadgeUI(false);
 
           loadRecommendedProductsForActiveElder();
+
+          // 後端離線：改用預設天氣產生今日關懷叮嚀，AI 守護額度改用本機計數
+
+          fetchLiveWeatherFromBackend(selectedCWACity);
+
+          updateAIGuardLimitUI();
 
         }
 
@@ -5639,15 +6019,31 @@
 
                 label: `${r.name} (${r.condition})`,
 
-                condition: r.condition
+                condition: r.condition,
+
+                quick_tags: r.quick_tags || (r.quick_tags_json ? JSON.parse(r.quick_tags_json) : null)
 
               }));
 
               sqliteRecs.forEach(sr => {
 
-                if (!recipientsDB.some(lr => lr.name === sr.name)) {
+                const existing = recipientsDB.find(lr => lr.id === sr.id || lr.name === sr.name);
+
+                if (!existing) {
 
                   recipientsDB.push(sr);
+
+                } else {
+
+                  existing.condition = sr.condition;
+
+                  existing.label = `${sr.name} (${sr.condition})`;
+
+                  if (sr.quick_tags && sr.quick_tags.length > 0) {
+
+                    existing.quick_tags = sr.quick_tags;
+
+                  }
 
                 }
 
@@ -6395,7 +6791,7 @@
 
         localStorage.setItem('caregift_user_profile', JSON.stringify(userProfile));
 
-        addPointsTransaction(bonusPts, `前往【${pharmacy || '連鎖藥局'}】官網查看即時特惠與庫存`);
+        if (typeof addPointsTransaction === 'function') addPointsTransaction(bonusPts, `前往【${pharmacy || '連鎖藥局'}】官網查看即時特惠與庫存`);
 
         saveUserScopeData();
 
@@ -6495,7 +6891,7 @@
 
         localStorage.setItem('caregift_user_profile', JSON.stringify(userProfile));
 
-        addPointsTransaction(bonusPts, `前往【${targetPharmacy}】官網導購下單獎勵`);
+        if (typeof addPointsTransaction === 'function') addPointsTransaction(bonusPts, `前往【${targetPharmacy}】官網導購下單獎勵`);
 
         saveUserScopeData();
 
@@ -6557,9 +6953,77 @@
 
 
 
+      // 後端離線或天氣 API 失敗時使用的預設天氣，確保今日關懷叮嚀仍可產生
+
+      function getFallbackWeatherData(city) {
+
+        return {
+
+          city: city || selectedCWACity,
+
+          minT: 24,
+
+          maxT: 28,
+
+          humidity: 65,
+
+          condition: '多雲時晴',
+
+          tip: '早晚溫差適中，提醒親友早起散步適時加薄外套、多補充溫開水。',
+
+          alert: '早晚溫差適中，提醒親友早起散步適時加薄外套、多補充溫開水。',
+
+          rain_prob: '20%',
+
+          isFallback: true
+
+        };
+
+      }
+
+
+
+      function applyFallbackWeather(city) {
+
+        const targetCity = city || selectedCWACity;
+
+        // 使用者已切換到其他城市時，忽略過期的回應
+
+        if (targetCity !== selectedCWACity) return;
+
+        const fb = getFallbackWeatherData(targetCity);
+
+        liveWeatherData = fb;
+
+        const tempRangeEl = document.getElementById('weatherTempRange');
+
+        const alertEl = document.getElementById('weatherHealthAlert');
+
+        const cwaLabel = document.getElementById('cwaWeatherStatusLabel');
+
+        if (tempRangeEl) tempRangeEl.innerText = `${fb.minT}°C ~ ${fb.maxT}°C · ${fb.condition} (降雨 ${fb.rain_prob})`;
+
+        if (alertEl) alertEl.innerText = fb.alert;
+
+        if (cwaLabel) cwaLabel.innerText = `${targetCity} · ${fb.minT}°C ~ ${fb.maxT}°C | ${fb.condition} | 降雨 ${fb.rain_prob} (離線預估)`;
+
+        updateDailyMessageText();
+
+      }
+
+
+
       async function fetchLiveWeatherFromBackend(city) {
 
-        if (!window.isBackendOnline) return;
+        if (!window.isBackendOnline) {
+
+          applyFallbackWeather(city);
+
+          return;
+
+        }
+
+        let gotLiveWeather = false;
 
         try {
 
@@ -6569,17 +7033,44 @@
 
             const json = await res.json();
 
+            if (city && city !== selectedCWACity) return;
+
             if (json.weather) {
 
-              const w = json.weather;
+              const tempText = String(json.weather.temperature || '0°C ~ 0°C');
+
+              const tempNumbers = tempText.match(/-?\d+(?:\.\d+)?/g) || ['0', '0'];
+              const humidityValue = Number.isFinite(Number(json.weather.humidity)) ? Number(json.weather.humidity) : null;
+
+              liveWeatherData = {
+
+                city: json.weather.city || city,
+
+                minT: Number(tempNumbers[0]) || 0,
+
+                maxT: Number(tempNumbers[1] || tempNumbers[0]) || 0,
+
+                humidity: humidityValue,
+
+                condition: json.weather.condition || '即時天氣',
+
+                tip: json.weather.alert || '即時天氣已更新'
+
+              };
+
+              gotLiveWeather = true;
 
               const tempRangeEl = document.getElementById('weatherTempRange');
 
               const alertEl = document.getElementById('weatherHealthAlert');
 
-              if (tempRangeEl) tempRangeEl.innerText = `${w.temperature} · ${w.condition} (降雨 ${w.rain_prob})`;
+              const cwaLabel = document.getElementById('cwaWeatherStatusLabel');
 
-              if (alertEl) alertEl.innerText = w.alert;
+              if (tempRangeEl) tempRangeEl.innerText = `${json.weather.temperature} · ${json.weather.condition} (降雨 ${json.weather.rain_prob})`;
+
+              if (alertEl) alertEl.innerText = json.weather.alert;
+
+              if (cwaLabel) cwaLabel.innerText = `${city} · ${json.weather.temperature} | ${json.weather.condition} | 降雨 ${json.weather.rain_prob}`;
 
             }
 
@@ -6588,6 +7079,18 @@
         } catch (e) {
 
           console.warn('Backend weather notice:', e);
+
+        }
+
+        // 取得即時天氣就照常渲染；失敗（非 2xx、無資料或例外）則改用預設天氣
+
+        if (gotLiveWeather) {
+
+          updateDailyMessageText();
+
+        } else {
+
+          applyFallbackWeather(city);
 
         }
 
@@ -6897,7 +7400,7 @@
 
           <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
 
-            <strong style="color:var(--muji-primary); font-size:12px;">CareGift AI 守護助理</strong>
+            <strong style="color:var(--muji-primary); font-size:12px;">GiftSense AI 守護助理</strong>
 
             <span style="font-size:9px; color:var(--muji-primary); font-weight:800;">🟢 物理舒緩 & 外用輔具軌</span>
 
@@ -7269,7 +7772,7 @@
 
         <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
 
-          <strong style="color:var(--muji-primary); font-size:12px;">CareGift AI 守護助理 (雙層混合架構)</strong>
+          <strong style="color:var(--muji-primary); font-size:12px;">GiftSense AI 守護助理 (雙層混合架構)</strong>
 
           <div style="display:flex; gap:4px;">
 
@@ -7315,6 +7818,380 @@
 
       // =========================================================================
 
+      // AI 守護助理每日額度：後端在線時以 /api/guard/quota 為準（依帳號計算），
+
+      // 離線時才退回本機 localStorage 計數（依「帳號 + 本地日期」分開記錄）
+
+      // =========================================================================
+
+      const AI_GUARD_DAILY_LIMIT = 3;
+
+      const AI_GUARD_REDEEM_COST = 50;
+
+      const AI_GUARD_REDEEM_EXTRA = 3;
+
+      let aiGuardServerQuota = null; // { account, date, used, bonus, limit, remaining }
+
+
+
+      function getAIGuardAccount() {
+
+        try {
+
+          if (userProfile && userProfile.isLoggedIn && userProfile.account) return String(userProfile.account).trim();
+
+        } catch (e) { }
+
+        return '';
+
+      }
+
+
+
+      function getAIGuardLocalDateStr() {
+
+        const now = new Date();
+
+        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+      }
+
+
+
+      function getAIGuardLocalUsageKey() {
+
+        const acc = (getAIGuardAccount() || 'guest').toLowerCase();
+
+        return `caregift_ai_guard_usage_${acc}_${getAIGuardLocalDateStr()}`;
+
+      }
+
+
+
+      function getAIGuardDailyUsage() {
+
+        try {
+
+          const parsed = Number(localStorage.getItem(getAIGuardLocalUsageKey()) || 0);
+
+          return Number.isFinite(parsed) ? parsed : 0;
+
+        } catch (e) {
+
+          return 0;
+
+        }
+
+      }
+
+
+
+      function registerAIGuardUsage() {
+
+        try {
+
+          const used = getAIGuardDailyUsage();
+
+          localStorage.setItem(getAIGuardLocalUsageKey(), String(Math.min(used + 1, AI_GUARD_DAILY_LIMIT)));
+
+        } catch (e) {
+
+          console.warn('AI guard quota save failed:', e);
+
+        }
+
+      }
+
+
+
+      function setAIGuardServerQuota(quota, account) {
+
+        if (!quota || typeof quota !== 'object') return;
+
+        aiGuardServerQuota = { ...quota, account: account !== undefined ? account : getAIGuardAccount() };
+
+      }
+
+
+
+      // 回傳今日剩餘次數；後端在線但尚未取得額度時回傳 null
+
+      function getAIGuardRemaining() {
+
+        if (window.isBackendOnline) {
+
+          if (aiGuardServerQuota && aiGuardServerQuota.account === getAIGuardAccount()) {
+
+            const r = Number(aiGuardServerQuota.remaining);
+
+            if (Number.isFinite(r)) return Math.max(0, r);
+
+          }
+
+          return null;
+
+        }
+
+        return Math.max(0, AI_GUARD_DAILY_LIMIT - getAIGuardDailyUsage());
+
+      }
+
+
+
+      function updateAIGuardLimitUI() {
+
+        const input = document.getElementById('aiGuardQueryInput');
+
+        const quotaLabel = document.getElementById('aiGuardQuotaLabel');
+
+        const redeemBtn = document.getElementById('aiGuardRedeemBtn');
+
+        const button = document.getElementById('aiGuardQueryBtn') || document.querySelector('button[onclick*="executeAIGuardQuery"]');
+
+        const remaining = getAIGuardRemaining();
+
+        const exhausted = remaining === 0;
+
+
+
+        if (quotaLabel) {
+
+          quotaLabel.innerText = remaining === null ? '今日剩餘次數查詢中...' : (remaining > 0 ? `今日剩餘 ${remaining} 次` : '今日守護已達上限');
+
+          quotaLabel.style.color = exhausted ? 'var(--muji-red)' : 'var(--muji-primary)';
+
+          quotaLabel.style.background = exhausted ? 'rgba(220,38,38,0.08)' : 'rgba(37,99,235,0.08)';
+
+          quotaLabel.style.borderColor = exhausted ? 'rgba(220,38,38,0.2)' : 'rgba(37,99,235,0.16)';
+
+        }
+
+
+
+        // 兌換僅能透過後端（扣除帳號點數），離線時不顯示
+
+        if (redeemBtn) {
+
+          redeemBtn.style.display = (exhausted && window.isBackendOnline) ? 'inline-flex' : 'none';
+
+        }
+
+
+
+        if (input) {
+
+          if (input.dataset.defaultPlaceholder === undefined) input.dataset.defaultPlaceholder = input.placeholder;
+
+          input.placeholder = exhausted
+
+            ? (window.isBackendOnline ? `今日守護已達上限，可用 ${AI_GUARD_REDEEM_COST} 點兌換 ${AI_GUARD_REDEEM_EXTRA} 次或明天再來` : '今日守護已達上限，明天再來問吧')
+
+            : input.dataset.defaultPlaceholder;
+
+          input.disabled = exhausted;
+
+        }
+
+
+
+        if (button) {
+
+          button.disabled = exhausted;
+
+          button.style.opacity = exhausted ? '0.6' : '1';
+
+          button.title = exhausted ? '今日守護已達上限' : '可繼續查詢';
+
+        }
+
+      }
+
+
+
+      async function refreshAIGuardQuota() {
+
+        if (!window.isBackendOnline) {
+
+          updateAIGuardLimitUI();
+
+          return;
+
+        }
+
+        const account = getAIGuardAccount();
+
+        try {
+
+          const res = await fetch(`${BACKEND_BASE_URL}/api/guard/quota?account=${encodeURIComponent(account)}`);
+
+          if (res.ok) {
+
+            const data = await res.json();
+
+            if (data && data.quota && account === getAIGuardAccount()) setAIGuardServerQuota(data.quota, account);
+
+          }
+
+        } catch (e) {
+
+          console.warn('AI guard quota fetch notice:', e);
+
+        }
+
+        updateAIGuardLimitUI();
+
+      }
+
+
+
+      async function redeemAIGuardQuota() {
+
+        const account = getAIGuardAccount();
+
+        if (!account) {
+
+          alert('請先登入帳號，才能使用關懷點數兌換 AI 守護助理次數。');
+
+          return;
+
+        }
+
+        if (!window.isBackendOnline) {
+
+          alert('目前為離線模式，需連線後端才能使用點數兌換 AI 守護助理次數。');
+
+          return;
+
+        }
+
+        if (!confirm(`確定要使用 ${AI_GUARD_REDEEM_COST} 點兌換 ${AI_GUARD_REDEEM_EXTRA} 次 AI 守護助理詢問嗎？`)) return;
+
+
+
+        const redeemBtns = document.querySelectorAll('#aiGuardRedeemBtn, .ai-guard-redeem-inline');
+
+        redeemBtns.forEach(b => { b.disabled = true; });
+
+        try {
+
+          const res = await fetch(`${BACKEND_BASE_URL}/api/guard/redeem`, {
+
+            method: 'POST',
+
+            headers: { 'Content-Type': 'application/json' },
+
+            body: JSON.stringify({ account: account })
+
+          });
+
+          const data = await res.json().catch(() => ({}));
+
+          if (res.status === 404) {
+
+            alert(`後端找不到帳號「${account}」，無法兌換。請改用後端已註冊的帳號登入後再試。`);
+
+          } else if (!res.ok) {
+
+            alert(data.detail || data.message || '兌換失敗，請稍後再試。');
+
+          } else if (data.success) {
+
+            if (data.quota) setAIGuardServerQuota(data.quota, account);
+
+            const newPoints = Number(data.new_points);
+
+            if (data.new_points !== undefined && data.new_points !== null && Number.isFinite(newPoints)) {
+
+              userProfile.points = newPoints;
+
+              localStorage.setItem('caregift_user_profile', JSON.stringify(userProfile));
+
+            }
+
+            alert(`🎉 ${data.message || '兌換成功！'}`);
+
+          } else {
+
+            alert(data.message || '兌換失敗，請稍後再試。');
+
+          }
+
+        } catch (e) {
+
+          console.warn('AI guard redeem error:', e);
+
+          alert('兌換失敗：目前無法連線後端，請稍後再試。');
+
+        } finally {
+
+          redeemBtns.forEach(b => { b.disabled = false; });
+
+        }
+
+        await refreshAIGuardQuota();
+
+      }
+
+
+
+      // 後端回 429（今日額度用完）時，在對話框顯示原因並附上兌換按鈕
+
+      function appendAIGuardQuotaNotice(detailText) {
+
+        const chatBox = document.getElementById('aiGuardChatBox');
+
+        if (!chatBox) return;
+
+        const bubble = document.createElement('div');
+
+        bubble.className = 'chat-bubble chat-bot';
+
+        const header = document.createElement('div');
+
+        header.style.cssText = 'display:flex; justify-content:space-between; margin-bottom:4px;';
+
+        const title = document.createElement('strong');
+
+        title.style.color = 'var(--muji-red)';
+
+        title.textContent = '⏳ 今日守護額度已用完';
+
+        header.appendChild(title);
+
+        const text = document.createElement('div');
+
+        text.style.cssText = 'font-size:11.5px; color:var(--text-muted); line-height:1.6;';
+
+        text.textContent = detailText;
+
+        const redeemBtn = document.createElement('button');
+
+        redeemBtn.type = 'button';
+
+        redeemBtn.className = 'sample-chip ai-guard-redeem-inline';
+
+        redeemBtn.style.cssText = 'margin:8px 0 0; font-size:11px; padding:5px 12px; font-weight:800; border-color:var(--muji-amber); color:var(--muji-dark); background:#FFFFFF;';
+
+        redeemBtn.textContent = `🪙 用 ${AI_GUARD_REDEEM_COST} 點兌換 ${AI_GUARD_REDEEM_EXTRA} 次`;
+
+        redeemBtn.addEventListener('click', () => redeemAIGuardQuota());
+
+        bubble.appendChild(header);
+
+        bubble.appendChild(text);
+
+        bubble.appendChild(redeemBtn);
+
+        chatBox.appendChild(bubble);
+
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+      }
+
+
+
+      // =========================================================================
+
       // UNIFIED AI CARE GUARD: RAG CONSULTATION + SAFETY COLLISION RADAR
 
       // =========================================================================
@@ -7331,6 +8208,15 @@
 
           return;
 
+        }
+
+        // 離線時才用本機計數擋下；後端在線時以後端額度為準（用完會回 429）
+        const isBackendMode = !!window.isBackendOnline;
+        if (!isBackendMode && getAIGuardDailyUsage() >= AI_GUARD_DAILY_LIMIT) {
+          alert(`今日守護已達上限：AI 守護助理今天已使用完 ${AI_GUARD_DAILY_LIMIT} 次，明天再來問吧。`);
+          if (input) input.value = '';
+          updateAIGuardLimitUI();
+          return;
         }
 
 
@@ -7363,7 +8249,10 @@
 
         if (loadingBox) loadingBox.style.display = 'block';
 
-
+        if (!isBackendMode) {
+          registerAIGuardUsage();
+          updateAIGuardLimitUI();
+        }
 
         const cleanRecName = activeRecipient ? activeRecipient.name.replace(/^[^\w\s\u4e00-\u9fa5]+/, '').trim() : '親友';
 
@@ -7373,7 +8262,9 @@
 
         // 3. IF PYTHON BACKEND IS ONLINE: Call backend /api/guard/query!
 
-        if (window.isBackendOnline) {
+        if (isBackendMode) {
+
+          const guardAccount = getAIGuardAccount();
 
           try {
 
@@ -7387,7 +8278,9 @@
 
               api_key: ragConfig.apiKey || null,
 
-              model: ragConfig.model || "gemini-1.5-flash"
+              model: ragConfig.model || "gemini-1.5-flash",
+
+              account: guardAccount || null
 
             };
 
@@ -7401,9 +8294,27 @@
 
             });
 
+            if (res.status === 429) {
+              const errData = await res.json().catch(() => ({}));
+              if (loadingBox) loadingBox.style.display = 'none';
+              setAIGuardServerQuota({ ...(aiGuardServerQuota || {}), remaining: 0 }, guardAccount);
+              // 保留剛才的問題，兌換次數後可直接再送出
+              if (input) input.value = query;
+              appendAIGuardQuotaNotice(errData.detail || `今日 AI 守護助理已達上限：${AI_GUARD_DAILY_LIMIT} 次/天，可使用 ${AI_GUARD_REDEEM_COST} 點兌換 ${AI_GUARD_REDEEM_EXTRA} 次，或明天再試。`);
+              updateAIGuardLimitUI();
+              refreshAIGuardQuota();
+              return;
+            }
+
             if (res.ok) {
 
               const data = await res.json();
+
+              // 依後端回傳的 quota 即時更新「今日剩餘次數」
+              if (data && data.quota) {
+                setAIGuardServerQuota(data.quota, guardAccount);
+                updateAIGuardLimitUI();
+              }
 
               if (data.has_match) {
 
@@ -7673,7 +8584,7 @@
 
             <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
 
-              <strong style="color:var(--muji-primary); font-size:12px;">CareGift AI 守護助理</strong>
+              <strong style="color:var(--muji-primary); font-size:12px;">GiftSense AI 守護助理</strong>
 
               <span style="font-size:9px; color:var(--text-subtle);">未檢索到直接匹配文獻</span>
 
@@ -8115,7 +9026,7 @@
 
           <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
 
-            <strong style="color:var(--muji-primary); font-size:12px;">CareGift AI 守護助理</strong>
+            <strong style="color:var(--muji-primary); font-size:12px;">GiftSense AI 守護助理</strong>
 
             <span style="font-size:9px; color:var(--text-subtle);">檢索 Top-${matched.length} 篇文獻</span>
 
@@ -8238,6 +9149,10 @@
             aiGuardLabel.innerText = `${cleanName} (${cleanCond})`;
 
           }
+
+          renderAIGuardQuickChips();
+
+          refreshAIGuardQuota();
 
         }
 
@@ -8388,6 +9303,8 @@
         try { renderSQLiteConsolePage(); } catch (e) { }
 
         try { checkBackendHealth(); } catch (e) { }
+
+        try { updateAIGuardLimitUI(); } catch (e) { }
 
       });
 

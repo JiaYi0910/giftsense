@@ -2,7 +2,181 @@ import os
 import random
 import requests
 import json
-from typing import Optional, Dict, Any
+from datetime import datetime
+from typing import Optional, Dict, Any, List
+
+WEEKDAY_NAMES = ["一", "二", "三", "四", "五", "六", "日"]
+
+def _season_of(month: int) -> str:
+    if month in (3, 4, 5):
+        return "spring"
+    if month in (6, 7, 8):
+        return "summer"
+    if month in (9, 10, 11):
+        return "autumn"
+    return "winter"
+
+SEASON_TEXT = {
+    "spring": {"spoiled": "春天到了，花都開了", "taiwanese": "春天來矣，四界花攏開", "reserved": "時值春暖花開"},
+    "summer": {"spoiled": "夏天太陽好大", "taiwanese": "熱天日頭赤焱焱", "reserved": "時序入夏，暑氣漸盛"},
+    "autumn": {"spoiled": "秋天來了，早晚涼涼的", "taiwanese": "秋天到矣，早暗有較冷", "reserved": "時序入秋，早晚微涼"},
+    "winter": {"spoiled": "冬天冷颼颼", "taiwanese": "寒天冷吱吱", "reserved": "時值隆冬，寒意漸濃"},
+}
+
+# 依病況挑選的專屬叮嚀（每種語氣各數句，讓不同親友收到不同內容）
+CONDITION_CARE_LINES = [
+    (("warfarin", "抗凝血", "血壓", "心血管"), {
+        "spoiled": [
+            "早上起床先在床邊坐 3 分鐘再站起來，血壓藥也要準時吃喔！",
+            "今天記得量一下血壓，不要吃太鹹，醬料沾一點點就好～",
+            "銀杏、高劑量魚油這些先不要亂吃，有想吃的補品先問我喔！",
+        ],
+        "taiwanese": [
+            "透早起床先坐佇床邊三分鐘才徛起來，血壓藥仔愛準時食喔！",
+            "今仔日愛記得量血壓，食物莫食傷鹹，醬料沾淡薄仔就好。",
+        ],
+        "reserved": [
+            "晨起請先於床緣靜坐三分鐘再起身，並請按時服用降壓藥物。",
+            "飲食宜清淡少鹽，若欲服用任何補品，請先與醫師確認。",
+        ],
+        "insight": "【AHA 美國心臟學會臨床指引】清晨為血壓高峰期，起床前先靜坐 3 分鐘可降低姿勢性低血壓與心血管事件風險。",
+    }),
+    (("糖",), {
+        "spoiled": [
+            "甜點和含糖飲料要忍住喔，飯後去散步 15 分鐘血糖會更穩～",
+            "洗澡水不要太燙，睡前看看腳有沒有小傷口，要好好保護喔！",
+            "三餐要定時定量，餓了可以吃一點無糖優格或堅果喔～",
+        ],
+        "taiwanese": [
+            "甜粿、甜飲料愛忍一下，食飽去行行咧十五分鐘，血糖較穩。",
+            "洗身軀水莫傷燒，睏前看跤有破空無，愛顧予好喔！",
+        ],
+        "reserved": [
+            "三餐請定時定量，少食甜品，飯後緩步慢行有助血糖平穩。",
+            "沐浴水溫請勿過燙，睡前請留意足部有無破皮傷口。",
+        ],
+        "insight": "【ADA 美國糖尿病學會照護標準】飯後輕度步行 10~15 分鐘可有效降低餐後血糖峰值，並建議每日檢查足部。",
+    }),
+    (("關節", "膝", "骨", "退化", "肌少"), {
+        "spoiled": [
+            "走路慢慢來，樓梯能少爬就少爬，膝蓋要好好疼惜喔！",
+            "坐久了記得起來動一動，晚上可以熱敷膝蓋 15 分鐘～",
+            "多曬一點太陽補維生素 D，骨頭才會勇勇的喔！",
+        ],
+        "taiwanese": [
+            "行路寬寬仔行，樓梯會使莫爬就莫爬，跤頭趺愛顧予好！",
+            "坐久愛徛起來振動一下，暗時用燒毛巾敷跤頭趺十五分。",
+        ],
+        "reserved": [
+            "行走請放緩步伐，盡量減少上下樓梯，以養護膝關節。",
+            "久坐後宜起身舒展，夜間可溫敷關節十五分鐘以舒緩不適。",
+        ],
+        "insight": "【ESCEO 歐洲骨關節醫學會指引】規律低衝擊運動（如散步、水中運動）搭配溫敷，有助維持關節活動度並減緩疼痛。",
+    }),
+    (("眠", "睡", "熬夜", "焦慮"), {
+        "spoiled": [
+            "晚上早點放下手機，睡前泡個腳，今晚一定能睡得香香的～",
+            "下午咖啡和濃茶先不要喝喔，白天曬曬太陽晚上比較好睡！",
+            "睡不著也不要煩惱，聽點輕音樂慢慢放鬆就好喔～",
+        ],
+        "taiwanese": [
+            "暗時早點放落手機仔，睏前燒水泡跤，今暗一定好睏！",
+            "下晡咖啡、濃茶先莫啉，日時曬日頭，暗時較好睏。",
+        ],
+        "reserved": [
+            "夜間請早些歇息，睡前溫水泡腳，有助安神入眠。",
+            "午後宜避免咖啡與濃茶，日間適度日照有助調整作息。",
+        ],
+        "insight": "【AASM 美國睡眠醫學會指引】固定起床時間、白天接受日照、睡前 1 小時遠離螢幕藍光，是改善失眠的第一線非藥物策略。",
+    }),
+    (("傷", "燙", "術後", "創面"), {
+        "spoiled": [
+            "傷口要保持乾淨乾燥，換藥時有紅腫熱痛要馬上跟我說喔！",
+            "多吃蛋、魚、豆腐補充蛋白質，傷口才會好得快快的～",
+        ],
+        "taiwanese": [
+            "傷口愛保持清氣焦燥，換藥若有紅腫疼愛隨講予我知！",
+            "加食卵、魚仔、豆腐補蛋白質，傷口才會較緊好。",
+        ],
+        "reserved": [
+            "傷口請保持清潔乾燥，換藥時若見紅腫熱痛，請即告知。",
+            "飲食宜多攝取優質蛋白質，以助傷口組織修復。",
+        ],
+        "insight": "【WHO / 傷口照護臨床指引】充足蛋白質、維生素 C 與鋅的攝取可促進膠原蛋白合成，加速傷口癒合。",
+    }),
+    (("眼", "視力", "黃斑", "白內障"), {
+        "spoiled": [
+            "看電視或手機 30 分鐘就讓眼睛休息一下，望望遠方喔～",
+            "出門戴個太陽眼鏡擋紫外線，多吃深綠色蔬菜顧眼睛！",
+        ],
+        "taiwanese": [
+            "看電視、手機三十分鐘就愛予目睭歇睏，看遠遠的所在。",
+            "出門戴烏仔鏡，加食青菜，目睭才會金金。",
+        ],
+        "reserved": [
+            "用眼三十分鐘請稍事歇息，遠眺片刻以舒緩眼部疲勞。",
+            "外出請配戴太陽眼鏡，並多攝取深綠色蔬菜以護視力。",
+        ],
+        "insight": "【NIH AREDS 2 研究】葉黃素與玉米黃素的攝取，搭配外出配戴抗 UV 眼鏡，有助延緩黃斑部退化。",
+    }),
+    (("懷孕", "孕", "產後", "哺乳", "坐月子"), {
+        "spoiled": [
+            "要多休息不要太累，想吃什麼跟我說，我買給您～",
+            "記得補充水分、慢慢走路，身體有不舒服要馬上說喔！",
+        ],
+        "taiwanese": [
+            "愛加歇睏莫傷忝，想欲食啥物共我講，我買予您。",
+            "水愛加啉，行路寬寬仔行，身體若無爽快愛隨講喔！",
+        ],
+        "reserved": [
+            "請多加歇息，切勿過度操勞，飲食起居皆以安穩為要。",
+            "請適量補充水分，起身行走放緩步伐，如有不適請即告知。",
+        ],
+        "insight": "【WHO 孕產期照護建議】孕期與產後應均衡攝取鐵、鈣與葉酸，保健品使用前請先與醫師或藥師確認。",
+    }),
+    (("胃", "腸", "便秘", "消化", "逆流"), {
+        "spoiled": [
+            "吃飯要細嚼慢嚥，七分飽就好，飯後不要馬上躺下喔～",
+            "多吃蔬菜水果、多喝溫開水，肚子會比較舒服喔！",
+        ],
+        "taiwanese": [
+            "食飯愛慢慢仔哺，七分飽就好，食飽莫隨倒落去喔。",
+            "加食菜佮果子、加啉燒水，腹肚會較爽快！",
+        ],
+        "reserved": [
+            "用餐請細嚼慢嚥，以七分飽為宜，飯後請勿立即躺臥。",
+            "日常宜多攝取蔬果與溫開水，以助腸胃順暢。",
+        ],
+        "insight": "【WGO 世界胃腸病學組織指引】規律作息、足量膳食纖維與水分，是維持腸道健康的基礎。",
+    }),
+    (("感冒", "咳", "氣喘", "肺", "鼻炎", "流感"), {
+        "spoiled": [
+            "最近換季要注意保暖，出門記得戴口罩，多喝溫水喔！",
+            "咳嗽不舒服就早點休息，症狀沒好要去看醫生喔～",
+        ],
+        "taiwanese": [
+            "這站仔換季愛注意燒暖，出門愛掛喙罨，加啉燒水喔！",
+            "嗽甲無爽快就早點歇睏，若無好愛去予醫生看喔。",
+        ],
+        "reserved": [
+            "時值換季，請留意保暖，外出時配戴口罩以防感染。",
+            "若有咳嗽不適，請早些歇息，症狀未改善請盡早就醫。",
+        ],
+        "insight": "【CDC 呼吸道疾病預防建議】勤洗手、配戴口罩、充足睡眠與接種疫苗，可降低呼吸道感染風險。",
+    }),
+]
+
+def _match_condition_lines(condition: str):
+    cond = (condition or "").lower()
+    for keywords, lines in CONDITION_CARE_LINES:
+        if any(k in cond for k in keywords):
+            return lines
+    return None
+
+def _daily_rng(*parts) -> random.Random:
+    """同一天、同一位親友、同一語氣產生固定結果；換天或換人就會不同"""
+    seed = "|".join(str(p) for p in parts)
+    return random.Random(seed)
 
 def generate_ai_greeting(
     elder_name: str,
@@ -15,7 +189,8 @@ def generate_ai_greeting(
     elder_status: str,
     tone: str,
     api_key: Optional[str] = None,
-    model: str = "gemini-1.5-flash"
+    model: str = "gemini-1.5-flash",
+    variant: int = 0
 ) -> Dict[str, Any]:
     """
     Generates real-time personalized elder care messages:
@@ -55,6 +230,9 @@ def generate_ai_greeting(
         try:
             prompt = f"""你是一位專門為年輕子女代筆發送「親友專屬每日健康問候」的 AI 暖心助理。
 請依據以下即時數據，為子女撰寫一段傳送給親友的問候短文，並提供 1 句專業醫學指南。
+
+【今天】
+- {datetime.now().strftime('%Y-%m-%d')} 星期{WEEKDAY_NAMES[datetime.now().weekday()]}（請自然融入季節或星期的話題，每天內容都要不一樣，避免制式重複的句子）
 
 【親友資訊】
 - 稱呼：{elder_name}
@@ -115,7 +293,8 @@ def generate_ai_greeting(
         weather_condition=weather_condition,
         weather_humidity=weather_humidity,
         elder_status=elder_status,
-        tone=tone
+        tone=tone,
+        variant=variant
     )
 
 def generate_local_dynamic_greeting(
@@ -127,10 +306,12 @@ def generate_local_dynamic_greeting(
     weather_condition: str,
     weather_humidity: int,
     elder_status: str,
-    tone: str
+    tone: str,
+    variant: int = 0
 ) -> Dict[str, Any]:
     """
     Generates non-repetitive dynamic messages using combinatoric synthesis.
+    同一天同一位親友結果固定（重新整理不會跳動），換天、換人、換病況或 variant 就會不同。
     """
     is_big_temp_diff = weather_temp_diff >= 7
     is_humid = weather_humidity >= 70
@@ -276,7 +457,63 @@ def generate_local_dynamic_greeting(
             ]
             insight = "【NIH 國家衛生研究院】銀髮親友每日攝取 1500~2000ml 水分能降低血液黏稠度，維持心肌與腦部供血充足。"
 
-    msg = random.choice(openers) + random.choice(middles) + random.choice(closings)
+    tone_key = tone if tone in ("taiwanese", "reserved") else "spoiled"
+    now = datetime.now()
+    weekday = WEEKDAY_NAMES[now.weekday()]
+    season = SEASON_TEXT[_season_of(now.month)][tone_key]
+
+    # 日常狀況時加入季節／星期開場與病況專屬叮嚀，讓每天、每位親友的語錄都不同
+    if elder_status not in ("joint_pain", "insomnia", "high_bp"):
+        if tone_key == "taiwanese":
+            openers = openers + [
+                f"「{elder_name}早安！{season}，今仔日【{weather_city}】{weather_temp}。",
+                f"「{elder_name}拜{weekday}好！今仔日【{weather_city}】{weather_condition}。",
+            ]
+            middles = middles + [
+                "有閒佮厝邊開講、行公園，心情好身體就勇。",
+                "日頭若好就去外口行行咧，莫歸工坐佇厝內喔。",
+            ]
+            closings = closings + [
+                "我有閒就轉去看您，愛好好照顧家己喔❤️」",
+                "三頓愛照時食，水愛加啉，愛您喔！」",
+            ]
+        elif tone_key == "reserved":
+            openers = openers + [
+                f"「{elder_name}晨安，{season}，【{weather_city}】今日 {weather_temp}。",
+                f"「{elder_name}晨安，今日星期{weekday}，【{weather_city}】天氣 {weather_condition}。",
+            ]
+            middles = middles + [
+                "願您今日起居有常，閒暇時可至戶外散步，舒展筋骨。",
+                "日常飲食宜均衡清淡，適量飲水，保持心情愉悅。",
+            ]
+            closings = closings + [
+                "晚輩雖不在身旁，心中時時掛念，敬祝您安康順遂。」",
+                "敬請保重身體，晚輩改日再向您問安。」",
+            ]
+        else:
+            openers = openers + [
+                f"「{elder_name}早安！{season}，【{weather_city}】今天 {weather_temp}喔！",
+                f"「{elder_name}星期{weekday}快樂！今天【{weather_city}】{weather_condition}～",
+                f"「{elder_name}早安呀！今天【{weather_city}】濕度 {weather_humidity}%，溫差 {weather_temp_diff}°C 喔！",
+            ]
+            middles = middles + [
+                "今天有沒有出去走走呀？跟朋友聊聊天心情會更好喔！",
+                "記得三餐要好好吃，不可以隨便吃吃就算了喔～",
+                "想到您我就覺得好幸福，今天也要開開心心的！",
+            ]
+            closings = closings + [
+                "我有空就回去陪您吃飯，要想我喔❤️」",
+                "有什麼需要隨時打給我，愛您喔❤️」",
+                "今天也要記得多喝水、多笑笑，最愛您了❤️」",
+            ]
+
+        condition_lines = _match_condition_lines(elder_condition)
+        if condition_lines:
+            middles = condition_lines[tone_key]
+            insight = condition_lines["insight"]
+
+    rng = _daily_rng(now.strftime("%Y-%m-%d"), elder_name, elder_condition, tone_key, elder_status, variant)
+    msg = rng.choice(openers) + rng.choice(middles) + rng.choice(closings)
     return {
         "success": True,
         "message": msg,

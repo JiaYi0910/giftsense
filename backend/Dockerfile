@@ -1,5 +1,5 @@
 # ========================================================
-# CareGift 2.0 - Python FastAPI Backend Dockerfile
+# GiftSense 2.0 - Python FastAPI Backend Dockerfile
 # ========================================================
 FROM python:3.11-slim
 

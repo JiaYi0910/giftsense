@@ -2,9 +2,133 @@ import sqlite3
 import json
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "caregift.db")
+
+# 💡 關懷推薦商品預設資料（首次啟動時寫入 recommendation_products 表）
+DEFAULT_RECOMMENDATION_PRODUCTS = [
+    {
+        "id": "rec_quaker_01",
+        "product_name": "【桂格完膳】營養素無糖低 GI 高鈣配方 (24罐/箱)",
+        "sku": "GT-Q109",
+        "ean_13": "4710043022131",
+        "category": "親友滋補 / 零撞藥首選",
+        "spec": "250ml x 24罐/箱",
+        "search_kw": "桂格完膳",
+        "match_conditions": ["warfarin", "抗凝血", "血壓", "心血管", "糖", "日常"],
+        "match_reason": "經臨床 RAG 審核：零抗凝血活血成分，無糖低 GI，高血壓與 Warfarin 患者首選滋補配方！",
+        "recommended_pharmacy": "大樹藥局",
+        "best_price": 1480,
+        "official_url": "https://shop.greattree.com.tw/searchlist?keyword=%E6%A1%82%E6%A0%BC%E5%AE%8C%E8%86%B3",
+        "pharmacy_comparison": [
+            {"pharmacy": "大樹藥局", "price": 1480, "is_lowest": True, "badge": "官方最低價", "url": "https://shop.greattree.com.tw/searchlist?keyword=%E6%A1%82%E6%A0%BC%E5%AE%8C%E8%86%B3"},
+            {"pharmacy": "杏一醫療", "price": 1499, "is_lowest": False, "badge": "門市正品", "url": "https://www.medfirst.com.tw/v2/Search?q=%E6%A1%82%E6%A0%BC%E5%AE%8C%E8%86%B3"},
+            {"pharmacy": "啄木鳥藥局", "price": 1520, "is_lowest": False, "badge": "原廠箱裝", "url": "https://www.woodpecker.com.tw/products_search/all/1?PdSearch=%E6%A1%82%E6%A0%BC%E5%AE%8C%E8%86%B3"},
+            {"pharmacy": "丁丁藥局", "price": 1550, "is_lowest": False, "badge": "快速出貨", "url": "https://www.norbelbaby.com.tw/nec/search?keyword=%E6%A1%82%E6%A0%BC%E5%AE%8C%E8%86%B3"}
+        ]
+    },
+    {
+        "id": "rec_glucosamine_01",
+        "product_name": "【挺立】關鍵 UC-II 葡萄糖胺加強配方 (30錠/盒)",
+        "sku": "MF-V180",
+        "ean_13": "4710018151026",
+        "category": "骨骼關節 / ESCEO 臨床首選",
+        "spec": "30錠/盒 (非變性二型膠原蛋白+葡萄糖胺)",
+        "search_kw": "葡萄糖胺",
+        "match_conditions": ["膝蓋", "關節", "骨折", "骨質", "痛", "跌倒", "日常", "warfarin", "抗凝血", "血壓"],
+        "match_reason": "符合 ESCEO 骨關節醫學會指引：非變性二型膠原蛋白協同葡萄糖胺，無心血管與抗凝血衝突。",
+        "recommended_pharmacy": "大樹藥局",
+        "best_price": 1550,
+        "official_url": "https://shop.greattree.com.tw/searchlist?keyword=%E8%91%A3%E8%90%84%E9%85%B6%E8%83%B6",
+        "pharmacy_comparison": [
+            {"pharmacy": "大樹藥局", "price": 1550, "is_lowest": True, "badge": "限時特惠", "url": "https://shop.greattree.com.tw/searchlist?keyword=%E8%91%A3%E8%90%84%E9%85%B6%E8%83%B6"},
+            {"pharmacy": "杏一醫療", "price": 1580, "is_lowest": False, "badge": "醫學中心合約", "url": "https://www.medfirst.com.tw/v2/Search?q=%E8%91%A3%E8%90%84%E9%85%B6%E8%83%B6"},
+            {"pharmacy": "啄木鳥藥局", "price": 1590, "is_lowest": False, "badge": "門市現貨", "url": "https://www.woodpecker.com.tw/products_search/all/1?PdSearch=%E8%91%A3%E8%90%84%E9%85%B6%E8%83%B6"},
+            {"pharmacy": "丁丁藥局", "price": 1620, "is_lowest": False, "badge": "官方直售", "url": "https://www.norbelbaby.com.tw/nec/search?keyword=%E8%91%A3%E8%90%84%E9%85%B6%E8%83%B6"}
+        ]
+    },
+    {
+        "id": "rec_calcium_01",
+        "product_name": "【挺立】鈣強力錠 + 活性維生素 D3 (60錠/盒)",
+        "sku": "GT-C060",
+        "ean_13": "4710018151019",
+        "category": "骨密維護 / NOF 臨床指引",
+        "spec": "60錠/盒 (高吸收檸檬酸鈣)",
+        "search_kw": "挺立",
+        "match_conditions": ["骨質", "骨折", "抽筋", "關節", "膝蓋", "日常", "warfarin", "抗凝血", "血壓"],
+        "match_reason": "美國骨質疏鬆學會 (NOF) 建議：鈣+D3 協同吸收，有效維持骨質密度，無藥物衝突。",
+        "recommended_pharmacy": "大樹藥局",
+        "best_price": 499,
+        "official_url": "https://shop.greattree.com.tw/searchlist?keyword=%E6%8C%BA%E7%AB%8B",
+        "pharmacy_comparison": [
+            {"pharmacy": "大樹藥局", "price": 499, "is_lowest": True, "badge": "會員破盤價", "url": "https://shop.greattree.com.tw/searchlist?keyword=%E6%8C%BA%E7%AB%8B"},
+            {"pharmacy": "杏一醫療", "price": 520, "is_lowest": False, "badge": "官方正品", "url": "https://www.medfirst.com.tw/v2/Search?q=%E6%8C%BA%E7%AB%8B"},
+            {"pharmacy": "丁丁藥局", "price": 535, "is_lowest": False, "badge": "連鎖直營", "url": "https://www.norbelbaby.com.tw/nec/search?keyword=%E6%8C%BA%E7%AB%8B"},
+            {"pharmacy": "啄木鳥藥局", "price": 550, "is_lowest": False, "badge": "門市供應", "url": "https://www.woodpecker.com.tw/products_search/all/1?PdSearch=%E6%8C%BA%E7%AB%8B"}
+        ]
+    },
+    {
+        "id": "rec_lutein_01",
+        "product_name": "【永信藥品】活泉游離型葉黃素 30mg + 玉米黃素 (60粒/瓶)",
+        "sku": "NB-L060",
+        "ean_13": "4711928001221",
+        "category": "視力保養 / AREDS 2 指引",
+        "spec": "60粒/瓶 (黃金比例 10:2)",
+        "search_kw": "葉黃素",
+        "match_conditions": ["眼", "視力", "白內障", "黃斑", "日常", "糖", "糖尿病"],
+        "match_reason": "符合美國國家衛生院 (NIH) AREDS 2 臨床指引：游離型高吸收率，保養黃斑部與視網膜微血管。",
+        "recommended_pharmacy": "丁丁藥局",
+        "best_price": 980,
+        "official_url": "https://www.norbelbaby.com.tw/nec/search?keyword=%E8%91%89%E9%BB%83%E7%B4%A0",
+        "pharmacy_comparison": [
+            {"pharmacy": "丁丁藥局", "price": 980, "is_lowest": True, "badge": "最低優惠價", "url": "https://www.norbelbaby.com.tw/nec/search?keyword=%E8%91%89%E9%BB%83%E7%B4%A0"},
+            {"pharmacy": "杏一醫療", "price": 1050, "is_lowest": False, "badge": "門市正品", "url": "https://www.medfirst.com.tw/v2/Search?q=%E8%91%89%E9%BB%83%E7%B4%A0"},
+            {"pharmacy": "大樹藥局", "price": 1080, "is_lowest": False, "badge": "官方直銷", "url": "https://shop.greattree.com.tw/searchlist?keyword=%E8%91%89%E9%BB%83%E7%B4%A0"},
+            {"pharmacy": "啄木鳥藥局", "price": 1100, "is_lowest": False, "badge": "常態供應", "url": "https://www.woodpecker.com.tw/products_search/all/1?PdSearch=%E8%91%89%E9%BB%83%E7%B4%A0"}
+        ]
+    },
+    {
+        "id": "rec_probiotics_01",
+        "product_name": "【日本味王】消化專利複合益生菌 (60包/盒)",
+        "sku": "GT-P060",
+        "ean_13": "4712857002013",
+        "category": "腸道健康 / WGO 益生菌指引",
+        "spec": "60包/盒 (200億活菌)",
+        "search_kw": "益生菌",
+        "match_conditions": ["腸", "便秘", "排便", "胃", "消化", "日常", "糖", "糖尿病"],
+        "match_reason": "符合世界胃腸病學組織 (WGO) 指引：調節腸道菌相、幫助消化，親友無腸胃負擔。",
+        "recommended_pharmacy": "大樹藥局",
+        "best_price": 790,
+        "official_url": "https://shop.greattree.com.tw/searchlist?keyword=%E7%9B%8A%E7%94%9F%E8%8F%80",
+        "pharmacy_comparison": [
+            {"pharmacy": "大樹藥局", "price": 790, "is_lowest": True, "badge": "獨家最低價", "url": "https://shop.greattree.com.tw/searchlist?keyword=%E7%9B%8A%E7%94%9F%E8%8F%80"},
+            {"pharmacy": "啄木鳥藥局", "price": 820, "is_lowest": False, "badge": "現貨提供", "url": "https://www.woodpecker.com.tw/products_search/all/1?PdSearch=%E7%9B%8A%E7%94%9F%E8%8F%80"},
+            {"pharmacy": "丁丁藥局", "price": 850, "is_lowest": False, "badge": "門市正品", "url": "https://www.norbelbaby.com.tw/nec/search?keyword=%E7%9B%8A%E7%94%9F%E8%8F%80"},
+            {"pharmacy": "杏一醫療", "price": 880, "is_lowest": False, "badge": "醫材門市", "url": "https://www.medfirst.com.tw/v2/Search?q=%E7%9B%8A%E7%94%9F%E8%8F%80"}
+        ]
+    },
+    {
+        "id": "rec_gaba_01",
+        "product_name": "【三得利】芝麻明 EX + GABA (90錠/瓶)",
+        "sku": "MF-S090",
+        "ean_13": "4901777252011",
+        "category": "睡眠調節 / AASM 指引",
+        "spec": "90錠/瓶 (日本原裝進口)",
+        "search_kw": "芝麻明",
+        "match_conditions": ["睡", "失眠", "焦慮", "放鬆", "日常"],
+        "match_reason": "結合 GABA 與高濃度芝麻素，幫助中樞神經放鬆，改善親友淺眠，無安眠藥成癮性。",
+        "recommended_pharmacy": "杏一醫療",
+        "best_price": 1600,
+        "official_url": "https://www.medfirst.com.tw/v2/Search?q=%E8%8A%9D%E9%BA%BB%E6%98%8E",
+        "pharmacy_comparison": [
+            {"pharmacy": "杏一醫療", "price": 1600, "is_lowest": True, "badge": "官方直銷最優", "url": "https://www.medfirst.com.tw/v2/Search?q=%E8%8A%9D%E9%BA%BB%E6%98%8E"},
+            {"pharmacy": "大樹藥局", "price": 1650, "is_lowest": False, "badge": "官方正品", "url": "https://shop.greattree.com.tw/searchlist?keyword=%E8%8A%9D%E9%BA%BB%E6%98%8E"},
+            {"pharmacy": "啄木鳥藥局", "price": 1680, "is_lowest": False, "badge": "門市代購", "url": "https://www.woodpecker.com.tw/products_search/all/1?PdSearch=%E8%8A%9D%E9%BA%BB%E6%98%8E"},
+            {"pharmacy": "丁丁藥局", "price": 1700, "is_lowest": False, "badge": "現貨速配", "url": "https://www.norbelbaby.com.tw/nec/search?keyword=%E8%8A%9D%E9%BA%BB%E6%98%8E"}
+        ]
+    }
+]
 
 def get_db():
     conn = sqlite3.connect(DB_PATH, timeout=30.0) # 💡 增加逾時等待時間 (30秒)，避免瞬間搶鎖失敗
@@ -30,9 +154,25 @@ def init_db():
         birthday TEXT,
         line_user_id TEXT,
         user_account TEXT DEFAULT 'test',
+        quick_tags_json TEXT DEFAULT '[]',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
+
+    # 舊資料庫自動補上 recipients 缺少的欄位
+    cursor.execute("PRAGMA table_info(recipients)")
+    existing_rec_cols = [c[1] for c in cursor.fetchall()]
+    for col_name, col_type in [
+        ("phone", "TEXT"),
+        ("birthday", "TEXT"),
+        ("line_user_id", "TEXT"),
+        ("user_account", "TEXT DEFAULT 'test'"),
+        ("quick_tags_json", "TEXT DEFAULT '[]'"),
+        ("line_bind_code", "TEXT"),
+        ("line_bind_expires", "TEXT")
+    ]:
+        if col_name not in existing_rec_cols:
+            cursor.execute(f"ALTER TABLE recipients ADD COLUMN {col_name} {col_type}")
 
     # 2. orders 表格
     cursor.execute("""
@@ -75,6 +215,49 @@ def init_db():
         image_url TEXT,
         in_stock INTEGER DEFAULT 1,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    # 4.5 recommendation_products 表格（關懷推薦商品資料庫）
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS recommendation_products (
+        id TEXT PRIMARY KEY,
+        product_name TEXT NOT NULL,
+        sku TEXT,
+        ean_13 TEXT,
+        category TEXT,
+        spec TEXT,
+        search_kw TEXT,
+        match_conditions_json TEXT NOT NULL,
+        match_reason TEXT,
+        recommended_pharmacy TEXT,
+        best_price INTEGER NOT NULL,
+        official_url TEXT,
+        pharmacy_comparison_json TEXT NOT NULL,
+        is_active INTEGER DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    """)
+
+    # 4.6 ai_guard_usage 表格（AI 守護助理每日詢問次數，依帳號計算）
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS ai_guard_usage (
+        account TEXT NOT NULL,
+        date_str TEXT NOT NULL,
+        used INTEGER DEFAULT 0,
+        bonus INTEGER DEFAULT 0,
+        PRIMARY KEY (account, date_str)
+    )
+    """)
+
+    # 4.7 reward_claims 表格（回饋點數領取紀錄，用來限制每日／每週次數）
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS reward_claims (
+        account TEXT NOT NULL,
+        claim_key TEXT NOT NULL,
+        amount INTEGER NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (account, claim_key)
     )
     """)
 
@@ -133,7 +316,8 @@ def init_db():
         ("bio", "TEXT DEFAULT ''"),
         ("avatar", "TEXT DEFAULT 'default'"),
         ("email", "TEXT DEFAULT ''"),
-        ("auth_provider", "TEXT DEFAULT 'email'")
+        ("auth_provider", "TEXT DEFAULT 'email'"),
+        ("social_id", "TEXT")
     ]
     for col_name, col_type in columns_to_add:
         if col_name not in existing_columns:
@@ -148,6 +332,58 @@ def init_db():
         INSERT INTO users (id, account, password_hash, name, role, points)
         VALUES (?, ?, ?, ?, ?, ?)
         """, ("usr_admin", "admin", "123", "系統管理員", "admin", 9999))
+
+    # 為尚未有快速提問晶片的親友自動補上臨床規則晶片
+    try:
+        from chips_generator import get_clinical_rule_chips
+    except Exception:
+        get_clinical_rule_chips = lambda c, n: []
+
+    cursor.execute("SELECT id, name, condition, quick_tags_json FROM recipients")
+    for rec in cursor.fetchall():
+        if not rec["quick_tags_json"] or rec["quick_tags_json"] == "[]":
+            auto_tags = get_clinical_rule_chips(rec["condition"], rec["name"])
+            cursor.execute(
+                "UPDATE recipients SET quick_tags_json = ? WHERE id = ?",
+                (json.dumps(auto_tags, ensure_ascii=False), rec["id"])
+            )
+
+    # 全新資料庫時預先寫入國家級臨床文獻
+    cursor.execute("SELECT COUNT(*) FROM clinical_knowledge")
+    if cursor.fetchone()[0] == 0:
+        try:
+            from vector_store import FULL_CLINICAL_LITERATURES
+            for lit in FULL_CLINICAL_LITERATURES:
+                cursor.execute("""
+                INSERT OR REPLACE INTO clinical_knowledge (
+                    id, title, authority, category, ingredient,
+                    evidence_level, recommended_dose, mechanism,
+                    contraindications, target_symptoms_json, citation
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    lit["id"],
+                    lit["title"],
+                    lit.get("authority", ""),
+                    lit.get("category", ""),
+                    lit.get("ingredient", ""),
+                    lit.get("evidenceLevel", "Level 1"),
+                    lit.get("recommendedDose", ""),
+                    lit.get("mechanism", ""),
+                    lit.get("contraindications", ""),
+                    json.dumps(lit.get("targetSymptoms", []), ensure_ascii=False),
+                    lit.get("citation", "")
+                ))
+        except Exception as e:
+            print("Notice: Clinical knowledge auto-seed deferred:", e)
+
+    # 推薦商品數量與預設不符時重新寫入
+    cursor.execute("SELECT COUNT(*) FROM recommendation_products")
+    if cursor.fetchone()[0] != len(DEFAULT_RECOMMENDATION_PRODUCTS):
+        cursor.execute("DELETE FROM recommendation_products")
+        conn.commit()
+        conn.close()
+        save_recommendation_products(DEFAULT_RECOMMENDATION_PRODUCTS)
+        return
 
     conn.commit()
     conn.close()
@@ -221,6 +457,64 @@ def save_pharmacy_products(products: list):
     conn.commit()
     conn.close()
 
+def save_recommendation_products(products: list):
+    conn = get_db()
+    cursor = conn.cursor()
+    for p in products:
+        if not isinstance(p, dict):
+            continue
+        cursor.execute("""
+        INSERT OR REPLACE INTO recommendation_products (
+            id, product_name, sku, ean_13, category, spec, search_kw,
+            match_conditions_json, match_reason, recommended_pharmacy,
+            best_price, official_url, pharmacy_comparison_json, is_active
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            p.get("id") or f"rec_{hash(str(p))}",
+            p.get("product_name", ""),
+            p.get("sku", ""),
+            p.get("ean_13", ""),
+            p.get("category", ""),
+            p.get("spec", ""),
+            p.get("search_kw", ""),
+            json.dumps(p.get("match_conditions") or [], ensure_ascii=False),
+            p.get("match_reason", ""),
+            p.get("recommended_pharmacy", ""),
+            int(p.get("best_price") or 0),
+            p.get("official_url", ""),
+            json.dumps(p.get("pharmacy_comparison") or [], ensure_ascii=False),
+            1
+        ))
+    conn.commit()
+    conn.close()
+    return len(products)
+
+def get_all_recommendation_products():
+    conn = get_db()
+    rows = conn.execute("SELECT * FROM recommendation_products WHERE is_active = 1 ORDER BY best_price ASC").fetchall()
+    conn.close()
+    products = []
+    for r in rows:
+        d = dict(r)
+        d["match_conditions"] = json.loads(d.get("match_conditions_json") or "[]")
+        d["pharmacy_comparison"] = json.loads(d.get("pharmacy_comparison_json") or "[]")
+        products.append(d)
+    return products
+
+def get_recommendation_products_by_condition(condition: str = ""):
+    cond = (condition or "").lower().strip()
+    items = get_all_recommendation_products()
+    if not cond:
+        return items[:3]
+
+    matched = []
+    for item in items:
+        terms = item.get("match_conditions") or []
+        if any((term or "").lower() in cond or cond in (term or "").lower() for term in terms):
+            matched.append(item)
+
+    return matched if matched else items[:3]
+
 def search_cached_products(keyword: str):
     conn = get_db()
     cursor = conn.cursor()
@@ -268,13 +562,15 @@ def register_user(account: str, password_raw: str, name: str = None, role: str =
     
     user_id = f"usr_{int(datetime.now().timestamp() * 1000)}"
     display_name = name if name and name.strip() else account
-    assigned_role = "admin" if "admin" in account.lower() else role
-    initial_points = 9999 if assigned_role == "admin" else 100
+    # 💡 一律註冊為一般會員，避免帳號含 admin 或前端傳 role 就取得管理員權限
+    assigned_role = "user"
+    initial_points = 100
 
+    # 點數先寫 0，再由下方的點數交易加上註冊獎勵（避免重複計算成 200 點）
     conn.execute("""
     INSERT INTO users (id, account, password_hash, name, role, points, email, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-    """, (user_id, account, password_raw, display_name, assigned_role, initial_points, account))
+    VALUES (?, ?, ?, ?, ?, 0, ?, CURRENT_TIMESTAMP)
+    """, (user_id, account, password_raw, display_name, assigned_role, account))
     conn.commit()
     conn.close()
 
@@ -289,30 +585,103 @@ def register_user(account: str, password_raw: str, name: str = None, role: str =
         "points": initial_points
     }
 
+def _public_user(row):
+    user = dict(row)
+    user.pop("password_hash", None)
+    return user
+
+def find_or_create_social_user(provider: str, social_id: str, email: str = "", email_verified: bool = False, name: str = ""):
+    """
+    依平台驗證過的身分找出或建立會員：
+    1. 先以 (auth_provider, social_id) 比對
+    2. 再以「平台已驗證」的 email 比對既有一般會員（不比對 account、不合併管理員）
+    3. 都沒有就建立新會員並發放註冊獎勵
+    """
+    conn = get_db()
+    row = conn.execute("SELECT * FROM users WHERE auth_provider = ? AND social_id = ?", (provider, social_id)).fetchone()
+
+    if not row and email and email_verified:
+        row = conn.execute(
+            "SELECT * FROM users WHERE email = ? AND COALESCE(role, 'user') != 'admin'", (email,)
+        ).fetchone()
+        if row and not row["social_id"] and row["auth_provider"] == provider:
+            conn.execute("UPDATE users SET social_id = ? WHERE id = ?", (social_id, row["id"]))
+            conn.commit()
+
+    created = False
+    if not row:
+        email_taken = bool(email) and conn.execute(
+            "SELECT 1 FROM users WHERE account = ? OR email = ?", (email, email)
+        ).fetchone() is not None
+        account = email if email and not email_taken else f"{provider}_{social_id}"
+        display_name = (name or "").strip() or (email.split("@")[0] if email else f"{provider.capitalize()} 會員")
+        user_id = f"usr_{int(datetime.now().timestamp() * 1000)}"
+        conn.execute(
+            """INSERT INTO users (id, account, name, email, auth_provider, social_id, role, points, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, 'user', 0, CURRENT_TIMESTAMP)""",
+            (user_id, account, display_name, email if not email_taken else "", provider, social_id)
+        )
+        conn.commit()
+        row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+        created = True
+
+    conn.close()
+    if created:
+        add_points_transaction(row["account"], 100, "新會員註冊獎勵")
+        return {**get_user_profile(row["account"]), "is_new_user": True}
+    return _public_user(row)
+
 def get_user_profile(account: str):
     conn = get_db()
     row = conn.execute("SELECT id, account, name, role, points, phone, birthday, bio, avatar, created_at, email, auth_provider FROM users WHERE account = ? OR email = ?", (account, account)).fetchone()
     conn.close()
     return dict(row) if row else None
 
+def _recipient_row_to_dict(row):
+    d = dict(row)
+    try:
+        d["quick_tags"] = json.loads(d.get("quick_tags_json") or "[]")
+    except Exception:
+        d["quick_tags"] = []
+    d["line_bound"] = bool(d.get("line_user_id"))
+    d.pop("line_bind_code", None)
+    d.pop("line_bind_expires", None)
+    return d
+
+def _resolve_quick_tags(quick_tags, condition: str, name: str):
+    if quick_tags is None:
+        try:
+            from chips_generator import get_clinical_rule_chips
+            quick_tags = get_clinical_rule_chips(condition, name)
+        except Exception:
+            quick_tags = []
+    return quick_tags, json.dumps(quick_tags, ensure_ascii=False)
+
 # 💡 依據使用者帳號取得專屬親友清單
 def get_all_recipients(user_account: str = "test"):
     conn = get_db()
     rows = conn.execute("SELECT * FROM recipients WHERE user_account = ? ORDER BY created_at ASC", (user_account,)).fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    return [_recipient_row_to_dict(r) for r in rows]
 
-# 💡 新增親友時綁定當前使用者帳號（具備自動重試防鎖定機制）
-def add_recipient(name: str, condition: str, phone: str = "", birthday: str = "", user_account: str = "test"):
+def get_recipient_by_id(rec_id: str):
+    conn = get_db()
+    row = conn.execute("SELECT * FROM recipients WHERE id = ?", (rec_id,)).fetchone()
+    conn.close()
+    return _recipient_row_to_dict(row) if row else None
+
+# 💡 新增親友時綁定當前使用者帳號（具備自動重試防鎖定機制），未指定晶片時依病況自動產生
+def add_recipient(name: str, condition: str, phone: str = "", birthday: str = "", user_account: str = "test", quick_tags: list = None):
     rec_id = f"rec_{int(datetime.now().timestamp() * 1000)}"
-    
+    quick_tags, tags_json = _resolve_quick_tags(quick_tags, condition, name)
+
     # 最多重試 5 次，每次間隔 0.2 秒
     for attempt in range(5):
         conn = get_db()
         try:
             conn.execute(
-                "INSERT INTO recipients (id, name, condition, phone, birthday, user_account) VALUES (?, ?, ?, ?, ?, ?)",
-                (rec_id, name, condition, phone, birthday, user_account)
+                "INSERT INTO recipients (id, name, condition, phone, birthday, user_account, quick_tags_json) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                (rec_id, name, condition, phone, birthday, user_account, tags_json)
             )
             conn.commit()
             break # 寫入成功，跳出迴圈
@@ -336,17 +705,25 @@ def add_recipient(name: str, condition: str, phone: str = "", birthday: str = ""
             except:
                 pass
                 
-    return {"id": rec_id, "name": name, "condition": condition, "phone": phone, "birthday": birthday, "user_account": user_account}
+    return {"id": rec_id, "name": name, "condition": condition, "phone": phone, "birthday": birthday, "user_account": user_account, "quick_tags": quick_tags}
 
-def update_recipient(rec_id: str, name: str, condition: str, phone: str = "", birthday: str = ""):
+def update_recipient(rec_id: str, name: str, condition: str, phone: str = "", birthday: str = "", quick_tags: list = None):
+    quick_tags, tags_json = _resolve_quick_tags(quick_tags, condition, name)
     conn = get_db()
     conn.execute(
-        "UPDATE recipients SET name = ?, condition = ?, phone = ?, birthday = ? WHERE id = ?",
-        (name, condition, phone, birthday, rec_id)
+        "UPDATE recipients SET name = ?, condition = ?, phone = ?, birthday = ?, quick_tags_json = ? WHERE id = ?",
+        (name, condition, phone, birthday, tags_json, rec_id)
     )
     conn.commit()
     conn.close()
-    return {"id": rec_id, "name": name, "condition": condition, "phone": phone, "birthday": birthday}
+    return {"id": rec_id, "name": name, "condition": condition, "phone": phone, "birthday": birthday, "quick_tags": quick_tags}
+
+def update_recipient_quick_tags(rec_id: str, quick_tags: list):
+    conn = get_db()
+    conn.execute("UPDATE recipients SET quick_tags_json = ? WHERE id = ?", (json.dumps(quick_tags, ensure_ascii=False), rec_id))
+    conn.commit()
+    conn.close()
+    return {"id": rec_id, "quick_tags": quick_tags}
 
 def delete_recipient(rec_id: str):
     conn = get_db()
@@ -406,6 +783,41 @@ def add_points_transaction(account: str, amount: int, title: str):
     )
     conn.commit()
     conn.close()
+
+def get_ai_guard_quota(account: str, daily_limit: int):
+    today = datetime.now().strftime("%Y-%m-%d")
+    conn = get_db()
+    row = conn.execute("SELECT used, bonus FROM ai_guard_usage WHERE account = ? AND date_str = ?", (account, today)).fetchone()
+    conn.close()
+    used = row["used"] if row else 0
+    bonus = row["bonus"] if row else 0
+    limit = daily_limit + bonus
+    return {"date": today, "used": used, "bonus": bonus, "limit": limit, "remaining": max(0, limit - used)}
+
+def consume_ai_guard_quota(account: str, daily_limit: int):
+    """扣除一次詢問次數；已達上限時回傳 (False, quota)"""
+    quota = get_ai_guard_quota(account, daily_limit)
+    if quota["remaining"] <= 0:
+        return False, quota
+    conn = get_db()
+    conn.execute("""
+    INSERT INTO ai_guard_usage (account, date_str, used, bonus) VALUES (?, ?, 1, 0)
+    ON CONFLICT(account, date_str) DO UPDATE SET used = used + 1
+    """, (account, quota["date"]))
+    conn.commit()
+    conn.close()
+    return True, get_ai_guard_quota(account, daily_limit)
+
+def add_ai_guard_bonus(account: str, extra: int, daily_limit: int):
+    today = datetime.now().strftime("%Y-%m-%d")
+    conn = get_db()
+    conn.execute("""
+    INSERT INTO ai_guard_usage (account, date_str, used, bonus) VALUES (?, ?, 0, ?)
+    ON CONFLICT(account, date_str) DO UPDATE SET bonus = bonus + excluded.bonus
+    """, (account, today, extra))
+    conn.commit()
+    conn.close()
+    return get_ai_guard_quota(account, daily_limit)
 
 def get_all_clinical_knowledge():
     conn = get_db()
@@ -481,7 +893,7 @@ def set_system_config(key: str, value):
 def get_database_stats():
     conn = get_db()
     cursor = conn.cursor()
-    tables = ["users", "recipients", "orders", "points_ledger", "pharmacy_cache", "clinical_knowledge", "system_config"]
+    tables = ["users", "recipients", "orders", "points_ledger", "pharmacy_cache", "recommendation_products", "clinical_knowledge", "system_config"]
     counts = {}
     for t in tables:
         try:
@@ -554,5 +966,131 @@ def update_recipient_line_id(recipient_name: str, line_user_id: str):
     conn.commit()
     conn.close()
     return {"success": True, "name": recipient_name, "line_user_id": line_user_id}
+
+# =========================================================================
+# LINE 個人帳號綁定（綁定碼）
+# =========================================================================
+LINE_BIND_CODE_TTL_HOURS = 24
+
+def create_line_bind_code(rec_id: str):
+    """為指定親友產生 6 位數綁定碼（24 小時內有效），親友在 LINE 傳「綁定 123456」即可綁定"""
+    import random as _random
+    rng = _random.SystemRandom()
+    now = datetime.now()
+    expires = (now + timedelta(hours=LINE_BIND_CODE_TTL_HOURS)).strftime("%Y-%m-%d %H:%M:%S")
+    conn = get_db()
+    for _ in range(20):
+        code = f"{rng.randint(0, 999999):06d}"
+        clash = conn.execute(
+            "SELECT 1 FROM recipients WHERE line_bind_code = ? AND line_bind_expires > ?",
+            (code, now.strftime("%Y-%m-%d %H:%M:%S"))
+        ).fetchone()
+        if not clash:
+            break
+    conn.execute("UPDATE recipients SET line_bind_code = ?, line_bind_expires = ? WHERE id = ?", (code, expires, rec_id))
+    conn.commit()
+    conn.close()
+    return {"code": code, "expires_at": expires}
+
+def bind_line_by_code(code: str, line_user_id: str):
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    conn = get_db()
+    row = conn.execute(
+        "SELECT * FROM recipients WHERE line_bind_code = ? AND line_bind_expires > ?", (code, now_str)
+    ).fetchone()
+    if not row:
+        conn.close()
+        return None
+    conn.execute(
+        "UPDATE recipients SET line_user_id = ?, line_bind_code = NULL, line_bind_expires = NULL WHERE id = ?",
+        (line_user_id, row["id"])
+    )
+    conn.commit()
+    owner = conn.execute("SELECT name FROM users WHERE account = ?", (row["user_account"],)).fetchone()
+    conn.close()
+    rec = _recipient_row_to_dict(row)
+    rec["owner_name"] = owner["name"] if owner and owner["name"] else ""
+    return rec
+
+def bind_line_by_exact_name(name: str, line_user_id: str):
+    """舊版「我是 名字」綁定：只有名字完全相同且全系統唯一時才綁定，避免綁錯人"""
+    conn = get_db()
+    rows = conn.execute("SELECT id, name FROM recipients WHERE TRIM(name) = ?", (name.strip(),)).fetchall()
+    if len(rows) != 1:
+        conn.close()
+        return None
+    conn.execute("UPDATE recipients SET line_user_id = ? WHERE id = ?", (line_user_id, rows[0]["id"]))
+    conn.commit()
+    conn.close()
+    return dict(rows[0])
+
+def unbind_recipient_line(rec_id: str):
+    conn = get_db()
+    conn.execute("UPDATE recipients SET line_user_id = NULL, line_bind_code = NULL, line_bind_expires = NULL WHERE id = ?", (rec_id,))
+    conn.commit()
+    conn.close()
+
+def find_recipient_line_id(elder_name: str, owner_account: str = ""):
+    """找出要推播的 LINE ID：只比對寄件者帳號底下的親友，避免推給其他使用者的同名親友"""
+    if not owner_account:
+        return None
+    conn = get_db()
+    row = conn.execute(
+        "SELECT line_user_id FROM recipients WHERE name = ? AND user_account = ? AND line_user_id IS NOT NULL",
+        (elder_name, owner_account)
+    ).fetchone()
+    conn.close()
+    return row["line_user_id"] if row else None
+
+def find_recipient_name_by_line_id(line_user_id: str):
+    conn = get_db()
+    row = conn.execute("SELECT name FROM recipients WHERE line_user_id = ?", (line_user_id,)).fetchone()
+    conn.close()
+    return row["name"] if row else None
+
+# =========================================================================
+# 回饋點數規則（由後端控管次數上限）
+# =========================================================================
+REWARD_RULES = {
+    # 發送關懷卡：每位親友每天 +10，每天最多 5 張
+    "care_card": {"amount": 10, "title": "發送關懷卡：給【{recipient}】", "daily_cap": 5},
+    # 與小熊互動：每週 +50
+    "mascot_weekly": {"amount": 50, "title": "小熊每週關懷加碼"},
+}
+
+def claim_reward(account: str, action: str, recipient: str = ""):
+    rule = REWARD_RULES.get(action)
+    if not rule:
+        return {"success": False, "awarded": 0, "message": "未知的回饋項目"}
+
+    now = datetime.now()
+    today = now.strftime("%Y-%m-%d")
+    if action == "care_card":
+        claim_key = f"care_card:{today}:{recipient}"
+    else:
+        iso_year, iso_week, _ = now.isocalendar()
+        claim_key = f"mascot_weekly:{iso_year}-W{iso_week:02d}"
+
+    conn = get_db()
+    if conn.execute("SELECT 1 FROM reward_claims WHERE account = ? AND claim_key = ?", (account, claim_key)).fetchone():
+        conn.close()
+        msg = "今天已經送過這位親友的關懷卡點數囉！" if action == "care_card" else "本週的小熊加碼已經領過囉！"
+        return {"success": True, "awarded": 0, "message": msg}
+
+    daily_cap = rule.get("daily_cap")
+    if daily_cap:
+        used = conn.execute(
+            "SELECT COUNT(*) FROM reward_claims WHERE account = ? AND claim_key LIKE ?", (account, f"{action}:{today}:%")
+        ).fetchone()[0]
+        if used >= daily_cap:
+            conn.close()
+            return {"success": True, "awarded": 0, "message": f"今天的關懷卡點數已達上限（{daily_cap} 張）"}
+
+    conn.execute("INSERT INTO reward_claims (account, claim_key, amount) VALUES (?, ?, ?)", (account, claim_key, rule["amount"]))
+    conn.commit()
+    conn.close()
+
+    add_points_transaction(account, rule["amount"], rule["title"].format(recipient=recipient or "親友"))
+    return {"success": True, "awarded": rule["amount"], "message": f"獲得 {rule['amount']} 點關懷回饋！"}
 
 init_db()

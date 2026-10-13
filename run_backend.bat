@@ -1,9 +1,9 @@
 @echo off
 chcp 65001 >nul
-title CareGift 2.0 FastAPI Server
+title GiftSense 2.0 FastAPI Server
 
 echo ========================================================
-echo   CareGift 2.0 智慧關懷送禮平台 - 後端伺服器啟動中
+echo   GiftSense 2.0 智慧關懷送禮平台 - 後端伺服器啟動中
 echo   介接技術：FastAPI + RAG 醫學知識庫 + CWA 中央氣象署
 echo ========================================================
 echo.

@@ -2,13 +2,96 @@ import requests
 import re
 import urllib3
 import urllib.parse
-from database import save_pharmacy_products
+import json
+import os
+import time
+from database import save_pharmacy_products, save_recommendation_products, get_recommendation_products_by_condition as get_db_recommendation_products_by_condition
 
 urllib3.disable_warnings()
 
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 }
+
+CACHE_TTL_SECONDS = 24 * 60 * 60
+CACHE_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'pharmacy_cache.json')
+
+def _normalize_cache_key(keyword: str) -> str:
+    text = (keyword or '').strip().lower()
+    return text or '__all__'
+
+def _read_cache_store():
+    if not os.path.exists(CACHE_FILE_PATH):
+        return {}
+    try:
+        with open(CACHE_FILE_PATH, 'r', encoding='utf-8') as f:
+            payload = json.load(f)
+        return payload if isinstance(payload, dict) else {}
+    except Exception:
+        return {}
+
+def _write_cache_store(store):
+    with open(CACHE_FILE_PATH, 'w', encoding='utf-8') as f:
+        json.dump(store, f, ensure_ascii=False, indent=2)
+
+def get_cache_status(keyword: str = ""):
+    key = _normalize_cache_key(keyword)
+    store = _read_cache_store()
+    entry = store.get(key)
+
+    if not isinstance(entry, dict):
+        return {
+            'key': key,
+            'exists': False,
+            'is_expired': True,
+            'cached_at': None,
+            'expires_at': None,
+            'ttl_seconds': CACHE_TTL_SECONDS,
+            'remaining_seconds': 0
+        }
+
+    cached_at = float(entry.get('cached_at', 0) or 0)
+    expires_at = float(entry.get('expires_at', 0) or 0)
+    now = time.time()
+    is_expired = now >= expires_at or now - cached_at > CACHE_TTL_SECONDS
+
+    return {
+        'key': key,
+        'exists': True,
+        'is_expired': is_expired,
+        'cached_at': cached_at,
+        'expires_at': expires_at,
+        'ttl_seconds': CACHE_TTL_SECONDS,
+        'remaining_seconds': max(0, int(expires_at - now))
+    }
+
+
+def get_cached_pharmacy_products(keyword: str = ""):
+    status = get_cache_status(keyword)
+    if not status['exists'] or status['is_expired']:
+        return None
+
+    store = _read_cache_store()
+    entry = store.get(status['key'])
+    if not isinstance(entry, dict):
+        return None
+
+    products = entry.get('products')
+    if isinstance(products, list):
+        return products
+    return None
+
+
+def set_cached_pharmacy_products(keyword: str, products):
+    key = _normalize_cache_key(keyword)
+    store = _read_cache_store()
+    now = time.time()
+    store[key] = {
+        'cached_at': now,
+        'expires_at': now + CACHE_TTL_SECONDS,
+        'products': products
+    }
+    _write_cache_store(store)
 
 def get_pharmacy_search_url(pharmacy: str, keyword: str) -> str:
     clean_kw = re.sub(r'【.*?】', '', keyword).strip()
@@ -26,6 +109,29 @@ def get_pharmacy_search_url(pharmacy: str, keyword: str) -> str:
         return f"https://www.norbelbaby.com.tw/nec/search?keyword={encoded_kw}"
     else:
         return f"https://shop.greattree.com.tw/searchlist?keyword={encoded_kw}"
+
+
+def warmup_pharmacy_cache():
+    keywords = [
+        "保健品",
+        "骨骼關節",
+        "葡萄糖胺",
+        "葉黃素",
+        "益生菌",
+        "魚油",
+        "睡眠",
+        "高血壓",
+        "親友保健"
+    ]
+    warmed = []
+    for keyword in keywords:
+        try:
+            items = search_pharmacy_products(keyword)
+            if items:
+                warmed.append({"keyword": keyword, "count": len(items)})
+        except Exception as exc:
+            print(f"Warmup cache failed for '{keyword}': {exc}")
+    return warmed
 
 # Curated & Verified Real Chain Pharmacy Product SKUs (Taiwan Big 4 Pharmacies)
 VERIFIED_PHARMACY_CATALOG = [
@@ -242,6 +348,12 @@ def scrape_medfirst_live(keyword: str):
 def search_pharmacy_products(keyword: str = ""):
     k = keyword.strip().lower()
 
+    cache_status = get_cache_status(k)
+    if cache_status['exists'] and not cache_status['is_expired']:
+        cached = get_cached_pharmacy_products(k)
+        if cached is not None:
+            return cached
+
     # 1. Search verified catalog
     matched = []
     for item in VERIFIED_PHARMACY_CATALOG:
@@ -260,8 +372,9 @@ def search_pharmacy_products(keyword: str = ""):
     # 3. Sort by price
     matched.sort(key=lambda x: x["price"])
 
-    # 4. Cache into SQLite
+    # 4. Cache into JSON with 24h TTL
     if matched:
+        set_cached_pharmacy_products(k, matched)
         try:
             save_pharmacy_products(matched)
         except Exception as e:
@@ -395,13 +508,22 @@ def get_recommended_products_by_condition(elder_name: str = "親友", condition:
         }
     ]
 
-    matched = []
-    for item in all_recommendations:
-        if any(mc in cond for mc in item["match_conditions"]):
-            matched.append(item)
+    db_matches = get_db_recommendation_products_by_condition(cond)
+    if db_matches:
+        matched = db_matches
+    else:
+        matched = []
+        for item in all_recommendations:
+            if any(mc in cond for mc in item["match_conditions"]):
+                matched.append(item)
 
     if not matched:
         matched = all_recommendations[:3]
+
+    try:
+        save_recommendation_products(matched)
+    except Exception as e:
+        print("Recommendation DB seed error:", e)
 
     return {
         "success": True,
