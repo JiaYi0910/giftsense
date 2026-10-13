@@ -250,7 +250,7 @@ def health_check():
         "status": "ok",
         "service": "GiftSense 2.0 Real Python Backend",
         "version": "2.0.0",
-        "database": "SQLite (caregift.db) Connected",
+        "database": "Turso (libSQL) Connected" if db_stats.get("persistent") else "SQLite (caregift.db) Connected",
         "sqlite_stats": db_stats,
         "literatures_count": db_stats["counts"].get("clinical_knowledge", len(CLINICAL_LITERATURES)),
         "vector_engine": "MedicalVectorStore (High-Dimensional Cosine)",

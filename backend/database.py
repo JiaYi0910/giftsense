@@ -8,8 +8,12 @@ DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "caregift.db"
 
 # 💡 暖心選物商品資料（藥局官網實際查價）統一放在 product_catalog.py，init_db 啟動時同步寫入
 from product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
+# 💡 設定 TURSO_DATABASE_URL 後改用 Turso 雲端資料庫（Render 免費方案重啟時資料才不會消失）
+from db_backend import USE_TURSO, connect_turso, bootstrap_turso_from_sqlite
 
 def get_db():
+    if USE_TURSO:
+        return connect_turso()
     conn = sqlite3.connect(DB_PATH, timeout=30.0) # 💡 增加逾時等待時間 (30秒)，避免瞬間搶鎖失敗
     conn.row_factory = sqlite3.Row
     try:
@@ -21,6 +25,14 @@ def get_db():
 
 def init_db():
     conn = get_db()
+    if USE_TURSO:
+        # 第一次連上空的 Turso 資料庫：匯入 repo 內附的 caregift.db（示範帳號、文獻、商品快取）
+        try:
+            if bootstrap_turso_from_sqlite(conn, DB_PATH):
+                print("【Turso】已從 caregift.db 匯入初始資料")
+        except Exception as e:
+            print("【Turso】初始資料匯入失敗，改用預設資料建立：", e)
+            conn.rollback()
     cursor = conn.cursor()
 
     # 1. recipients 表格（💡 加上 user_account 實現多用戶隔離）
@@ -876,11 +888,21 @@ def get_database_stats():
         except Exception:
             counts[t] = 0
     conn.close()
+    if USE_TURSO:
+        return {
+            "db_name": "Turso 雲端資料庫",
+            "db_path": "turso",
+            "db_size_kb": "-",
+            "status": "connected",
+            "persistent": True,
+            "counts": counts
+        }
     file_size_kb = round(os.path.getsize(DB_PATH) / 1024, 1) if os.path.exists(DB_PATH) else 0
     return {
         "db_name": "caregift.db",
         "db_path": DB_PATH,
         "db_size_kb": file_size_kb,
+        "persistent": False,
         "status": "connected",
         "counts": counts
     }
