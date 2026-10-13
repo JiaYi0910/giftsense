@@ -2,7 +2,8 @@ import sqlite3
 import json
 import os
 import time
-from datetime import datetime, timedelta
+import uuid
+from datetime import datetime, timedelta, timezone
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "caregift.db")
 
@@ -255,7 +256,10 @@ def init_db():
         ("avatar", "TEXT DEFAULT 'default'"),
         ("email", "TEXT DEFAULT ''"),
         ("auth_provider", "TEXT DEFAULT 'email'"),
-        ("social_id", "TEXT")
+        ("social_id", "TEXT"),
+        ("social_avatar_url", "TEXT DEFAULT ''"),
+        ("last_active_date", "TEXT DEFAULT ''"),
+        ("login_streak", "INTEGER DEFAULT 0")
     ]
     for col_name, col_type in columns_to_add:
         if col_name not in existing_columns:
@@ -263,6 +267,43 @@ def init_db():
                 conn.execute(f"ALTER TABLE users ADD COLUMN {col_name} {col_type}")
             except Exception:
                 pass
+
+    cursor.execute(
+        "UPDATE recipients SET line_user_id = NULL "
+        "WHERE COALESCE(user_account, '') = '' AND line_user_id IS NOT NULL"
+    )
+
+    # 一次性：清除舊的暖幣紀錄與傳情小站聊天紀錄（2026/10/13 使用者要求，避免和新的測試紀錄混在一起）
+    # 舊資料移到 *_archive 表保留備查，不直接刪除；會員保留「新會員註冊獎勵 +100」（以新版格式重新記錄），
+    # 其餘紀錄歸零後重新累計（管理員帳號的點數不動）
+    if not cursor.execute("SELECT 1 FROM system_config WHERE key = 'points_reset_20261013'").fetchone():
+        cursor.execute("CREATE TABLE IF NOT EXISTS chat_messages_archive AS SELECT * FROM chat_messages WHERE 0")
+        cursor.execute("INSERT INTO chat_messages_archive SELECT * FROM chat_messages")
+        cursor.execute("DELETE FROM chat_messages")
+        cursor.execute("CREATE TABLE IF NOT EXISTS points_ledger_archive AS SELECT * FROM points_ledger WHERE 0")
+        cursor.execute("INSERT INTO points_ledger_archive SELECT * FROM points_ledger")
+        cursor.execute("DELETE FROM points_ledger")
+        cursor.execute("CREATE TABLE IF NOT EXISTS cashback_orders_archive AS SELECT * FROM cashback_orders WHERE 0")
+        cursor.execute("INSERT INTO cashback_orders_archive SELECT * FROM cashback_orders")
+        cursor.execute("DELETE FROM cashback_orders")
+        cursor.execute("DELETE FROM reward_claims")
+        reset_now = datetime.now()
+        bonus_date = reset_now.strftime("%Y/%m/%d")
+        bonus_expire = f"{reset_now.year + 3}/{reset_now.strftime('%m/%d')} (剩餘 3 年)"
+        members = cursor.execute(
+            "SELECT account FROM users WHERE COALESCE(role, 'user') != 'admin'"
+        ).fetchall()
+        for m in members:
+            cursor.execute(
+                "INSERT INTO points_ledger (account, amount, title, date_str, expire_str, type, user_account) "
+                "VALUES (?, 100, '新會員註冊獎勵', ?, ?, 'plus', ?)",
+                (m["account"], bonus_date, bonus_expire, m["account"])
+            )
+        cursor.execute("UPDATE users SET points = 100 WHERE COALESCE(role, 'user') != 'admin'")
+        cursor.execute(
+            "INSERT OR REPLACE INTO system_config (key, value_json) VALUES ('points_reset_20261013', ?)",
+            (json.dumps({"done_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}),)
+        )
 
     cursor.execute("SELECT COUNT(*) FROM users WHERE account = 'admin'")
     if cursor.fetchone()[0] == 0:
@@ -558,7 +599,8 @@ def authenticate_user(account: str, password_raw: str):
             "points": user["points"],
             "phone": user.get("phone", ""),
             "birthday": user.get("birthday", ""),
-            "bio": user.get("bio", "")
+            "bio": user.get("bio", ""),
+            "avatar_url": resolve_avatar_url(user),
         }
     return None
 
@@ -594,12 +636,34 @@ def register_user(account: str, password_raw: str, name: str = None, role: str =
         "points": initial_points
     }
 
+def resolve_avatar_url(user: dict) -> str:
+    """頭貼優先順序：自行上傳 > 第三方登入的大頭照 > 空字串（前端顯示預設人像圖示）"""
+    avatar = (user.get("avatar") or "").strip()
+    if avatar.startswith("data:image/") or avatar.startswith("http"):
+        return avatar
+    return (user.get("social_avatar_url") or "").strip()
+
 def _public_user(row):
     user = dict(row)
     user.pop("password_hash", None)
+    user["avatar_url"] = resolve_avatar_url(user)
     return user
 
-def find_or_create_social_user(provider: str, social_id: str, email: str = "", email_verified: bool = False, name: str = ""):
+AVATAR_MAX_LENGTH = 450_000  # 約 330KB 圖片（base64）；前端上傳前會先縮到 512px
+
+def set_user_avatar(account: str, image_data_url: str = ""):
+    """自行上傳頭貼（data URL）；傳空字串則移除，改回第三方大頭照或預設圖示"""
+    value = (image_data_url or "").strip() or "default"
+    conn = get_db()
+    conn.execute("UPDATE users SET avatar = ? WHERE account = ? OR email = ?", (value, account, account))
+    conn.commit()
+    row = conn.execute(
+        "SELECT avatar, social_avatar_url FROM users WHERE account = ? OR email = ?", (account, account)
+    ).fetchone()
+    conn.close()
+    return resolve_avatar_url(dict(row)) if row else None
+
+def find_or_create_social_user(provider: str, social_id: str, email: str = "", email_verified: bool = False, name: str = "", picture: str = ""):
     """
     依平台驗證過的身分找出或建立會員：
     1. 先以 (auth_provider, social_id) 比對
@@ -626,13 +690,19 @@ def find_or_create_social_user(provider: str, social_id: str, email: str = "", e
         display_name = (name or "").strip() or (email.split("@")[0] if email else f"{provider.capitalize()} 會員")
         user_id = f"usr_{int(datetime.now().timestamp() * 1000)}"
         conn.execute(
-            """INSERT INTO users (id, account, name, email, auth_provider, social_id, role, points, created_at)
-               VALUES (?, ?, ?, ?, ?, ?, 'user', 0, CURRENT_TIMESTAMP)""",
-            (user_id, account, display_name, email if not email_taken else "", provider, social_id)
+            """INSERT INTO users (id, account, name, email, auth_provider, social_id, role, points, created_at, social_avatar_url)
+               VALUES (?, ?, ?, ?, ?, ?, 'user', 0, CURRENT_TIMESTAMP, ?)""",
+            (user_id, account, display_name, email if not email_taken else "", provider, social_id, picture or "")
         )
         conn.commit()
         row = conn.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
         created = True
+
+    elif picture and picture != (row["social_avatar_url"] or ""):
+        # 每次登入都同步第三方的最新大頭照
+        conn.execute("UPDATE users SET social_avatar_url = ? WHERE id = ?", (picture, row["id"]))
+        conn.commit()
+        row = conn.execute("SELECT * FROM users WHERE id = ?", (row["id"],)).fetchone()
 
     conn.close()
     if created:
@@ -642,9 +712,17 @@ def find_or_create_social_user(provider: str, social_id: str, email: str = "", e
 
 def get_user_profile(account: str):
     conn = get_db()
-    row = conn.execute("SELECT id, account, name, role, points, phone, birthday, bio, avatar, created_at, email, auth_provider FROM users WHERE account = ? OR email = ?", (account, account)).fetchone()
+    row = conn.execute(
+        "SELECT id, account, name, role, points, phone, birthday, bio, avatar, social_avatar_url, created_at, email, auth_provider "
+        "FROM users WHERE account = ? OR email = ?",
+        (account, account)
+    ).fetchone()
     conn.close()
-    return dict(row) if row else None
+    if not row:
+        return None
+    d = dict(row)
+    d["avatar_url"] = resolve_avatar_url(d)
+    return d
 
 def _recipient_row_to_dict(row):
     d = dict(row)
@@ -682,7 +760,7 @@ def get_recipient_by_id(rec_id: str):
 
 # 💡 新增親友時綁定當前使用者帳號（具備自動重試防鎖定機制），未指定晶片時依病況自動產生
 def add_recipient(name: str, condition: str, phone: str = "", birthday: str = "", user_account: str = "test", quick_tags: list = None):
-    rec_id = f"rec_{int(datetime.now().timestamp() * 1000)}"
+    rec_id = f"rec_{int(datetime.now().timestamp() * 1000)}_{uuid.uuid4().hex[:6]}"  # 加隨機碼，避免同一毫秒建立時撞號
     quick_tags, tags_json = _resolve_quick_tags(quick_tags, condition, name)
 
     # 最多重試 5 次，每次間隔 0.2 秒
@@ -768,6 +846,36 @@ def cancel_order(order_id: str):
     conn.execute("UPDATE orders SET status = '系統已連線藥局辦理撤單 (全額退款成功)' WHERE id = ?", (order_id,))
     conn.commit()
     conn.close()
+
+TAIWAN_TZ = timezone(timedelta(hours=8))
+
+def check_in_user(account: str):
+    """每天第一次開啟 App 時打卡：昨天有上線就連續天數 +1，中間斷掉就從第 1 天重新計算（以台灣日期為準）"""
+    today = datetime.now(TAIWAN_TZ).date()
+    conn = get_db()
+    row = conn.execute(
+        "SELECT account, last_active_date, login_streak FROM users WHERE account = ? OR email = ?",
+        (account, account)
+    ).fetchone()
+    if not row:
+        conn.close()
+        return None
+    last = row["last_active_date"] or ""
+    streak = int(row["login_streak"] or 0)
+    if last == today.isoformat():
+        new_streak = max(streak, 1)
+    elif last == (today - timedelta(days=1)).isoformat():
+        new_streak = streak + 1
+    else:
+        new_streak = 1
+    if last != today.isoformat():
+        conn.execute(
+            "UPDATE users SET last_active_date = ?, login_streak = ? WHERE account = ?",
+            (today.isoformat(), new_streak, row["account"])
+        )
+        conn.commit()
+    conn.close()
+    return {"streak": new_streak, "date": today.isoformat(), "is_new_day": last != today.isoformat()}
 
 def get_points_ledger(account: str = "test"):
     conn = get_db()
@@ -970,37 +1078,29 @@ def get_database_stats():
         "counts": counts
     }
 
-def update_user_profile_in_db(account: str, name: str, phone: str, birthday: str, bio: str, avatar: str = "default"):
+def update_user_profile_in_db(account: str, name: str, phone: str, birthday: str, bio: str, avatar: str = None):
     conn = get_db()
     try:
-        conn.execute(
-            """UPDATE users 
-               SET name = ?, phone = ?, birthday = ?, bio = ?, avatar = ? 
-               WHERE account = ? OR email = ?""", 
-            (name, phone, birthday, bio, avatar, account, account)
-        )
+        if avatar is None:
+            conn.execute(
+                "UPDATE users SET name = ?, phone = ?, birthday = ?, bio = ? WHERE account = ? OR email = ?",
+                (name, phone, birthday, bio, account, account)
+            )
+        else:
+            conn.execute(
+                "UPDATE users SET name = ?, phone = ?, birthday = ?, bio = ?, avatar = ? WHERE account = ? OR email = ?",
+                (name, phone, birthday, bio, avatar, account, account)
+            )
         conn.commit()
-        conn.close()
         return True
     except Exception as e:
-        print("更新 SQLite 會員資料失敗:", e)
-        conn.close()
+        print("更新會員資料失敗:", e)
         return False
+    finally:
+        conn.close()
 
 def get_user_profile_by_account(account: str):
-    conn = get_db()
-    row = conn.execute(
-        """
-        SELECT account, name, role, points, phone, birthday, bio, avatar, created_at, email, auth_provider 
-        FROM users 
-        WHERE account = ? OR email = ?
-        """, 
-        (account, account)
-    ).fetchone()
-    conn.close()
-    if row:
-        return dict(row)
-    return None
+    return get_user_profile(account)
 
 def export_full_database():
     return {
@@ -1049,6 +1149,11 @@ def bind_line_by_code(code: str, line_user_id: str):
     if not row:
         conn.close()
         return None
+    # 同一個 LINE 帳號只對應一位親友：先解除其他親友身上的舊綁定，避免訊息存到錯的對話
+    conn.execute(
+        "UPDATE recipients SET line_user_id = NULL WHERE line_user_id = ? AND id != ?",
+        (line_user_id, row["id"])
+    )
     conn.execute(
         "UPDATE recipients SET line_user_id = ?, line_bind_code = NULL, line_bind_expires = NULL WHERE id = ?",
         (line_user_id, row["id"])
@@ -1084,7 +1189,8 @@ def get_line_binding_info(line_user_id: str):
     row = conn.execute(
         """SELECT r.id, r.name, r.condition, r.user_account, u.name AS owner_name
            FROM recipients r LEFT JOIN users u ON u.account = r.user_account
-           WHERE r.line_user_id = ?""",
+           WHERE r.line_user_id = ?
+           ORDER BY CASE WHEN COALESCE(r.user_account, '') = '' THEN 1 ELSE 0 END, r.rowid DESC""",
         (line_user_id,)
     ).fetchone()
     conn.close()

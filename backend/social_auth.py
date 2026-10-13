@@ -55,12 +55,28 @@ def verify_google(id_token: Optional[str] = None, access_token: Optional[str] = 
     if not info.get("sub"):
         raise SocialAuthError("Google 登入憑證缺少使用者識別碼")
 
+    picture = info.get("picture", "")
+    name = info.get("name", "")
+    if access_token and not picture:
+        # Web 版只有 access token：tokeninfo 不含大頭照，改向 userinfo 取得
+        try:
+            profile = requests.get(
+                "https://openidconnect.googleapis.com/v1/userinfo",
+                headers={"Authorization": f"Bearer {access_token}"},
+                timeout=8,
+            ).json()
+            picture = profile.get("picture", "") or ""
+            name = name or profile.get("name", "")
+        except Exception:
+            pass
+
     return {
         "provider": "google",
         "social_id": info["sub"],
         "email": info.get("email", ""),
         "email_verified": str(info.get("email_verified", "")).lower() == "true",
-        "name": info.get("name", ""),
+        "name": name,
+        "picture": picture,
     }
 
 
@@ -83,7 +99,7 @@ def verify_facebook(access_token: Optional[str]) -> Dict[str, Any]:
 
         me = requests.get(
             "https://graph.facebook.com/me",
-            params={"fields": "id,name,email", "access_token": access_token},
+            params={"fields": "id,name,email,picture.width(256).height(256)", "access_token": access_token},
             timeout=8,
         ).json()
     except requests.RequestException:
@@ -91,6 +107,7 @@ def verify_facebook(access_token: Optional[str]) -> Dict[str, Any]:
 
     if not me.get("id") or str(me.get("id")) != str(debug.get("user_id")):
         raise SocialAuthError("Facebook 使用者資料不一致")
+    picture_data = (me.get("picture") or {}).get("data") or {}
 
     return {
         "provider": "facebook",
@@ -99,6 +116,8 @@ def verify_facebook(access_token: Optional[str]) -> Dict[str, Any]:
         # Facebook 不保證 email 已驗證，因此不用來合併既有帳號
         "email_verified": False,
         "name": me.get("name", ""),
+        # 預設剪影頭像不使用，改顯示系統預設圖示
+        "picture": "" if picture_data.get("is_silhouette") else picture_data.get("url", ""),
     }
 
 
@@ -133,6 +152,7 @@ def verify_apple(identity_token: Optional[str]) -> Dict[str, Any]:
         "email": claims.get("email", ""),
         "email_verified": claims.get("email_verified") in (True, "true"),
         "name": "",
+        "picture": "",  # Apple 不提供大頭照
     }
 
 

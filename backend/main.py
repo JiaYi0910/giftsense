@@ -33,7 +33,8 @@ from database import (
     find_or_create_social_user, create_line_bind_code, bind_line_by_code,
     unbind_recipient_line, find_recipient_line_id, get_line_binding_info, claim_reward,
     create_cashback_click, list_cashback_orders, simulate_cashback_purchase, settle_cashback, CASHBACK_RATES,
-    add_family_message, list_family_messages, latest_family_card
+    add_family_message, list_family_messages, latest_family_card,
+    set_user_avatar, AVATAR_MAX_LENGTH, check_in_user
 )
 from social_auth import verify_social_token, SocialAuthError
 from line_messages import card as line_card, button as line_button
@@ -547,6 +548,17 @@ def add_points_tx(req: PointsTxRequest):
     add_points_transaction(account=req.account, amount=req.amount, title=req.title)
     return {"success": True, "account": req.account, "amount": req.amount}
 
+def _refresh_rag_index():
+    """實證文獻有變動時重建 AI 守護助理的檢索索引（資料庫是唯一來源）"""
+    try:
+        return global_vector_store.reload(get_all_clinical_knowledge())
+    except Exception as e:
+        print("RAG 索引重建失敗：", e)
+        return None
+
+# 啟動時改用資料庫中的文獻建立索引（管理員編輯過的內容在重啟後仍然有效）
+_refresh_rag_index()
+
 @app.get("/api/knowledge")
 def list_clinical_knowledge():
     items = get_all_clinical_knowledge()
@@ -557,21 +569,25 @@ def list_clinical_knowledge():
 @app.post("/api/knowledge")
 def add_or_update_clinical_knowledge(req: KnowledgeItemRequest):
     item = save_clinical_knowledge(req.dict())
+    _refresh_rag_index()
     return {"success": True, "item": item}
 
 @app.post("/api/knowledge/sync")
 def sync_clinical_knowledge(req: KnowledgeSyncRequest):
     saved_count = batch_save_clinical_knowledge(req.literatures)
+    _refresh_rag_index()
     return {"success": True, "saved_count": saved_count}
 
 @app.post("/api/knowledge/reset")
 def reset_clinical_knowledge():
     res = reset_clinical_knowledge_to_defaults()
+    _refresh_rag_index()
     return {"success": True, "total": len(res), "literatures": res}
 
 @app.delete("/api/knowledge/{item_id}")
 def remove_clinical_knowledge(item_id: str):
     delete_clinical_knowledge(item_id)
+    _refresh_rag_index()
     return {"success": True, "deleted_id": item_id}
 
 @app.get("/api/config/rag")
@@ -999,7 +1015,7 @@ def api_update_user_profile(req: dict):
     phone = req.get("phone", "")
     birthday = req.get("birthday", "")
     bio = req.get("bio", "")
-    avatar = req.get("avatar", "default")
+    avatar = req.get("avatar")  # 沒帶就維持原本的頭貼（上傳頭貼改用 /api/user/avatar）
     
     if not account or not name:
         return {"success": False, "message": "帳號與顯示名稱不能為空"}
@@ -1008,6 +1024,34 @@ def api_update_user_profile(req: dict):
     if success:
         return {"success": True, "message": "個人資料與 SQLite 資料庫更新成功"}
     return {"success": False, "message": "更新失敗"}
+
+class CheckInRequest(BaseModel):
+    account: str
+
+@app.post("/api/user/checkin")
+def api_user_checkin(req: CheckInRequest):
+    """連續登入天數：每天第一次開啟時打卡，中斷就從第 1 天重新計算"""
+    result = check_in_user(req.account)
+    if result is None:
+        return {"success": False, "streak": 1}
+    return {"success": True, **result}
+
+class AvatarUploadRequest(BaseModel):
+    account: str
+    image: str = ""  # data:image/...;base64,...；空字串 = 移除自訂頭貼
+
+@app.post("/api/user/avatar")
+def api_upload_avatar(req: AvatarUploadRequest):
+    image = (req.image or "").strip()
+    if image:
+        if not re.match(r"^data:image/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$", image):
+            return {"success": False, "message": "頭貼格式不支援，請上傳 JPG、PNG 或 WebP 圖片"}
+        if len(image) > AVATAR_MAX_LENGTH:
+            return {"success": False, "message": "圖片太大，請選擇較小的照片"}
+    avatar_url = set_user_avatar(req.account, image)
+    if avatar_url is None:
+        return {"success": False, "message": "找不到這個會員帳號"}
+    return {"success": True, "avatar_url": avatar_url}
 
 class SocialLoginRequest(BaseModel):
     provider: str
@@ -1051,7 +1095,8 @@ def api_social_login(req: SocialLoginRequest):
         social_id=identity["social_id"],
         email=identity.get("email", ""),
         email_verified=identity.get("email_verified", False),
-        name=identity.get("name") or (req.name or "")
+        name=identity.get("name") or (req.name or ""),
+        picture=identity.get("picture", "")
     )
     return {
         "success": True,

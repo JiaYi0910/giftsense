@@ -269,6 +269,29 @@ class MedicalVectorStore:
                 vec[t] /= length
             self.doc_vectors.append(vec)
 
+    def reload(self, documents: List[Dict[str, Any]]):
+        """以資料庫中的實證文獻重建索引（管理員新增／編輯／刪除文獻後呼叫）"""
+        docs = []
+        for d in documents or []:
+            if not d.get("title"):
+                continue
+            doc = dict(d)
+            symptoms = doc.get("targetSymptoms")
+            doc["targetSymptoms"] = [str(x) for x in symptoms] if isinstance(symptoms, list) else []
+            for key in ("ingredient", "category", "mechanism", "contraindications", "authority"):
+                doc[key] = doc.get(key) or ""
+            docs.append(doc)
+        fresh = MedicalVectorStore.__new__(MedicalVectorStore)
+        fresh.index_file = self.index_file
+        fresh.documents = docs
+        fresh.vocabulary = {}
+        fresh.idf = {}
+        fresh.doc_vectors = []
+        fresh._build_index()
+        # 一次換上新的索引，避免查詢到一半時文件與向量數量不一致
+        self.idf, self.doc_vectors, self.documents = fresh.idf, fresh.doc_vectors, fresh.documents
+        return len(docs)
+
     def search(self, query: str, top_k: int = 3) -> List[Dict[str, Any]]:
         """Semantic vector retrieval via Cosine Similarity in high-dimensional space."""
         q_tokens = self._tokenize(query)
@@ -290,13 +313,14 @@ class MedicalVectorStore:
             q_vec[t] /= q_len
 
         # Compute Cosine Similarity against all documents
+        documents, doc_vectors = self.documents, self.doc_vectors
         scores: List[tuple] = []
-        for idx, doc_vec in enumerate(self.doc_vectors):
+        for idx, doc_vec in enumerate(doc_vectors[:len(documents)]):
             dot_product = 0.0
             for t, val in q_vec.items():
                 if t in doc_vec:
                     dot_product += val * doc_vec[t]
-            scores.append((dot_product, self.documents[idx]))
+            scores.append((dot_product, documents[idx]))
 
         scores.sort(key=lambda x: x[0], reverse=True)
         # Return matched documents with score >= 0.12 (normalized threshold)
