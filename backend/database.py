@@ -956,17 +956,6 @@ def export_full_database():
         }
     }
 
-def update_recipient_line_id(recipient_name: str, line_user_id: str):
-    conn = get_db()
-    cursor = conn.cursor()
-    cursor.execute(
-        "UPDATE recipients SET line_user_id = ? WHERE name = ?",
-        (line_user_id, recipient_name)
-    )
-    conn.commit()
-    conn.close()
-    return {"success": True, "name": recipient_name, "line_user_id": line_user_id}
-
 # =========================================================================
 # LINE 個人帳號綁定（綁定碼）
 # =========================================================================
@@ -1012,18 +1001,6 @@ def bind_line_by_code(code: str, line_user_id: str):
     rec["owner_name"] = owner["name"] if owner and owner["name"] else ""
     return rec
 
-def bind_line_by_exact_name(name: str, line_user_id: str):
-    """舊版「我是 名字」綁定：只有名字完全相同且全系統唯一時才綁定，避免綁錯人"""
-    conn = get_db()
-    rows = conn.execute("SELECT id, name FROM recipients WHERE TRIM(name) = ?", (name.strip(),)).fetchall()
-    if len(rows) != 1:
-        conn.close()
-        return None
-    conn.execute("UPDATE recipients SET line_user_id = ? WHERE id = ?", (line_user_id, rows[0]["id"]))
-    conn.commit()
-    conn.close()
-    return dict(rows[0])
-
 def unbind_recipient_line(rec_id: str):
     conn = get_db()
     conn.execute("UPDATE recipients SET line_user_id = NULL, line_bind_code = NULL, line_bind_expires = NULL WHERE id = ?", (rec_id,))
@@ -1041,6 +1018,22 @@ def find_recipient_line_id(elder_name: str, owner_account: str = ""):
     ).fetchone()
     conn.close()
     return row["line_user_id"] if row else None
+
+def get_line_binding_info(line_user_id: str):
+    """依 LINE ID 取得綁定的親友資料與守護家人的顯示名稱；未綁定回傳 None"""
+    conn = get_db()
+    row = conn.execute(
+        """SELECT r.id, r.name, r.condition, r.user_account, u.name AS owner_name
+           FROM recipients r LEFT JOIN users u ON u.account = r.user_account
+           WHERE r.line_user_id = ?""",
+        (line_user_id,)
+    ).fetchone()
+    conn.close()
+    if not row:
+        return None
+    info = dict(row)
+    info["owner_name"] = info.get("owner_name") or "家人"
+    return info
 
 def find_recipient_name_by_line_id(line_user_id: str):
     conn = get_db()

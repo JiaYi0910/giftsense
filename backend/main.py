@@ -27,10 +27,10 @@ from database import (
     get_all_clinical_knowledge, save_clinical_knowledge, batch_save_clinical_knowledge,
     delete_clinical_knowledge, reset_clinical_knowledge_to_defaults,
     get_system_config, set_system_config, get_database_stats, export_full_database,
-    get_db, update_recipient_line_id, update_user_profile_in_db, get_user_profile_by_account,
+    get_db, update_user_profile_in_db, get_user_profile_by_account,
     get_ai_guard_quota, consume_ai_guard_quota, add_ai_guard_bonus,
-    find_or_create_social_user, create_line_bind_code, bind_line_by_code, bind_line_by_exact_name,
-    unbind_recipient_line, find_recipient_line_id, find_recipient_name_by_line_id, claim_reward
+    find_or_create_social_user, create_line_bind_code, bind_line_by_code,
+    unbind_recipient_line, find_recipient_line_id, get_line_binding_info, claim_reward
 )
 from social_auth import verify_social_token, SocialAuthError
 from rag_engine import query_rag_engine, CLINICAL_LITERATURES
@@ -48,7 +48,6 @@ AI_GUARD_REDEEM_COST = 50
 AI_GUARD_REDEEM_EXTRA = 3
 
 from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage, AudioMessage
 
 # 1. 💡 必須最先建立 FastAPI 實例 (app)
@@ -101,6 +100,30 @@ def _get_line_bot_basic_id() -> str:
     except Exception as e:
         print("取得 LINE 官方帳號 ID 失敗:", e)
     return _line_bot_basic_id_cache["value"]
+
+LINE_WELCOME_TEXT = (
+    "💙 歡迎加入 GiftSense 智慧關懷 💙\n\n"
+    "心意，醫觸即達。在這裡您會收到家人傳來的暖心問候、健康關懷卡與用藥叮嚀，"
+    "也能直接留言或傳語音給家人 ✨"
+)
+
+LINE_HELP_TEXT = (
+    "【 GiftSense 服務說明 】\n\n"
+    "點下方選單就能使用：\n"
+    "💌 今日關懷：查看家人最新送來的關懷卡\n"
+    "💊 今日用藥：服藥與保健叮嚀\n"
+    "🆘 緊急求助：立即通知守護您的家人\n"
+    "🔗 綁定說明：如何綁定與改綁家人\n"
+    "👤 我的綁定：查看目前綁定的家人\n\n"
+    "💬 直接傳文字或語音，就會轉達給家人喔！"
+)
+
+LINE_UNBOUND_GUIDE = (
+    "您好！您的 LINE 尚未完成綁定 🙏\n\n"
+    "請向家人索取 GiftSense App 上顯示的 6 位數綁定碼，直接回傳：\n"
+    "👉 【綁定 123456】\n"
+    "（請把 123456 換成家人給您的綁定碼）"
+)
 
 def _verify_line_signature(body: bytes, signature: str) -> bool:
     digest = hmac.new(LINE_CHANNEL_SECRET.encode("utf-8"), body, hashlib.sha256).digest()
@@ -225,16 +248,8 @@ class KnowledgeItemRequest(BaseModel):
 class KnowledgeSyncRequest(BaseModel):
     literatures: List[Dict[str, Any]]
 
-family_messages_store: List[Dict[str, Any]] = [
-    {
-        "id": "msg_sample_1",
-        "sender": "我",
-        "elder": "媽媽",
-        "content": "媽媽早安！今天臺北市氣溫舒適，記得多喝溫開水，按時更換無菌敷料喔❤️",
-        "type": "card",
-        "timestamp": "2026-10-05 08:30:00"
-    }
-]
+# 傳情小站訊息（記憶體暫存）：owner_account = 守護家人的帳號，from_role = family（家人發送）/ elder（親友從 LINE 回覆）
+family_messages_store: List[Dict[str, Any]] = []
 
 @app.get("/api/health")
 def health_check():
@@ -557,11 +572,15 @@ def greeting_generate(req: GreetingGenerateRequest):
     )
 
 @app.get("/api/messages")
-def get_family_messages(elder: str = ""):
-    if elder.strip():
-        filtered = [m for m in family_messages_store if elder in m.get("elder", "")]
-        return {"success": True, "messages": filtered}
-    return {"success": True, "messages": family_messages_store}
+def get_family_messages(elder: str = "", account: str = ""):
+    # 💡 只回傳「這個帳號 × 這位親友」的一對一對話，避免不同使用者或不同親友的訊息混在一起
+    if not account.strip():
+        return {"success": True, "messages": []}
+    filtered = [
+        m for m in family_messages_store
+        if m.get("owner_account") == account and (not elder.strip() or m.get("elder") == elder.strip())
+    ]
+    return {"success": True, "messages": filtered}
 
 @app.post("/api/messages")
 def post_family_message(req: FamilyMessageRequest):
@@ -591,6 +610,8 @@ def post_family_message(req: FamilyMessageRequest):
         "content": content_text,
         "type": req.type or "card",
         "timestamp": timestamp_str,
+        "owner_account": req.sender,
+        "from_role": "family",
     }
     family_messages_store.insert(0, new_msg)
     
@@ -618,7 +639,6 @@ def post_family_message(req: FamilyMessageRequest):
 async def line_webhook(request: Request):
     signature = request.headers.get('X-Line-Signature', '')
     body = await request.body()
-    body_str = body.decode('utf-8')
 
     # 💡 驗證請求確實來自 LINE 平台
     if not _verify_line_signature(body, signature):
@@ -627,149 +647,228 @@ async def line_webhook(request: Request):
 
     try:
         import json
-        data = json.loads(body_str)
+        data = json.loads(body.decode('utf-8'))
         for event in data.get("events", []):
-            event_type = event.get("type")
-            user_id = event.get("source", {}).get("userId")
-            print(f"【解析事件】類型: {event_type}, 用戶 ID: {user_id}")
-            
-            if event_type == "follow":
-                if user_id:
-                    welcome_msg_1 = (
-                        "💙 【 歡迎加入 GiftSense 智慧健康守護 】 💙\n"
-                        "-------------------------------------\n"
-                        "心意，醫觸即達。我們是您專屬的溫馨健康管家。\n\n"
-                        "在這裡，您可以隨時收到家人傳遞的暖心問候、健康守護小卡與用藥叮嚀，讓愛與關懷零距離！✨"
-                    )
-                    welcome_msg_2 = (
-                        "📌 【 快速開通綁定步驟 】\n"
-                        "請向家人索取 GiftSense App 上顯示的 6 位數綁定碼，直接回傳：\n\n"
-                        "👉 【綁定 123456】\n"
-                        "（請把 123456 換成家人給您的綁定碼）\n\n"
-                        "💡 綁定成功後，您就能直接在此聊天室與家人雙向對話、接收語音或查看用藥提醒喔！"
-                    )
-                    _send_line_reply(user_id, welcome_msg_1)
-                    import time
-                    time.sleep(0.4)
-                    _send_line_reply(user_id, welcome_msg_2)
-                continue
-
-            if event_type == "message":
-                msg = event.get("message", {})
-                content = ""
-                msg_type = "text"
-                
-                if msg.get("type") == "text":
-                    content = msg.get("text", "").strip()
-                    bind_match = re.match(r"^【?\s*綁定\s*(\d{6})\s*】?$", content)
-
-                    if bind_match:
-                        rec = bind_line_by_code(bind_match.group(1), user_id)
-                        if rec:
-                            owner = f"{rec['owner_name']} " if rec.get("owner_name") else "家人"
-                            reply_text = f"綁定成功！您好，{rec['name']}。{owner}傳送的健康關懷與用藥叮嚀將會即時同步給您！"
-                        else:
-                            reply_text = "綁定失敗：綁定碼錯誤或已過期（有效 24 小時），請家人在 App 重新產生綁定碼後再試一次。"
-                        _send_line_reply(user_id, reply_text)
-                        continue
-
-                    if content.startswith("我是"):
-                        # 舊版綁定方式：只在名字完全相同且唯一時才綁定，否則請改用綁定碼
-                        target_name = content.replace("我是", "").strip("【】 ")
-                        rec = bind_line_by_exact_name(target_name, user_id)
-                        if rec:
-                            reply_text = f"綁定成功！您好，{rec['name']}。家人傳送的健康關懷與用藥叮嚀將會即時同步給您！"
-                        else:
-                            reply_text = (
-                                f"無法用名字「{target_name}」完成綁定（找不到或有同名親友）。\n"
-                                "請向家人索取 App 上的 6 位數綁定碼，回傳【綁定 123456】即可。"
-                            )
-                        _send_line_reply(user_id, reply_text)
-                        continue
-
-                    elif content in ["功能說明", "說明", "幫助", "Help", "選單", "menu"]:
-                        help_text = (
-                            "【 GiftSense 服務說明 】\n\n"
-                            "1. 接收家人問候\n"
-                            "   家人每天發送的關懷卡會直接推播到這裡。\n\n"
-                            "2. 隨時語音與文字留言\n"
-                            "   直接傳送訊息，系統會自動同步至家人的控制台。\n\n"
-                            "3. 常用指令快捷：\n"
-                            "   - 輸入「綁定 6位數綁定碼」重新綁定身份\n"
-                            "   - 點擊下方選單查看用藥提醒或發送求助"
-                        )
-                        _send_line_reply(user_id, help_text)
-                        content = "【系統指令】查看功能說明"
-
-                    elif content in ["用藥提醒", "吃藥", "保健品"]:
-                        med_text = (
-                            "【 今日用藥與保健叮嚀 】\n\n"
-                            "• 請依照醫師處方按時服藥。\n"
-                            "• 若有額外購買市售保健品（如魚油、維他命），請先透過家人的 App 進行安全交互作用檢驗喔！"
-                        )
-                        _send_line_reply(user_id, med_text)
-                        content = "【系統指令】查詢用藥提醒"
-
-                    elif content in ["緊急求助", "幫忙", "不舒服"]:
-                        sos_text = "【安全通報】已收到您的身體不適訊息！系統已同步發送通知給您的守護家人，請保持電話暢通或稍候片刻。"
-                        _send_line_reply(user_id, sos_text)
-                        content = "🚨 【親友發出緊急求助訊號】"
-
-                elif msg.get("type") == "audio":
-                    msg_type = "audio"
-                    msg_id = msg.get("id")
-                    audio_url = f"https://api-data.line.me/v2/bot/message/{msg_id}/content"
-                    headers = {"Authorization": f"Bearer {LINE_CHANNEL_ACCESS_TOKEN}"}
-                    try:
-                        audio_res = requests.get(audio_url, headers=headers)
-                        if audio_res.status_code == 200:
-                            os.makedirs("static/uploads", exist_ok=True)
-                            file_name = f"voice_{msg_id}.m4a"
-                            file_path = os.path.join("static/uploads", file_name)
-                            with open(file_path, "wb") as f:
-                                f.write(audio_res.content)
-                            content = f"/api/uploads/{file_name}"
-                        else:
-                            content = "[語音訊息下載失敗]"
-                    except Exception as e:
-                        content = "[語音訊息錯誤]"
-
-                elif msg.get("type") == "sticker":
-                    msg_type = "sticker"
-                    content = "🎨 [LINE 貼圖]"
-                
-                elder_name = find_recipient_name_by_line_id(user_id) or "未綁定親友"
-                new_msg = {
-                    "id": f"msg_line_{int(datetime.now().timestamp() * 1000)}",
-                    "sender": elder_name,
-                    "elder": elder_name,
-                    "content": content,
-                    "type": msg_type,
-                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                }
-                family_messages_store.insert(0, new_msg)
-                
-    except InvalidSignatureError:
-        raise HTTPException(status_code=400, detail="Invalid signature")
+            try:
+                _handle_line_event(event)
+            except Exception as e:
+                print("LINE 事件處理異常:", e)
     except Exception as e:
         print("Webhook 處理異常:", e)
-        
+
     return {"status": "success"}
 
-def _send_line_reply(user_id: str, text: str):
-    url = "https://api.line.me/v2/bot/message/push"
+# 圖文選單按鈕送出的文字（tools/setup_line_richmenu.py 建立的選單也使用這些字）
+LINE_CMD_TODAY_CARE = ("今日關懷", "最新關懷", "關懷卡")
+LINE_CMD_MEDICATION = ("今日用藥", "用藥提醒", "吃藥", "保健品")
+LINE_CMD_SOS = ("緊急求助", "幫忙", "不舒服", "救命")
+LINE_CMD_BIND_HELP = ("綁定說明", "如何綁定", "綁定")
+LINE_CMD_HELP = ("服務說明", "功能說明", "說明", "幫助", "help", "選單", "menu")
+LINE_CMD_MY_BINDING = ("我的綁定", "綁定狀態")
+
+LINE_QUICK_REPLY = {
+    "items": [
+        {"type": "action", "action": {"type": "message", "label": label, "text": label}}
+        for label in ("今日關懷", "今日用藥", "緊急求助", "服務說明")
+    ]
+}
+
+def _line_text(text: str, quick_reply: bool = True) -> dict:
+    msg = {"type": "text", "text": text}
+    if quick_reply:
+        msg["quickReply"] = LINE_QUICK_REPLY
+    return msg
+
+def _handle_line_event(event: dict):
+    event_type = event.get("type")
+    user_id = event.get("source", {}).get("userId")
+    reply_token = event.get("replyToken")
+    print(f"【解析事件】類型: {event_type}, 用戶 ID: {user_id}")
+    if not user_id:
+        return
+
+    binding = get_line_binding_info(user_id)
+
+    if event_type == "follow":
+        if binding:
+            _line_reply(reply_token, user_id, [_line_text(
+                f"💙 歡迎回來，{binding['name']}！\n"
+                f"您已綁定，{binding['owner_name']} 傳送的關懷卡會直接送到這裡。\n"
+                "點下方選單就能查看今日關懷、用藥提醒或發送求助。"
+            )])
+        else:
+            _line_reply(reply_token, user_id, [
+                _line_text(LINE_WELCOME_TEXT, quick_reply=False),
+                _line_text(LINE_UNBOUND_GUIDE, quick_reply=False),
+            ])
+        return
+
+    if event_type != "message":
+        return
+
+    msg = event.get("message", {})
+    msg_type = msg.get("type")
+    text = msg.get("text", "").strip() if msg_type == "text" else ""
+
+    # 1. 綁定碼：唯一的綁定方式
+    bind_match = re.match(r"^【?\s*綁定\s*(\d{6})\s*】?$", text)
+    if bind_match:
+        rec = bind_line_by_code(bind_match.group(1), user_id)
+        if rec:
+            owner = rec.get("owner_name") or "家人"
+            reply = _line_text(
+                f"✅ 綁定成功！您好，{rec['name']}。\n"
+                f"{owner} 傳送的健康關懷與用藥叮嚀會即時送到這裡，點下方選單就能使用各項功能。"
+            )
+        else:
+            reply = _line_text(
+                "綁定失敗：綁定碼錯誤或已過期（有效 24 小時）。\n請家人在 App 重新產生綁定碼後再試一次。",
+                quick_reply=False,
+            )
+        _line_reply(reply_token, user_id, [reply])
+        return
+
+    # 2. 尚未綁定：只回覆綁定教學，訊息不存入系統
+    if not binding:
+        _line_reply(reply_token, user_id, [_line_text(LINE_UNBOUND_GUIDE, quick_reply=False)])
+        return
+
+    elder_name = binding["name"]
+    owner_name = binding["owner_name"]
+    owner_account = binding["user_account"]
+
+    def _store(content: str, store_type: str = "text"):
+        family_messages_store.insert(0, {
+            "id": f"msg_line_{int(datetime.now().timestamp() * 1000)}",
+            "sender": elder_name,
+            "elder": elder_name,
+            "content": content,
+            "type": store_type,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "owner_account": owner_account,
+            "from_role": "elder",
+        })
+
+    if msg_type == "text":
+        cmd = text.lower()
+        if cmd in LINE_CMD_TODAY_CARE:
+            card = next((
+                m for m in family_messages_store
+                if m.get("elder") == elder_name and m.get("type") == "card"
+                and m.get("owner_account") == owner_account
+            ), None)
+            if card:
+                reply = f"💌 {owner_name} 最新送給您的關懷（{card.get('timestamp', '')[5:16]}）：\n\n{card['content']}"
+            else:
+                reply = f"💌 {owner_name} 今天還沒有送關懷卡喔！\n想念家人的話，可以直接在這裡留言，我會幫您轉達 ❤️"
+            _line_reply(reply_token, user_id, [_line_text(reply)])
+            return
+
+        if cmd in LINE_CMD_MEDICATION:
+            _line_reply(reply_token, user_id, [_line_text(_build_medication_reminder(binding))])
+            return
+
+        if cmd in LINE_CMD_SOS:
+            _store("🚨【親友發出緊急求助訊號】", "text")
+            _line_reply(reply_token, user_id, [_line_text(
+                f"🆘 已收到您的求助！系統已通知 {owner_name}，請保持電話暢通。\n"
+                "⚠️ 若情況緊急，請立即撥打 119。"
+            )])
+            return
+
+        if cmd in LINE_CMD_BIND_HELP:
+            _line_reply(reply_token, user_id, [_line_text(
+                f"🔗 您目前綁定為【{elder_name}】，由 {owner_name} 守護。\n\n"
+                "若要改綁其他家人：請向對方索取 GiftSense App 上的新綁定碼，回傳【綁定 123456】即可。"
+            )])
+            return
+
+        if cmd in LINE_CMD_HELP:
+            _line_reply(reply_token, user_id, [_line_text(LINE_HELP_TEXT)])
+            return
+
+        if cmd in LINE_CMD_MY_BINDING:
+            _line_reply(reply_token, user_id, [_line_text(
+                f"👤 綁定身分：{elder_name}\n💙 守護家人：{owner_name}\n🩺 健康狀況：{binding.get('condition') or '日常養生'}"
+            )])
+            return
+
+        # 一般文字留言：轉達給家人
+        _store(text, "text")
+        _line_reply(reply_token, user_id, [_line_text(f"✅ 已轉達給 {owner_name}！")])
+        return
+
+    if msg_type == "audio":
+        _store(_download_line_audio(msg.get("id")), "audio")
+        _line_reply(reply_token, user_id, [_line_text(f"✅ 語音已轉達給 {owner_name}！")])
+        return
+
+    if msg_type == "sticker":
+        _store("🎨 [LINE 貼圖]", "sticker")
+
+def _build_medication_reminder(binding: dict) -> str:
+    from greeting_generator import _match_condition_lines
+    condition = binding.get("condition") or "日常養生"
+    lines = [
+        f"💊 【{binding['name']}的今日用藥與保健叮嚀】",
+        "",
+        "• 請依照醫師處方按時服藥，不要自行停藥或加量。",
+    ]
+    care = _match_condition_lines(condition)
+    if care:
+        lines.append(f"• {care['reserved'][0]}")
+        lines.append("")
+        lines.append(care["insight"])
+    lines.append("")
+    lines.append("• 想買市售保健品（如魚油、維他命）前，請先請家人用 GiftSense App 檢驗是否會撞藥喔！")
+    return "\n".join(lines)
+
+def _download_line_audio(msg_id: str) -> str:
+    try:
+        audio_res = requests.get(
+            f"https://api-data.line.me/v2/bot/message/{msg_id}/content",
+            headers={"Authorization": f"Bearer {LINE_CHANNEL_ACCESS_TOKEN}"},
+            timeout=15
+        )
+        if audio_res.status_code == 200:
+            os.makedirs("static/uploads", exist_ok=True)
+            file_name = f"voice_{msg_id}.m4a"
+            with open(os.path.join("static/uploads", file_name), "wb") as f:
+                f.write(audio_res.content)
+            return f"/api/uploads/{file_name}"
+        return "[語音訊息下載失敗]"
+    except Exception:
+        return "[語音訊息錯誤]"
+
+def _line_reply(reply_token: Optional[str], user_id: str, messages: List[Dict[str, Any]]):
+    """優先使用 Reply API（不佔官方帳號每月訊息額度），失敗時才改用 Push"""
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {LINE_CHANNEL_ACCESS_TOKEN}"
     }
-    payload = {
-        "to": user_id,
-        "messages": [{"type": "text", "text": text}]
-    }
+    messages = messages[:5]
+    if reply_token:
+        try:
+            res = requests.post(
+                "https://api.line.me/v2/bot/message/reply",
+                headers=headers,
+                json={"replyToken": reply_token, "messages": messages},
+                timeout=8
+            )
+            if res.status_code == 200:
+                return
+            print("LINE Reply 失敗，改用 Push:", res.status_code, res.text[:200])
+        except Exception as e:
+            print("LINE Reply 例外，改用 Push:", e)
     try:
-        requests.post(url, headers=headers, json=payload)
+        requests.post(
+            "https://api.line.me/v2/bot/message/push",
+            headers=headers,
+            json={"to": user_id, "messages": messages},
+            timeout=8
+        )
     except Exception as e:
-        print("LINE 回覆失敗:", e)
+        print("LINE 推播失敗:", e)
 
 @app.post("/api/points/add")
 def api_add_points_alias(req: PointsTxRequest):
