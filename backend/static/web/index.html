@@ -41,6 +41,38 @@
     <div style="font-size:20px;font-weight:800;color:#0F172A;letter-spacing:.3px;">GiftSense</div>
     <div style="font-size:13px;color:#64748B;">心意，醫觸即達 · 載入中…</div>
   </div>
+  <!-- iPhone／iPad 用 Safari 開啟、還沒加入主畫面時，提示「分享 → 加入主畫面」（免費的 App 使用方式） -->
+  <div id="gs-a2hs" style="display:none;position:fixed;left:12px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:9998;background:#FFFFFF;border:1px solid #BFDBFE;border-radius:18px;box-shadow:0 12px 32px rgba(30,58,138,.18);padding:14px 14px 12px;font-family:-apple-system,'PingFang TC','Noto Sans TC',sans-serif;">
+    <div style="display:flex;gap:12px;align-items:center;">
+      <img src="icons/apple-touch-icon.png" alt="" width="44" height="44" style="border-radius:11px;flex:none;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:14px;font-weight:800;color:#0F172A;">把 GiftSense 加入主畫面</div>
+        <div style="font-size:12px;color:#475569;line-height:1.5;margin-top:2px;">點下方 Safari 的「分享」<span style="display:inline-block;border:1.5px solid #2563EB;border-radius:4px;width:11px;height:11px;vertical-align:-1px;margin:0 2px;"></span>→「加入主畫面」，就能像 App 一樣全螢幕使用。</div>
+      </div>
+    </div>
+    <div style="text-align:right;margin-top:8px;">
+      <button id="gs-a2hs-ok" style="border:none;background:#2563EB;color:#FFFFFF;font-weight:700;font-size:13px;border-radius:12px;padding:8px 16px;">知道了</button>
+    </div>
+  </div>
+  <script>
+    (function () {
+      var ua = navigator.userAgent || "";
+      var isIOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+      var isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|Line\//.test(ua);
+      var standalone = window.navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches;
+      var dismissed = false;
+      try { dismissed = localStorage.getItem("gs_a2hs_dismissed") === "1"; } catch (e) {}
+      if (!isIOS || !isSafari || standalone || dismissed) return;
+      var box = document.getElementById("gs-a2hs");
+      window.addEventListener("flutter-first-frame", function () {
+        setTimeout(function () { box.style.display = "block"; }, 1200);
+      });
+      document.getElementById("gs-a2hs-ok").addEventListener("click", function () {
+        box.style.display = "none";
+        try { localStorage.setItem("gs_a2hs_dismissed", "1"); } catch (e) {}
+      });
+    })();
+  </script>
   <script>
     window.addEventListener('flutter-first-frame', function () {
       var el = document.getElementById('gs-splash');
