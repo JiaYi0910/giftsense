@@ -6,129 +6,8 @@ from datetime import datetime, timedelta
 
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "caregift.db")
 
-# 💡 關懷推薦商品預設資料（首次啟動時寫入 recommendation_products 表）
-DEFAULT_RECOMMENDATION_PRODUCTS = [
-    {
-        "id": "rec_quaker_01",
-        "product_name": "【桂格完膳】營養素無糖低 GI 高鈣配方 (24罐/箱)",
-        "sku": "GT-Q109",
-        "ean_13": "4710043022131",
-        "category": "親友滋補 / 零撞藥首選",
-        "spec": "250ml x 24罐/箱",
-        "search_kw": "桂格完膳",
-        "match_conditions": ["warfarin", "抗凝血", "血壓", "心血管", "糖", "日常"],
-        "match_reason": "經臨床 RAG 審核：零抗凝血活血成分，無糖低 GI，高血壓與 Warfarin 患者首選滋補配方！",
-        "recommended_pharmacy": "大樹藥局",
-        "best_price": 1480,
-        "official_url": "https://shop.greattree.com.tw/searchlist?keyword=%E6%A1%82%E6%A0%BC%E5%AE%8C%E8%86%B3",
-        "pharmacy_comparison": [
-            {"pharmacy": "大樹藥局", "price": 1480, "is_lowest": True, "badge": "官方最低價", "url": "https://shop.greattree.com.tw/searchlist?keyword=%E6%A1%82%E6%A0%BC%E5%AE%8C%E8%86%B3"},
-            {"pharmacy": "杏一醫療", "price": 1499, "is_lowest": False, "badge": "門市正品", "url": "https://www.medfirst.com.tw/v2/Search?q=%E6%A1%82%E6%A0%BC%E5%AE%8C%E8%86%B3"},
-            {"pharmacy": "啄木鳥藥局", "price": 1520, "is_lowest": False, "badge": "原廠箱裝", "url": "https://www.woodpecker.com.tw/products_search/all/1?PdSearch=%E6%A1%82%E6%A0%BC%E5%AE%8C%E8%86%B3"},
-            {"pharmacy": "丁丁藥局", "price": 1550, "is_lowest": False, "badge": "快速出貨", "url": "https://www.norbelbaby.com.tw/nec/search?keyword=%E6%A1%82%E6%A0%BC%E5%AE%8C%E8%86%B3"}
-        ]
-    },
-    {
-        "id": "rec_glucosamine_01",
-        "product_name": "【挺立】關鍵 UC-II 葡萄糖胺加強配方 (30錠/盒)",
-        "sku": "MF-V180",
-        "ean_13": "4710018151026",
-        "category": "骨骼關節 / ESCEO 臨床首選",
-        "spec": "30錠/盒 (非變性二型膠原蛋白+葡萄糖胺)",
-        "search_kw": "葡萄糖胺",
-        "match_conditions": ["膝蓋", "關節", "骨折", "骨質", "痛", "跌倒", "日常", "warfarin", "抗凝血", "血壓"],
-        "match_reason": "符合 ESCEO 骨關節醫學會指引：非變性二型膠原蛋白協同葡萄糖胺，無心血管與抗凝血衝突。",
-        "recommended_pharmacy": "大樹藥局",
-        "best_price": 1550,
-        "official_url": "https://shop.greattree.com.tw/searchlist?keyword=%E8%91%A3%E8%90%84%E9%85%B6%E8%83%B6",
-        "pharmacy_comparison": [
-            {"pharmacy": "大樹藥局", "price": 1550, "is_lowest": True, "badge": "限時特惠", "url": "https://shop.greattree.com.tw/searchlist?keyword=%E8%91%A3%E8%90%84%E9%85%B6%E8%83%B6"},
-            {"pharmacy": "杏一醫療", "price": 1580, "is_lowest": False, "badge": "醫學中心合約", "url": "https://www.medfirst.com.tw/v2/Search?q=%E8%91%A3%E8%90%84%E9%85%B6%E8%83%B6"},
-            {"pharmacy": "啄木鳥藥局", "price": 1590, "is_lowest": False, "badge": "門市現貨", "url": "https://www.woodpecker.com.tw/products_search/all/1?PdSearch=%E8%91%A3%E8%90%84%E9%85%B6%E8%83%B6"},
-            {"pharmacy": "丁丁藥局", "price": 1620, "is_lowest": False, "badge": "官方直售", "url": "https://www.norbelbaby.com.tw/nec/search?keyword=%E8%91%A3%E8%90%84%E9%85%B6%E8%83%B6"}
-        ]
-    },
-    {
-        "id": "rec_calcium_01",
-        "product_name": "【挺立】鈣強力錠 + 活性維生素 D3 (60錠/盒)",
-        "sku": "GT-C060",
-        "ean_13": "4710018151019",
-        "category": "骨密維護 / NOF 臨床指引",
-        "spec": "60錠/盒 (高吸收檸檬酸鈣)",
-        "search_kw": "挺立",
-        "match_conditions": ["骨質", "骨折", "抽筋", "關節", "膝蓋", "日常", "warfarin", "抗凝血", "血壓"],
-        "match_reason": "美國骨質疏鬆學會 (NOF) 建議：鈣+D3 協同吸收，有效維持骨質密度，無藥物衝突。",
-        "recommended_pharmacy": "大樹藥局",
-        "best_price": 499,
-        "official_url": "https://shop.greattree.com.tw/searchlist?keyword=%E6%8C%BA%E7%AB%8B",
-        "pharmacy_comparison": [
-            {"pharmacy": "大樹藥局", "price": 499, "is_lowest": True, "badge": "會員破盤價", "url": "https://shop.greattree.com.tw/searchlist?keyword=%E6%8C%BA%E7%AB%8B"},
-            {"pharmacy": "杏一醫療", "price": 520, "is_lowest": False, "badge": "官方正品", "url": "https://www.medfirst.com.tw/v2/Search?q=%E6%8C%BA%E7%AB%8B"},
-            {"pharmacy": "丁丁藥局", "price": 535, "is_lowest": False, "badge": "連鎖直營", "url": "https://www.norbelbaby.com.tw/nec/search?keyword=%E6%8C%BA%E7%AB%8B"},
-            {"pharmacy": "啄木鳥藥局", "price": 550, "is_lowest": False, "badge": "門市供應", "url": "https://www.woodpecker.com.tw/products_search/all/1?PdSearch=%E6%8C%BA%E7%AB%8B"}
-        ]
-    },
-    {
-        "id": "rec_lutein_01",
-        "product_name": "【永信藥品】活泉游離型葉黃素 30mg + 玉米黃素 (60粒/瓶)",
-        "sku": "NB-L060",
-        "ean_13": "4711928001221",
-        "category": "視力保養 / AREDS 2 指引",
-        "spec": "60粒/瓶 (黃金比例 10:2)",
-        "search_kw": "葉黃素",
-        "match_conditions": ["眼", "視力", "白內障", "黃斑", "日常", "糖", "糖尿病"],
-        "match_reason": "符合美國國家衛生院 (NIH) AREDS 2 臨床指引：游離型高吸收率，保養黃斑部與視網膜微血管。",
-        "recommended_pharmacy": "丁丁藥局",
-        "best_price": 980,
-        "official_url": "https://www.norbelbaby.com.tw/nec/search?keyword=%E8%91%89%E9%BB%83%E7%B4%A0",
-        "pharmacy_comparison": [
-            {"pharmacy": "丁丁藥局", "price": 980, "is_lowest": True, "badge": "最低優惠價", "url": "https://www.norbelbaby.com.tw/nec/search?keyword=%E8%91%89%E9%BB%83%E7%B4%A0"},
-            {"pharmacy": "杏一醫療", "price": 1050, "is_lowest": False, "badge": "門市正品", "url": "https://www.medfirst.com.tw/v2/Search?q=%E8%91%89%E9%BB%83%E7%B4%A0"},
-            {"pharmacy": "大樹藥局", "price": 1080, "is_lowest": False, "badge": "官方直銷", "url": "https://shop.greattree.com.tw/searchlist?keyword=%E8%91%89%E9%BB%83%E7%B4%A0"},
-            {"pharmacy": "啄木鳥藥局", "price": 1100, "is_lowest": False, "badge": "常態供應", "url": "https://www.woodpecker.com.tw/products_search/all/1?PdSearch=%E8%91%89%E9%BB%83%E7%B4%A0"}
-        ]
-    },
-    {
-        "id": "rec_probiotics_01",
-        "product_name": "【日本味王】消化專利複合益生菌 (60包/盒)",
-        "sku": "GT-P060",
-        "ean_13": "4712857002013",
-        "category": "腸道健康 / WGO 益生菌指引",
-        "spec": "60包/盒 (200億活菌)",
-        "search_kw": "益生菌",
-        "match_conditions": ["腸", "便秘", "排便", "胃", "消化", "日常", "糖", "糖尿病"],
-        "match_reason": "符合世界胃腸病學組織 (WGO) 指引：調節腸道菌相、幫助消化，親友無腸胃負擔。",
-        "recommended_pharmacy": "大樹藥局",
-        "best_price": 790,
-        "official_url": "https://shop.greattree.com.tw/searchlist?keyword=%E7%9B%8A%E7%94%9F%E8%8F%80",
-        "pharmacy_comparison": [
-            {"pharmacy": "大樹藥局", "price": 790, "is_lowest": True, "badge": "獨家最低價", "url": "https://shop.greattree.com.tw/searchlist?keyword=%E7%9B%8A%E7%94%9F%E8%8F%80"},
-            {"pharmacy": "啄木鳥藥局", "price": 820, "is_lowest": False, "badge": "現貨提供", "url": "https://www.woodpecker.com.tw/products_search/all/1?PdSearch=%E7%9B%8A%E7%94%9F%E8%8F%80"},
-            {"pharmacy": "丁丁藥局", "price": 850, "is_lowest": False, "badge": "門市正品", "url": "https://www.norbelbaby.com.tw/nec/search?keyword=%E7%9B%8A%E7%94%9F%E8%8F%80"},
-            {"pharmacy": "杏一醫療", "price": 880, "is_lowest": False, "badge": "醫材門市", "url": "https://www.medfirst.com.tw/v2/Search?q=%E7%9B%8A%E7%94%9F%E8%8F%80"}
-        ]
-    },
-    {
-        "id": "rec_gaba_01",
-        "product_name": "【三得利】芝麻明 EX + GABA (90錠/瓶)",
-        "sku": "MF-S090",
-        "ean_13": "4901777252011",
-        "category": "睡眠調節 / AASM 指引",
-        "spec": "90錠/瓶 (日本原裝進口)",
-        "search_kw": "芝麻明",
-        "match_conditions": ["睡", "失眠", "焦慮", "放鬆", "熬夜", "疲勞", "精神", "日常"],
-        "match_reason": "結合 GABA 與高濃度芝麻素，幫助中樞神經放鬆，改善親友淺眠，無安眠藥成癮性。",
-        "recommended_pharmacy": "杏一醫療",
-        "best_price": 1600,
-        "official_url": "https://www.medfirst.com.tw/v2/Search?q=%E8%8A%9D%E9%BA%BB%E6%98%8E",
-        "pharmacy_comparison": [
-            {"pharmacy": "杏一醫療", "price": 1600, "is_lowest": True, "badge": "官方直銷最優", "url": "https://www.medfirst.com.tw/v2/Search?q=%E8%8A%9D%E9%BA%BB%E6%98%8E"},
-            {"pharmacy": "大樹藥局", "price": 1650, "is_lowest": False, "badge": "官方正品", "url": "https://shop.greattree.com.tw/searchlist?keyword=%E8%8A%9D%E9%BA%BB%E6%98%8E"},
-            {"pharmacy": "啄木鳥藥局", "price": 1680, "is_lowest": False, "badge": "門市代購", "url": "https://www.woodpecker.com.tw/products_search/all/1?PdSearch=%E8%8A%9D%E9%BA%BB%E6%98%8E"},
-            {"pharmacy": "丁丁藥局", "price": 1700, "is_lowest": False, "badge": "現貨速配", "url": "https://www.norbelbaby.com.tw/nec/search?keyword=%E8%8A%9D%E9%BA%BB%E6%98%8E"}
-        ]
-    }
-]
+# 💡 暖心選物商品資料（藥局官網實際查價）統一放在 product_catalog.py，init_db 啟動時同步寫入
+from product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
 
 def get_db():
     conn = sqlite3.connect(DB_PATH, timeout=30.0) # 💡 增加逾時等待時間 (30秒)，避免瞬間搶鎖失敗
@@ -235,9 +114,20 @@ def init_db():
         official_url TEXT,
         pharmacy_comparison_json TEXT NOT NULL,
         is_active INTEGER DEFAULT 1,
+        price_checked_at TEXT,
+        primary_conditions_json TEXT DEFAULT '[]',
+        exclude_conditions_json TEXT DEFAULT '[]',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
+    cursor.execute("PRAGMA table_info(recommendation_products)")
+    rp_cols = [c[1] for c in cursor.fetchall()]
+    if "price_checked_at" not in rp_cols:
+        cursor.execute("ALTER TABLE recommendation_products ADD COLUMN price_checked_at TEXT")
+    if "primary_conditions_json" not in rp_cols:
+        cursor.execute("ALTER TABLE recommendation_products ADD COLUMN primary_conditions_json TEXT DEFAULT '[]'")
+    if "exclude_conditions_json" not in rp_cols:
+        cursor.execute("ALTER TABLE recommendation_products ADD COLUMN exclude_conditions_json TEXT DEFAULT '[]'")
 
     # 4.6 ai_guard_usage 表格（AI 守護助理每日詢問次數，依帳號計算）
     cursor.execute("""
@@ -485,8 +375,9 @@ def save_recommendation_products(products: list):
         INSERT OR REPLACE INTO recommendation_products (
             id, product_name, sku, ean_13, category, spec, search_kw,
             match_conditions_json, match_reason, recommended_pharmacy,
-            best_price, official_url, pharmacy_comparison_json, is_active
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            best_price, official_url, pharmacy_comparison_json, is_active, price_checked_at,
+            primary_conditions_json, exclude_conditions_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             p.get("id") or f"rec_{hash(str(p))}",
             p.get("product_name", ""),
@@ -501,7 +392,10 @@ def save_recommendation_products(products: list):
             int(p.get("best_price") or 0),
             p.get("official_url", ""),
             json.dumps(p.get("pharmacy_comparison") or [], ensure_ascii=False),
-            1
+            1,
+            p.get("price_checked_at", ""),
+            json.dumps(p.get("primary_conditions") or [], ensure_ascii=False),
+            json.dumps(p.get("exclude_conditions") or [], ensure_ascii=False)
         ))
     conn.commit()
     conn.close()
@@ -516,23 +410,80 @@ def get_all_recommendation_products():
         d = dict(r)
         d["match_conditions"] = json.loads(d.get("match_conditions_json") or "[]")
         d["pharmacy_comparison"] = json.loads(d.get("pharmacy_comparison_json") or "[]")
+        d["primary_conditions"] = json.loads(d.get("primary_conditions_json") or "[]")
+        d["exclude_conditions"] = json.loads(d.get("exclude_conditions_json") or "[]")
         products.append(d)
     return products
 
-def match_recommendation_products(condition: str = ""):
-    """依病況比對推薦商品；沒有對應商品時回傳一般日常保養商品並標記 is_fallback"""
+_NEGATION_PREFIXES = ("未", "無", "非", "沒有", "不是")
+
+def _mentions(cond: str, term: str) -> bool:
+    """病況文字是否提到 term；「未洗腎」「沒有糖尿病」這類否定敘述不算"""
+    start = cond.find(term)
+    while start != -1:
+        if not any(cond[max(0, start - len(n)):start] == n for n in _NEGATION_PREFIXES):
+            return True
+        start = cond.find(term, start + 1)
+    return False
+
+def _is_excluded(item: dict, cond: str) -> bool:
+    return any(_mentions(cond, (t or "").lower()) for t in (item.get("exclude_conditions") or []) if t)
+
+def _match_score(item: dict, cond: str) -> int:
+    """比對分數：關鍵字越具體（越長）分數越高；命中該商品的主要對應病況再加權。
+    命中 exclude_conditions（例如服用抗凝血劑時的魚油、Q10）一律不推薦"""
+    if _is_excluded(item, cond):
+        return 0
+    primary = [t.lower() for t in (item.get("primary_conditions") or [])]
+    score = 0
+    for term in item.get("match_conditions") or []:
+        t = (term or "").lower()
+        if not t or t == "日常":
+            continue
+        if _mentions(cond, t) or (len(cond) >= 2 and cond in t):
+            score += len(t) * (3 if t in primary else 1)
+    return score
+
+RECOMMEND_LIMIT = 3
+
+def match_recommendation_products(condition: str = "", limit: int = RECOMMEND_LIMIT):
+    """暖心選物固定推薦 limit（3）項：
+    - 先放與病況相關的商品（分數高 → 價格低），第一名標記 is_top_pick
+    - 相關商品不足時，用一般日常保養品補滿，標記 is_related=False（前端以「日常保養推薦」另外呈現）
+    - 補位商品同樣套用排除條件（例如服用抗凝血劑者不會出現魚油、Q10）
+    - 完全沒有相關商品時標記 is_fallback（「日常養生」本來就是一般保養，不算）"""
     cond = (condition or "").lower().strip()
     items = get_all_recommendation_products()
-    matched = []
+    scored = []
     if cond:
         for item in items:
-            terms = [t for t in (item.get("match_conditions") or []) if t and t != "日常"]
-            if any(t.lower() in cond or cond in t.lower() for t in terms):
-                matched.append(item)
-    if matched:
-        return {"products": matched, "is_fallback": False}
-    # 「日常養生」本來就是一般保養，不算找不到對應商品
-    return {"products": items[:3], "is_fallback": "日常" not in cond}
+            score = _match_score(item, cond)
+            if score > 0:
+                scored.append((score, item))
+    scored.sort(key=lambda x: (-x[0], x[1].get("best_price") or 0))
+    related = [
+        {**item, "match_score": score, "is_related": True, "is_top_pick": rank == 0}
+        for rank, (score, item) in enumerate(scored[:limit])
+    ]
+    used = {p["id"] for p in related}
+    general = [
+        i for i in items
+        if "日常" in (i.get("match_conditions") or []) and i["id"] not in used and not _is_excluded(i, cond)
+    ]
+    is_daily = not cond or "日常" in cond
+    if is_daily and not related:
+        # 日常養生：一般保養品就是對應的推薦（沒有特定病況，不標最推薦）
+        related = [{**i, "match_score": 0, "is_related": True, "is_top_pick": False} for i in general[:limit]]
+        general = general[limit:]
+    fillers = [
+        {**i, "match_score": 0, "is_related": False, "is_top_pick": False}
+        for i in general[:max(0, limit - len(related))]
+    ]
+    return {
+        "products": related + fillers,
+        "related_count": len(related),
+        "is_fallback": not related,
+    }
 
 def get_recommendation_products_by_condition(condition: str = ""):
     return match_recommendation_products(condition)["products"]
@@ -916,7 +867,7 @@ def set_system_config(key: str, value):
 def get_database_stats():
     conn = get_db()
     cursor = conn.cursor()
-    tables = ["users", "recipients", "orders", "points_ledger", "pharmacy_cache", "recommendation_products", "clinical_knowledge", "system_config"]
+    tables = ["users", "recipients", "orders", "points_ledger", "pharmacy_cache", "recommendation_products", "clinical_knowledge", "system_config", "cashback_orders", "ai_guard_usage"]
     counts = {}
     for t in tables:
         try:

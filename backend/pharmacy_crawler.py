@@ -6,6 +6,7 @@ import json
 import os
 import time
 from database import save_pharmacy_products, save_recommendation_products, match_recommendation_products
+from product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
 
 urllib3.disable_warnings()
 
@@ -384,145 +385,26 @@ def search_pharmacy_products(keyword: str = ""):
 
 def get_recommended_products_by_condition(elder_name: str = "親友", condition: str = "日常養生"):
     cond = condition.lower()
-    
-    all_recommendations = [
-        {
-            "id": "rec_quaker_01",
-            "product_name": "【桂格完膳】營養素無糖低 GI 高鈣配方 (24罐/箱)",
-            "sku": "GT-Q109",
-            "ean_13": "4710043022131",
-            "category": "親友滋補 / 零撞藥首選",
-            "spec": "250ml x 24罐/箱",
-            "search_kw": "桂格完膳",
-            "match_conditions": ["warfarin", "抗凝血", "血壓", "心血管", "糖", "日常"],
-            "match_reason": "經臨床 RAG 審核：零抗凝血活血成分，無糖低 GI，高血壓與 Warfarin 患者首選滋補配方！",
-            "recommended_pharmacy": "大樹藥局",
-            "best_price": 1480,
-            "official_url": get_pharmacy_search_url("大樹藥局", "桂格完膳"),
-            "pharmacy_comparison": [
-                {"pharmacy": "大樹藥局", "price": 1480, "is_lowest": True, "badge": "官方最低價", "url": get_pharmacy_search_url("大樹藥局", "桂格完膳")},
-                {"pharmacy": "杏一醫療", "price": 1499, "is_lowest": False, "badge": "門市正品", "url": get_pharmacy_search_url("杏一醫療", "桂格完膳")},
-                {"pharmacy": "啄木鳥藥局", "price": 1520, "is_lowest": False, "badge": "原廠箱裝", "url": get_pharmacy_search_url("啄木鳥藥局", "桂格完膳")},
-                {"pharmacy": "丁丁藥局", "price": 1550, "is_lowest": False, "badge": "快速出貨", "url": get_pharmacy_search_url("丁丁藥局", "桂格完膳")}
-            ]
-        },
-        {
-            "id": "rec_glucosamine_01",
-            "product_name": "【挺立】關鍵 UC-II 葡萄糖胺加強配方 (30錠/盒)",
-            "sku": "MF-V180",
-            "ean_13": "4710018151026",
-            "category": "骨骼關節 / ESCEO 臨床首選",
-            "spec": "30錠/盒 (非變性二型膠原蛋白+葡萄糖胺)",
-            "search_kw": "葡萄糖胺",
-            "match_conditions": ["膝蓋", "關節", "骨折", "骨質", "痛", "跌倒", "日常", "warfarin", "抗凝血", "血壓"],
-            "match_reason": "符合 ESCEO 骨關節醫學會指引：非變性二型膠原蛋白協同葡萄糖胺，無心血管與抗凝血衝突。",
-            "recommended_pharmacy": "大樹藥局",
-            "best_price": 1550,
-            "official_url": get_pharmacy_search_url("大樹藥局", "葡萄糖胺"),
-            "pharmacy_comparison": [
-                {"pharmacy": "大樹藥局", "price": 1550, "is_lowest": True, "badge": "限時特惠", "url": get_pharmacy_search_url("大樹藥局", "葡萄糖胺")},
-                {"pharmacy": "杏一醫療", "price": 1580, "is_lowest": False, "badge": "醫學中心合約", "url": get_pharmacy_search_url("杏一醫療", "葡萄糖胺")},
-                {"pharmacy": "啄木鳥藥局", "price": 1590, "is_lowest": False, "badge": "門市現貨", "url": get_pharmacy_search_url("啄木鳥藥局", "葡萄糖胺")},
-                {"pharmacy": "丁丁藥局", "price": 1620, "is_lowest": False, "badge": "官方直售", "url": get_pharmacy_search_url("丁丁藥局", "葡萄糖胺")}
-            ]
-        },
-        {
-            "id": "rec_calcium_01",
-            "product_name": "【挺立】鈣強力錠 + 活性維生素 D3 (60錠/盒)",
-            "sku": "GT-C060",
-            "ean_13": "4710018151019",
-            "category": "骨密維護 / NOF 臨床指引",
-            "spec": "60錠/盒 (高吸收檸檬酸鈣)",
-            "search_kw": "挺立",
-            "match_conditions": ["骨質", "骨折", "抽筋", "關節", "膝蓋", "日常", "warfarin", "抗凝血", "血壓"],
-            "match_reason": "美國骨質疏鬆學會 (NOF) 建議：鈣+D3 協同吸收，有效維持骨質密度，無藥物衝突。",
-            "recommended_pharmacy": "大樹藥局",
-            "best_price": 499,
-            "official_url": get_pharmacy_search_url("大樹藥局", "挺立"),
-            "pharmacy_comparison": [
-                {"pharmacy": "大樹藥局", "price": 499, "is_lowest": True, "badge": "會員破盤價", "url": get_pharmacy_search_url("大樹藥局", "挺立")},
-                {"pharmacy": "杏一醫療", "price": 520, "is_lowest": False, "badge": "官方正品", "url": get_pharmacy_search_url("杏一醫療", "挺立")},
-                {"pharmacy": "丁丁藥局", "price": 535, "is_lowest": False, "badge": "連鎖直營", "url": get_pharmacy_search_url("丁丁藥局", "挺立")},
-                {"pharmacy": "啄木鳥藥局", "price": 550, "is_lowest": False, "badge": "門市供應", "url": get_pharmacy_search_url("啄木鳥藥局", "挺立")}
-            ]
-        },
-        {
-            "id": "rec_lutein_01",
-            "product_name": "【永信藥品】活泉游離型葉黃素 30mg + 玉米黃素 (60粒/瓶)",
-            "sku": "NB-L060",
-            "ean_13": "4711928001221",
-            "category": "視力保養 / AREDS 2 指引",
-            "spec": "60粒/瓶 (黃金比例 10:2)",
-            "search_kw": "葉黃素",
-            "match_conditions": ["眼", "視力", "白內障", "黃斑", "日常", "糖", "糖尿病"],
-            "match_reason": "符合美國國家衛生院 (NIH) AREDS 2 臨床指引：游離型高吸收率，保養黃斑部與視網膜微血管。",
-            "recommended_pharmacy": "丁丁藥局",
-            "best_price": 980,
-            "official_url": get_pharmacy_search_url("丁丁藥局", "葉黃素"),
-            "pharmacy_comparison": [
-                {"pharmacy": "丁丁藥局", "price": 980, "is_lowest": True, "badge": "最低優惠價", "url": get_pharmacy_search_url("丁丁藥局", "葉黃素")},
-                {"pharmacy": "杏一醫療", "price": 1050, "is_lowest": False, "badge": "門市正品", "url": get_pharmacy_search_url("杏一醫療", "葉黃素")},
-                {"pharmacy": "大樹藥局", "price": 1080, "is_lowest": False, "badge": "官方直銷", "url": get_pharmacy_search_url("大樹藥局", "葉黃素")},
-                {"pharmacy": "啄木鳥藥局", "price": 1100, "is_lowest": False, "badge": "常態供應", "url": get_pharmacy_search_url("啄木鳥藥局", "葉黃素")}
-            ]
-        },
-        {
-            "id": "rec_probiotics_01",
-            "product_name": "【日本味王】消化專利複合益生菌 (60包/盒)",
-            "sku": "GT-P060",
-            "ean_13": "4712857002013",
-            "category": "腸道健康 / WGO 益生菌指引",
-            "spec": "60包/盒 (200億活菌)",
-            "search_kw": "益生菌",
-            "match_conditions": ["腸", "便秘", "排便", "胃", "消化", "日常", "糖", "糖尿病"],
-            "match_reason": "符合世界胃腸病學組織 (WGO) 指引：調節腸道菌相、幫助消化，親友無腸胃負擔。",
-            "recommended_pharmacy": "大樹藥局",
-            "best_price": 790,
-            "official_url": get_pharmacy_search_url("大樹藥局", "益生菌"),
-            "pharmacy_comparison": [
-                {"pharmacy": "大樹藥局", "price": 790, "is_lowest": True, "badge": "獨家最低價", "url": get_pharmacy_search_url("大樹藥局", "益生菌")},
-                {"pharmacy": "啄木鳥藥局", "price": 820, "is_lowest": False, "badge": "現貨提供", "url": get_pharmacy_search_url("啄木鳥藥局", "益生菌")},
-                {"pharmacy": "丁丁藥局", "price": 850, "is_lowest": False, "badge": "門市正品", "url": get_pharmacy_search_url("丁丁藥局", "益生菌")},
-                {"pharmacy": "杏一醫療", "price": 880, "is_lowest": False, "badge": "醫材門市", "url": get_pharmacy_search_url("杏一醫療", "益生菌")}
-            ]
-        },
-        {
-            "id": "rec_gaba_01",
-            "product_name": "【三得利】芝麻明 EX + GABA (90錠/瓶)",
-            "sku": "MF-S090",
-            "ean_13": "4901777252011",
-            "category": "睡眠調節 / AASM 指引",
-            "spec": "90錠/瓶 (日本原裝進口)",
-            "search_kw": "芝麻明",
-            "match_conditions": ["睡", "失眠", "焦慮", "放鬆", "熬夜", "疲勞", "精神", "日常"],
-            "match_reason": "結合 GABA 與高濃度芝麻素，幫助中樞神經放鬆，改善親友淺眠，無安眠藥成癮性。",
-            "recommended_pharmacy": "杏一醫療",
-            "best_price": 1600,
-            "official_url": get_pharmacy_search_url("杏一醫療", "芝麻明"),
-            "pharmacy_comparison": [
-                {"pharmacy": "杏一醫療", "price": 1600, "is_lowest": True, "badge": "官方直銷最優", "url": get_pharmacy_search_url("杏一醫療", "芝麻明")},
-                {"pharmacy": "大樹藥局", "price": 1650, "is_lowest": False, "badge": "官方正品", "url": get_pharmacy_search_url("大樹藥局", "芝麻明")},
-                {"pharmacy": "啄木鳥藥局", "price": 1680, "is_lowest": False, "badge": "門市代購", "url": get_pharmacy_search_url("啄木鳥藥局", "芝麻明")},
-                {"pharmacy": "丁丁藥局", "price": 1700, "is_lowest": False, "badge": "現貨速配", "url": get_pharmacy_search_url("丁丁藥局", "芝麻明")}
-            ]
-        }
-    ]
 
     db_result = match_recommendation_products(cond)
     matched = db_result["products"]
     is_fallback = db_result["is_fallback"]
+    related_count = db_result["related_count"]
     if not matched:
-        # 資料庫尚未建立時，改用程式內建清單比對
-        matched = [item for item in all_recommendations if any(mc in cond for mc in item["match_conditions"] if mc != "日常")]
-        is_fallback = not matched
-        if not matched:
-            matched = all_recommendations[:3]
+        # 資料庫尚未建立時，改用 product_catalog 的一般保養商品當作日常保養推薦
+        matched = [
+            {**p, "is_related": False, "is_top_pick": False}
+            for p in DEFAULT_RECOMMENDATION_PRODUCTS if "日常" in p.get("match_conditions", [])
+        ][:3]
+        is_fallback = True
+        related_count = 0
 
     return {
         "success": True,
         "elder_name": elder_name,
         "elder_condition": condition,
         "total": len(matched),
+        "related_count": related_count,
         "is_fallback": is_fallback,
         "products": matched
     }

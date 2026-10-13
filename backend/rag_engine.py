@@ -5,124 +5,77 @@ import requests
 try:
     from backend.vector_store import global_vector_store, FULL_CLINICAL_LITERATURES
     from backend.tfda_service import global_tfda_service
+    from backend.product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
 except ImportError:
     from vector_store import global_vector_store, FULL_CLINICAL_LITERATURES
     from tfda_service import global_tfda_service
+    from product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
 
 # Expose full clinical literatures for compatibility
 CLINICAL_LITERATURES = FULL_CLINICAL_LITERATURES
 
 # =========================================================================
-# REAL PHARMACY PRODUCT MAPPING (15 CLINICAL LITERATURES)
-# 連鎖藥局正品直售與四家比價資料庫
+# 推薦商品卡：一律使用 product_catalog（2026/10/13 四家藥局官網實際查價）
+# 沒有收錄（沒有實際查價）的成分不顯示價格，避免出現不實的比價資訊
 # =========================================================================
-REAL_PHARMACY_MAP = {
-    "lit_glucosamine_07": {
-        "pharmacy": "大樹藥局",
-        "product_name": "【維骨力】加強型結晶型硫酸鹽葡萄糖胺膠囊 (180粒/盒)",
-        "price": 1550,
-        "comparison": "大樹藥局 $1,550 (全網最低) vs 杏一醫療 $1,580 vs 啄木鳥 $1,590",
-        "reason": "符合 ESCEO 骨關節醫學會指引，緩解關節軟骨退化，無心血管與抗凝血衝突。"
-    },
-    "lit_calcium_d3_04": {
-        "pharmacy": "大樹藥局",
-        "product_name": "【挺立】鈣強力錠 + 活性維生素 D3 (60錠/盒)",
-        "price": 499,
-        "comparison": "大樹藥局 $499 (全網最低) vs 杏一醫療 $520 vs 丁丁藥局 $535",
-        "reason": "美國骨質疏鬆學會 (NOF) 指引：檸檬酸鈣+D3 協同吸收，有效維持骨質密度。"
-    },
-    "lit_lutein_01": {
-        "pharmacy": "丁丁藥局",
-        "product_name": "【永信藥品】活泉游離型葉黃素 30mg + 玉米黃素 (60粒/瓶)",
-        "price": 980,
-        "comparison": "丁丁藥局 $980 (全網最低) vs 杏一醫療 $1,050 vs 大樹藥局 $1,080",
-        "reason": "符合美國國家衛生院 (NIH) AREDS 2 臨床指引：游離型高吸收率保養黃斑部。"
-    },
-    "lit_probiotics_03": {
-        "pharmacy": "大樹藥局",
-        "product_name": "【日本味王】消化專利複合益生菌 (60包/盒)",
-        "price": 790,
-        "comparison": "大樹藥局 $790 (全網最低) vs 啄木鳥藥局 $820 vs 杏一醫療 $880",
-        "reason": "符合世界胃腸病學組織 (WGO) 指引：調節腸道菌相、改善便秘脹氣，親友無腸胃負擔。"
-    },
-    "lit_gaba_sesamin_08": {
-        "pharmacy": "杏一醫療",
-        "product_name": "【三得利】芝麻明 EX + GABA (90錠/瓶)",
-        "price": 1600,
-        "comparison": "杏一醫療 $1,600 (全網最低) vs 大樹藥局 $1,650 vs 啄木鳥 $1,680",
-        "reason": "結合 GABA 與高濃度芝麻素，幫助中樞神經放鬆改善淺眠，無安眠藥成癮性。"
-    },
-    "lit_coq10_06": {
-        "pharmacy": "大樹藥局",
-        "product_name": "【DHC】輔酶 Q10 軟膠囊 (60粒/包)",
-        "price": 520,
-        "comparison": "大樹藥局 $520 (全網最低) vs 啄木鳥藥局 $550",
-        "reason": "每日 30mg 符合 TFDA 法規標準，增進心肌細胞活力。"
-    },
-    "lit_omega3_02": {
-        "pharmacy": "大樹藥局",
-        "product_name": "【白蘭氏】深海魚油 + 蝦紅素軟膠囊 (120粒/瓶)",
-        "price": 1280,
-        "comparison": "大樹藥局 $1,280 (全網最低) vs 丁丁藥局 $1,320",
-        "reason": "符合美國心臟學會 (AHA) 指引，純度 >80% 維持血脂健康。"
-    },
-    "lit_curcumin_05": {
-        "pharmacy": "啄木鳥藥局",
-        "product_name": "【三得利】極之薑黃薑黃素膠囊 (60粒/瓶)",
-        "price": 1150,
-        "comparison": "啄木鳥藥局 $1,150 (全網最低) vs 大樹藥局 $1,200",
-        "reason": "符合 NIH 臨床消炎文獻指引，具抗氧化與關節保養效益。"
-    },
-    "lit_red_yeast_09": {
-        "pharmacy": "大樹藥局",
-        "product_name": "【娘家】大紅麴膠囊 (30粒/盒)",
-        "price": 1080,
-        "comparison": "大樹藥局 $1,080 (全網最低) vs 杏一醫療 $1,120",
-        "reason": "衛福部健字號認證調節血脂，需嚴格遵照醫囑避免與 Statin 併用。"
-    },
-    "lit_nattokinase_10": {
-        "pharmacy": "杏一醫療",
-        "product_name": "【日本野口醫學研究所】納豆激酶 2000FU (60粒/瓶)",
-        "price": 950,
-        "comparison": "杏一醫療 $950 (全網最低) vs 大樹藥局 $990",
-        "reason": "日本納豆激酶協會 JNKA 認證，晚餐後食用維護循環（禁與抗凝血併用）。"
-    },
-    "lit_ginkgo_11": {
-        "pharmacy": "大樹藥局",
-        "product_name": "【循利寧】銀杏葉萃取物濃縮滴劑 (40ml/瓶)",
-        "price": 890,
-        "comparison": "大樹藥局 $890 (全網最低) vs 丁丁藥局 $920",
-        "reason": "德國原廠 EGb 761 標準化銀杏葉萃取物，改善末梢血液循環。"
-    },
-    "lit_ucii_12": {
-        "pharmacy": "大樹藥局",
-        "product_name": "【挺立】關鍵迷你錠 UC-II 非變性二型膠原蛋白 (30錠/盒)",
-        "price": 999,
-        "comparison": "大樹藥局 $999 (全網最低) vs 杏一醫療 $1,050",
-        "reason": "美國專利 UC-II 口服免疫耐受調節軟骨，90天靈活度提升，無抗凝血衝突。"
-    },
-    "lit_vitamin_b_13": {
-        "pharmacy": "杏一醫療",
-        "product_name": "【合利他命】強效錠 EX PLUS 活性維生素 B 群 (120錠/瓶)",
-        "price": 1450,
-        "comparison": "杏一醫療 $1,450 (全網最低) vs 大樹藥局 $1,490",
-        "reason": "日本原裝維生素 B1/B6/B12 活性誘導體，修復受損末梢神經、緩解手麻腳麻。"
-    },
-    "lit_zinc_wound_14": {
-        "pharmacy": "大樹藥局",
-        "product_name": "【亞培】創力康傷口修復高蛋白營養配方 (24罐/箱)",
-        "price": 1650,
-        "comparison": "大樹藥局 $1,650 (全網最低) vs 杏一醫療 $1,680",
-        "reason": "ESPEN 臨床指引認證：富含高優質蛋白質與高吸收率螯合鋅，加速皮膚創面肉芽生長。"
-    },
-    "lit_cranberry_mannose_15": {
-        "pharmacy": "大樹藥局",
-        "product_name": "【善存】女性高濃縮蔓越莓膠囊 + D-甘露糖 (60粒/瓶)",
-        "price": 790,
-        "comparison": "大樹藥局 $790 (全網最低) vs 啄木鳥藥局 $820",
-        "reason": "考科藍 Cochrane 實證 PACs 36mg + D-甘露糖，維護親友私密泌尿道微生態健康。"
-    }
+_CATALOG = {p["id"]: p for p in DEFAULT_RECOMMENDATION_PRODUCTS}
+
+# 實證文獻 → 暖心選物中同成分的商品
+LIT_TO_CATALOG = {
+    "lit_calcium_d3_04": "rec_calcium_01",
+    "lit_lutein_01": "rec_lutein_01",
+    "lit_probiotics_03": "rec_probiotics_01",
+    "lit_coq10_06": "rec_q10_01",
+    "lit_omega3_02": "rec_fishoil_01",
+    "lit_ucii_12": "rec_glucosamine_01",
 }
+
+# TFDA 替代建議的品名關鍵字 → 暖心選物中同類的商品
+ALT_NAME_TO_CATALOG = [
+    ("Q10", "rec_q10_01"),
+    ("完膳", "rec_quaker_01"),
+    ("味王", "rec_probiotics_01"),
+    ("葉黃", "rec_lutein_01"),
+    ("鈣強力", "rec_calcium_01"),
+    ("UC-II", "rec_glucosamine_01"),
+]
+
+
+def catalog_card_fields(product_id, elder_condition: str = ""):
+    """回傳商品卡的通路／品名／價格／比價；親友病況命中商品的排除條件時回傳 None"""
+    p = _CATALOG.get(product_id or "")
+    if not p:
+        return None
+    cond = (elder_condition or "").lower()
+    if any(t.lower() in cond for t in p.get("exclude_conditions", []) if t):
+        return None
+    comparable = [x for x in p["pharmacy_comparison"] if x.get("comparable", True)]
+    parts = [
+        f"{x['pharmacy']} ${x['price']:,}" + ("（最低）" if x.get("is_lowest") else "")
+        for x in comparable
+    ]
+    return {
+        "pharmacy": p["recommended_pharmacy"],
+        "product_name": p["product_name"],
+        "price": p["best_price"],
+        "comparison": " vs ".join(parts) + f"｜{p['price_checked_at']} 藥局官網查價",
+        "url": p["official_url"],
+        "catalog_id": p["id"],
+    }
+
+
+def _no_price_card(title: str, product_name: str, reason: str) -> dict:
+    return {
+        "type": "notice",
+        "title": title,
+        "pharmacy": "",
+        "product_name": product_name,
+        "price": None,
+        "comparison": None,
+        "url": "",
+        "reason": reason,
+    }
+
 
 # =========================================================================
 # SYMPTOM & PHYSICAL RELIEF KNOWLEDGE BASE (Acupressure + Tools + Safety)
@@ -648,36 +601,37 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
     is_collision = tfda_result["is_collision"]
     radar_scores = tfda_result["radar_scores"]
 
-    # Action Card: Either TFDA certified alternative or real chain pharmacy product
+    # Action Card: TFDA 替代建議或同成分商品；價格一律來自暖心選物的實際查價資料
     if is_collision and tfda_result.get("alternative"):
         alt = tfda_result["alternative"]
-        action_card = {
-            "type": "alternative",
-            "title": f"🛡️ 衛福部認證【零衝突】安全替代推薦",
-            "pharmacy": alt["pharmacy"],
-            "product_name": alt["product_name"],
-            "price": alt["price"],
-            "comparison": alt["comparison"],
-            "reason": alt["reason"]
-        }
+        catalog_id = next((cid for kw, cid in ALT_NAME_TO_CATALOG if kw in alt["product_name"]), None)
+        real = catalog_card_fields(catalog_id, elder_condition)
+        if real:
+            action_card = {"type": "alternative", "title": "較安全的替代選擇", **real, "reason": alt["reason"]}
+        else:
+            # 替代商品只從經過查價、套用排除條件的暖心選物資料庫挑選；
+            # 沒有收錄或替代品本身也有衝突時（例如服用抗凝血劑時的 Q10），不推薦具體商品
+            action_card = _no_price_card(
+                "暫不推薦替代商品",
+                "請先諮詢醫師或藥師",
+                "親友目前的用藥與這類保健品可能有交互作用，替代選擇請由醫師或藥師依實際用藥評估後再購買。"
+            )
     else:
         lit_id = top_lit["id"]
-        prod_info = REAL_PHARMACY_MAP.get(lit_id, {
-            "pharmacy": "大樹藥局",
-            "product_name": f"【實證專利】{matched_ingredient} 認證配方",
-            "price": 1280,
-            "comparison": "大樹藥局 $1,280 (全網最低) vs 杏一醫療 $1,350",
-            "reason": f"符合 {top_lit['authority']} 臨床指引，4 大連鎖藥局正品保證。"
-        })
-        action_card = {
-            "type": "recommended",
-            "title": f"🌿 推薦通路：【{prod_info['pharmacy']}】正品直售",
-            "pharmacy": prod_info["pharmacy"],
-            "product_name": prod_info["product_name"],
-            "price": prod_info["price"],
-            "comparison": prod_info["comparison"],
-            "reason": prod_info["reason"]
-        }
+        real = catalog_card_fields(LIT_TO_CATALOG.get(lit_id), elder_condition)
+        if real:
+            action_card = {
+                "type": "recommended",
+                "title": f"推薦通路：【{real['pharmacy']}】",
+                **real,
+                "reason": _CATALOG[real["catalog_id"]]["match_reason"],
+            }
+        else:
+            action_card = _no_price_card(
+                "暖心選物尚未收錄此類商品",
+                f"{matched_ingredient} 類保健品",
+                "目前藥局比價資料庫沒有經過實際查價的對應商品，因此不提供價格。購買前請先詢問醫師或藥師，確認與親友目前的用藥沒有交互作用。"
+            )
 
     safety = {
         "is_collision": is_collision,
