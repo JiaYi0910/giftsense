@@ -43,7 +43,10 @@
      ```bash
      keytool -exportcert -alias androiddebugkey -keystore %USERPROFILE%\.android\debug.keystore | openssl sha1 -binary | openssl base64
      ```
-4. 新增**網站**平台：網址填 `https://giftsense-vjbu.onrender.com/`。
+4. 網頁版登入的網域設定（沒設會跳出「無法載入網址：這個網址的網域未包含在應用程式的網域中」）：
+   - 「設定 → 基本資料」→「應用程式網域」填 `giftsense-vjbu.onrender.com`（不加 `https://`）；最下方「新增平台 → 網站」，網址填 `https://giftsense-vjbu.onrender.com/`。
+   - 「Facebook 登入 → 設定」：「用戶端 OAuth 登入」「網頁 OAuth 登入」「用 JavaScript SDK 登入」都開啟；「JavaScript SDK 的允許網域」與「有效的 OAuth 重新導向 URI」都填 `https://giftsense-vjbu.onrender.com/`。
+   - 兩頁都要按「儲存變更」，生效可能要幾分鐘。
 5. 把值填進專案：
    - `giftsense/lib/config/social_login_config.dart` → `facebookAppId`
    - `giftsense/android/app/src/main/res/values/strings.xml` → `facebook_app_id`、`facebook_client_token`
