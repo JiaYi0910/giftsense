@@ -27,18 +27,20 @@ iOS App 只能在 **macOS + Xcode** 上編譯，Windows 無法產出 iPhone 安�
 
 **一、準備（只需做一次）**
 
-1. 從 App Store 安裝 **Xcode**，打開一次並同意授權；終端機執行 `xcode-select --install`。
-2. 安裝 Flutter（macOS 版）與 CocoaPods：`brew install cocoapods`（沒有 Homebrew 可用 `sudo gem install cocoapods`）。
-3. 把 Windows 上的 `giftsense` 資料夾整個複製到 Mac（`build`、`.dart_tool` 資料夾不用複製）。
+1. 從 App Store 安裝 **Xcode**，打開一次並同意授權，等它裝完 iOS 平台元件；終端機執行 `xcode-select --install`。
+2. 安裝 Flutter **stable 最新版**（專案需要 Dart 3.12 以上，Windows 上用的是 Flutter 3.44）與 CocoaPods：`brew install cocoapods`（沒有 Homebrew 可用 `sudo gem install cocoapods`）。裝完執行 `flutter doctor`，Xcode 與 CocoaPods 兩項要打勾。
+3. 把專案複製到 Mac：用 Windows 桌面的 `giftsense_mac.zip`（已排除 `build`、`.dart_tool` 等暫存檔，不到 1 MB），在 Mac 上解壓縮。
 
 **二、第一次編譯**
 
 ```bash
 cd giftsense
 flutter pub get
-cd ios && pod install && cd ..
+flutter build ios --release --no-codesign   # 第一次會自動產生 Podfile 並執行 pod install
 open ios/Runner.xcworkspace
 ```
+
+專案裡還沒有 `ios/Podfile`，所以不要先手動執行 `pod install`；上面的 `flutter build ios` 會自動建立並安裝。
 
 在 Xcode 左側點 **Runner** → **Signing & Capabilities**：
 
@@ -49,8 +51,15 @@ open ios/Runner.xcworkspace
 
 1. iPhone 用傳輸線接上 Mac，在 iPhone 上點「信任這部電腦」。
 2. iPhone：設定 → 隱私權與安全性 → **開發者模式** → 開啟（會要求重新開機）。
-3. Xcode 上方選擇你的 iPhone，按 ▶ 執行。
-4. 第一次開啟若顯示「不受信任的開發者」：iPhone 設定 → 一般 → **VPN 與裝置管理** → 信任你的 Apple ID。
+3. 在 Mac 終端機（`giftsense` 資料夾）執行：
+
+   ```bash
+   flutter devices          # 確認看得到你的 iPhone
+   flutter run --release    # 安裝正式版，拔線後也能從主畫面開啟
+   ```
+
+   也可以在 Xcode 上方選擇你的 iPhone 後按 ▶，但 Xcode 預設是 Debug 版，拔線後從主畫面開啟會閃退；要長期使用請用 `flutter run --release`。
+4. 第一次開啟若顯示「不受信任的開發者」：iPhone 設定 → 一般 → **VPN 與裝置管理** → 信任你的 Apple ID，再開一次。
 
 免費 Apple ID 安裝的 App 約 **7 天**後會失效，接上 Mac 再按一次 ▶ 就能重新安裝。
 
