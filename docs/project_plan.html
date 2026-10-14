@@ -24,7 +24,7 @@
              box-shadow: 0 10px 30px rgba(37,99,235,.08); display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 18px; align-items: center; }
   .progress b { font-size: 15px; color: var(--blue-deep); }
   .bar { margin-top: 10px; height: 12px; border-radius: 999px; background: var(--blue-soft); border: 1px solid var(--blue-border); overflow: hidden; }
-  .bar i { display: block; height: 100%; width: 83%; background: linear-gradient(90deg, #34D399, #059669); border-radius: 999px; }
+  .bar i { display: block; height: 100%; width: 84%; background: linear-gradient(90deg, #34D399, #059669); border-radius: 999px; }
   .progress small { display: block; margin-top: 6px; color: var(--muted); font-size: 12.5px; }
   .stat { border-left: 1px solid var(--line); padding-left: 18px; }
   .stat b { display: block; font-size: 30px; line-height: 1.1; }
@@ -68,15 +68,15 @@
 </header>
 <div class="wrap">
   <div class="summary">
-    <div class="progress"><b>整體進度 83%</b><div class="bar"><i></i></div><small>已完成 40 項 / 共 48 項（不含範圍外）</small></div>
-    <div class="stat done"><b>40</b><span>已完成</span></div>
+    <div class="progress"><b>整體進度 84%</b><div class="bar"><i></i></div><small>已完成 41 項 / 共 49 項（不含範圍外）</small></div>
+    <div class="stat done"><b>41</b><span>已完成</span></div>
     <div class="stat todo"><b>4</b><span>待辦</span></div>
     <div class="stat check"><b>4</b><span>展示前確認</span></div>
   </div>
 </div>
 <main class="wrap">
   <section class="card done">
-    <h2><span class="dot"></span>已完成<em>40 項</em></h2>
+    <h2><span class="dot"></span>已完成<em>41 項</em></h2>
     <div class="grid">
       <div class="group">
         <h3>基礎架構與部署<span>5</span></h3>
@@ -89,7 +89,7 @@
         </ul>
       </div>
       <div class="group">
-        <h3>會員與登入<span>8</span></h3>
+        <h3>會員與登入<span>9</span></h3>
         <ul>
           <li class="done">帳號密碼註冊和登入</li>
           <li class="done">Google 登入</li>
@@ -99,6 +99,7 @@
           <li class="done">個人資料編輯介面</li>
           <li class="done">連續登入天數（中斷一天就從第 1 天重算）</li>
           <li class="done">網頁版 Cookie 同意，以及公開的隱私權政策頁 <code>/privacy</code></li>
+          <li class="done">密碼以 bcrypt 雜湊儲存（舊資料啟動時自動轉換）</li>
         </ul>
       </div>
       <div class="group">

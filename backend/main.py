@@ -56,7 +56,7 @@ from chips_generator import get_clinical_rule_chips, generate_ai_recipient_chips
 
 # AI 守護助理每日免費詢問次數；可用關懷點數兌換額外次數
 AI_GUARD_DAILY_LIMIT = 3
-from database import AI_GUARD_REDEEM_COST, round_points, format_points  # 1 點兌換 3 次
+from database import AI_GUARD_REDEEM_COST, SIGNUP_BONUS_POINTS, round_points, format_points  # 1 點兌換 3 次
 AI_GUARD_REDEEM_EXTRA = 3
 
 from linebot import LineBotApi, WebhookHandler
@@ -338,7 +338,7 @@ def api_register(req: RegisterRequest):
     user = register_user(req.account, req.password, req.name, req.role or "user")
     if not user:
         return {"success": False, "message": "此帳號已存在，請直接登入！"}
-    return {"success": True, "message": "註冊成功！已自動發放新會員 100 點獎勵！", "user": user}
+    return {"success": True, "message": f"註冊成功！已發放新會員 {format_points(SIGNUP_BONUS_POINTS)} 點獎勵！", "user": user}
 
 @app.get("/api/auth/profile")
 def api_user_profile(account: str = "test"):

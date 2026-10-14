@@ -1,8 +1,11 @@
 import sqlite3
 import json
+import hmac
 import os
 import time
 import uuid
+
+import bcrypt
 from datetime import datetime, timedelta, timezone
 
 # 💡 伺服器一律使用台灣時間（Render 預設是 UTC，會讓 LINE 訊息時間慢 8 小時、聊天排序錯亂）
@@ -17,6 +20,34 @@ DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "caregift.db"
 from product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
 # 💡 設定 TURSO_DATABASE_URL 後改用 Turso 雲端資料庫（Render 免費方案重啟時資料才不會消失）
 from db_backend import USE_TURSO, connect_turso, bootstrap_turso_from_sqlite
+
+# =========================================================================
+# 密碼：以 bcrypt 雜湊儲存（2026/10/15 起）
+# 舊資料的明文密碼在啟動時一次轉成雜湊；登入時若仍遇到明文，驗證成功後立即改存雜湊
+# =========================================================================
+def _password_bytes(raw: str) -> bytes:
+    # bcrypt 只使用前 72 個位元組；新版 bcrypt 對超過的長度會報錯，因此先截斷
+    return (raw or "").encode("utf-8")[:72]
+
+
+def hash_password(raw: str) -> str:
+    return bcrypt.hashpw(_password_bytes(raw), bcrypt.gensalt()).decode("ascii")
+
+
+def is_password_hash(stored) -> bool:
+    return isinstance(stored, str) and stored.startswith(("$2a$", "$2b$", "$2y$"))
+
+
+def verify_password(raw: str, stored) -> bool:
+    if not stored or raw is None:
+        return False
+    if is_password_hash(stored):
+        try:
+            return bcrypt.checkpw(_password_bytes(raw), stored.encode("ascii"))
+        except ValueError:
+            return False
+    return hmac.compare_digest(str(stored).encode("utf-8"), raw.encode("utf-8"))  # 尚未轉換的舊明文
+
 
 # 點數規則（2026/10/15 起改為小額回饋，1 點折抵 $1）
 SIGNUP_BONUS_POINTS = 5        # 新會員註冊禮
@@ -408,15 +439,25 @@ def init_db():
         cursor.execute("""
         INSERT INTO users (id, account, password_hash, name, role, points)
         VALUES (?, ?, ?, ?, ?, ?)
-        """, ("usr_admin", "admin", "123", "系統管理員", "admin", 9999))
-    # 💡 線上環境請在 Render 設定 ADMIN_PASSWORD：每次啟動都以它覆蓋 admin 密碼，
+        """, ("usr_admin", "admin", hash_password("123"), "系統管理員", "admin", 9999))
+
+    # 舊資料的明文密碼一律轉成 bcrypt 雜湊（已是雜湊的不動，可重複執行）
+    for r in cursor.execute(
+        "SELECT id, password_hash FROM users WHERE password_hash IS NOT NULL AND password_hash != ''"
+    ).fetchall():
+        if not is_password_hash(r["password_hash"]):
+            cursor.execute("UPDATE users SET password_hash = ? WHERE id = ?", (hash_password(r["password_hash"]), r["id"]))
+
+    # 💡 線上環境請在 Render 設定 ADMIN_PASSWORD：啟動時以它覆蓋 admin 密碼（存成雜湊），
     #    避免任何人用 repo 裡公開的預設密碼登入管理後台
     admin_password = os.getenv("ADMIN_PASSWORD", "").strip()
     if admin_password:
-        cursor.execute(
-            "UPDATE users SET password_hash = ? WHERE account = 'admin'",
-            (admin_password,)
-        )
+        current = cursor.execute("SELECT password_hash FROM users WHERE account = 'admin'").fetchone()
+        if not current or not verify_password(admin_password, current["password_hash"]):
+            cursor.execute(
+                "UPDATE users SET password_hash = ? WHERE account = 'admin'",
+                (hash_password(admin_password),)
+            )
 
     # 為尚未有快速提問晶片的親友自動補上臨床規則晶片
     try:
@@ -688,7 +729,12 @@ def authenticate_user(account: str, password_raw: str):
     if not row:
         return None
     user = dict(row)
-    if user["password_hash"] == password_raw:
+    if verify_password(password_raw, user["password_hash"]):
+        if not is_password_hash(user["password_hash"]):
+            conn = get_db()
+            conn.execute("UPDATE users SET password_hash = ? WHERE id = ?", (hash_password(password_raw), user["id"]))
+            conn.commit()
+            conn.close()
         return {
             "id": user["id"],
             "account": user["account"],
@@ -719,7 +765,7 @@ def register_user(account: str, password_raw: str, name: str = None, role: str =
     conn.execute("""
     INSERT INTO users (id, account, password_hash, name, role, points, email, created_at)
     VALUES (?, ?, ?, ?, ?, 0, ?, CURRENT_TIMESTAMP)
-    """, (user_id, account, password_raw, display_name, assigned_role, account))
+    """, (user_id, account, hash_password(password_raw), display_name, assigned_role, account))
     conn.commit()
     conn.close()
 
