@@ -64,6 +64,17 @@ def catalog_card_fields(product_id, elder_condition: str = ""):
     }
 
 
+try:
+    from clinical_guidance import GUIDANCE_CATEGORIES
+except ImportError:
+    from backend.clinical_guidance import GUIDANCE_CATEGORIES
+
+
+def _guidance_text(lit: dict) -> str:
+    return (f"依據 {lit.get('authority', '')}：\n{lit.get('mechanism', '')}\n"
+            f"建議做法：{lit.get('recommendedDose', '')}\n注意：{lit.get('contraindications', '')}")
+
+
 def _no_price_card(title: str, product_name: str, reason: str) -> dict:
     return {
         "type": "notice",
@@ -481,8 +492,16 @@ def build_elder_safety_warning(symptom_cat: str, elder_name: str, elder_conditio
     else:
         return f"ℹ️ 【{elder_name} 專屬健康叮嚀】：穴位指壓請以親友感覺「酸脹微溫」為原則，切勿用力過猛造成皮下瘀青。如持續劇痛或出現手麻放射性麻木，應即刻前往神經內科或骨科門診就醫。"
 
+# 問題提到藥物、保健品或飲食時，交給文獻檢索與撞藥比對，不走穴位舒緩路線
+INTAKE_TERMS = ("藥", "保健", "補充", "維生素", "維他命", "魚油", "gaba", "芝麻素", "葡萄糖胺", "uc-ii",
+                "膠原", "葉黃素", "益生菌", "鈣", "鎂", "b群", "薑黃", "納豆", "銀杏", "紅麴", "q10", "輔酶",
+                "飲食", "營養", "可以吃", "能吃", "可以喝", "能喝")
+
+
 def find_symptom_match(query: str, elder_name: str, elder_condition: str):
     q = query.lower()
+    if any(t in q for t in INTAKE_TERMS):
+        return None
     for cat_id, cat_data in SYMPTOM_KNOWLEDGE_BASE.items():
         if any(kw in q for kw in cat_data["keywords"]):
             safety_warning = build_elder_safety_warning(cat_id, elder_name, elder_condition)
@@ -568,7 +587,7 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
             "success": True,
             "has_match": False,
             "is_symptom_track": False,
-            "message": f"針對「{query}」，目前 15 篇國家級與 TFDA 臨床文獻庫中未檢索到高度直接相關項目。",
+            "message": f"針對「{query}」，目前 {len(global_vector_store.documents)} 篇實證文獻與照護指引中未檢索到高度直接相關項目。",
             "supported_areas": [
                 "肩頸與關節舒緩 (風池/肩井穴位、醫療熱敷墊、一條根貼片)",
                 "紅麴血脂調節 (Monacolin K / TFDA 黑框警語)",
@@ -600,6 +619,14 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
 
     is_collision = tfda_result["is_collision"]
     radar_scores = tfda_result["radar_scores"]
+    is_guidance = top_lit.get("category") in GUIDANCE_CATEGORIES
+    if is_guidance and not is_collision:
+        tfda_result = {
+            **tfda_result,
+            "badge": "照護與用藥安全指引",
+            "title": f"依{top_lit.get('authority', '權威機構')}建議整理",
+            "desc": f"這題屬於{top_lit.get('category')}問題，以下依權威機構的指引整理重點；已比對{elder_name}（{elder_condition}）的病況與用藥，沒有命中撞藥規則。",
+        }
 
     # Action Card: TFDA 替代建議或同成分商品；價格一律來自暖心選物的實際查價資料
     if is_collision and tfda_result.get("alternative"):
@@ -616,6 +643,12 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
                 "請先諮詢醫師或藥師",
                 "親友目前的用藥與這類保健品可能有交互作用，替代選擇請由醫師或藥師依實際用藥評估後再購買。"
             )
+    elif is_guidance:
+        action_card = _no_price_card(
+            "這題不需要購買保健品",
+            "依指引調整用藥與生活習慣",
+            "這是用藥安全與照護建議，不推薦特定商品；有疑問請帶著藥袋詢問醫師或藥師。"
+        )
     else:
         lit_id = top_lit["id"]
         real = catalog_card_fields(LIT_TO_CATALOG.get(lit_id), elder_condition)
@@ -683,6 +716,12 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
                 gemini_text = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
         except Exception as e:
             print("Gemini API call notice:", e)
+
+    if not gemini_text and is_guidance:
+        gemini_text = _guidance_text(top_lit)
+        if is_collision:
+            gemini_text = (f"【用藥安全警示】{tfda_result['title']}\n{tfda_result['mechanism']}\n"
+                           f"處置建議：{tfda_result['clinical_action']}\n\n" + gemini_text)
 
     if not gemini_text:
         # High quality offline synthesis with TFDA endorsement

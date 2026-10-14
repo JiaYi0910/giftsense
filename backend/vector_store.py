@@ -5,7 +5,8 @@ import re
 from typing import List, Dict, Any, Optional
 
 # =========================================================================
-# COMPREHENSIVE CLINICAL LITERATURE CORPUS (15 Authoritative Literatures)
+# COMPREHENSIVE CLINICAL LITERATURE CORPUS
+# 15 篇保健成分文獻 + 用藥安全與照護指引（clinical_guidance.py）
 # US FDA / NIH / TFDA / Cochrane / AHA / ESCEO / WGO / AASM
 # =========================================================================
 FULL_CLINICAL_LITERATURES: List[Dict[str, Any]] = [
@@ -207,6 +208,13 @@ FULL_CLINICAL_LITERATURES: List[Dict[str, Any]] = [
     }
 ]
 
+# 2026/10/15：補上各病症的用藥安全、飲食與照護指引，讓快速提問都有對應的實證資料
+try:
+    from clinical_guidance import GUIDANCE_LITERATURES
+except ImportError:
+    from backend.clinical_guidance import GUIDANCE_LITERATURES
+FULL_CLINICAL_LITERATURES.extend(GUIDANCE_LITERATURES)
+
 # =========================================================================
 # MEDICAL VECTOR STORE IMPLEMENTATION
 # (High-Dimensional Semantic Embeddings + Persistent In-Memory Index)
@@ -235,7 +243,7 @@ class MedicalVectorStore:
         return tokens
 
     def _build_index(self):
-        """Construct TF-IDF semantic vector space for all 15 clinical documents."""
+        """Construct TF-IDF semantic vector space for all clinical documents."""
         doc_count = len(self.documents)
         doc_tokens_list = []
         df: Dict[str, int] = {}

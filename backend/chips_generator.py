@@ -4,151 +4,6 @@ import re
 import requests
 from typing import List, Dict, Any, Optional
 
-# Track 1: Fast Clinical Knowledge Base Mapping (0-delay deterministic clinical tags)
-CLINICAL_DISEASE_TAGS_MAP = {
-    "warfarin": [
-        {"label": "⚠️ 抗凝血+納豆禁忌(TFDA)", "query": "吃抗凝血藥Warfarin可以吃納豆激酶嗎？有什麼出血風險？", "badge": "TFDA禁忌"},
-        {"label": "⚠️ 魚油/銀杏出血風險", "query": "吃Warfarin可以吃高濃度魚油或銀杏嗎？需要停用嗎？", "badge": "撞藥警示"},
-        {"label": "膝關節無力卡卡(ESCEO)", "query": "親友膝蓋關節痛，吃硫酸鹽葡萄糖胺會影響血壓或抗凝血藥嗎？", "badge": "臨床指引"},
-        {"label": "半夜小腿抽筋補鈣(NOF)", "query": "親友半夜小腿容易抽筋，高血壓與服用抗凝血藥物補鈣推薦哪種？", "badge": "對症舒緩"},
-        {"label": "失眠睡不好吃什麼？", "query": "親友高血壓失眠睡不好，吃GABA或芝麻素安全嗎？會撞藥嗎？", "badge": "安全評估"},
-        {"label": "桂格完膳零撞藥滋補", "query": "桂格完膳無糖高鈣配方適合高血壓且吃抗凝血藥的親友嗎？", "badge": "藥局推薦"},
-        {"label": "挺立關鍵UC-II安全檢驗", "query": "挺立關鍵UC-II非變性二型膠原蛋白，心血管患者能安心吃嗎？", "badge": "實證檢驗"}
-    ],
-    "血壓": [
-        {"label": "⚠️ 降壓藥與紅麴交互作用", "query": "吃降血壓藥或降血脂藥可以吃紅麴嗎？TFDA有沒有警示？", "badge": "TFDA警示"},
-        {"label": "輔酶Q10心血管保養", "query": "高血壓親友補充輔酶Q10有幫助嗎？會不會影響降血壓藥？", "badge": "心血管"},
-        {"label": "半夜小腿抽筋補鈣鎂", "query": "高血壓親友夜間腳抽筋，補充檸檬酸鈣與鎂安全嗎？", "badge": "對症舒緩"},
-        {"label": "深海魚油EPA/DHA挑選", "query": "高血壓親友吃深海魚油，EPA與DHA該怎麼選？", "badge": "實證檢驗"},
-        {"label": "親友失眠睡不好吃什麼？", "query": "高血壓親友失眠淺眠，吃什麼保健品溫和放鬆不傷心血管？", "badge": "安全評估"},
-        {"label": "低鈉低鉀營養飲推薦", "query": "高血壓患者平時滋補，有推薦哪些低鈉無負擔的營養素嗎？", "badge": "營養指引"}
-    ],
-    "糖": [
-        {"label": "💡 高血糖吃什麼保健品安全？", "query": "親友血糖偏高，吃什麼保健品安全？有哪些成分不能碰？", "badge": "對症指南"},
-        {"label": "⚠️ 苦瓜胜肽+降糖藥(TFDA)", "query": "吃降血糖藥可以吃苦瓜胜肽嗎？會不會造成低血糖危險？", "badge": "TFDA警示"},
-        {"label": "⚠️ 糖尿病可以吃紅麴嗎？", "query": "糖尿病患者可以吃紅麴降血脂嗎？有撞藥或肝腎風險嗎？", "badge": "撞藥防錯"},
-        {"label": "桂格完膳無糖低GI(藥局)", "query": "桂格完膳無糖低GI高鈣配方適合糖尿病親友當早餐或點心嗎？", "badge": "藥局首選"},
-        {"label": "手腳末梢麻木保養", "query": "糖尿病親友手腳末梢神經麻木、血液循環差，補充B群或硫辛酸有用嗎？", "badge": "症狀舒緩"},
-        {"label": "視網膜與葉黃素AREDS 2", "query": "糖尿病親友眼睛視網膜與黃斑部保養，AREDS 2指引葉黃素怎麼挑？", "badge": "視力保健"},
-        {"label": "鉻酵母與胰島素敏感度", "query": "糖尿病親友補充微量元素鉻酵母，對維持醣類正常代謝有幫助嗎？", "badge": "實證檢驗"}
-    ],
-    "燙傷": [
-        {"label": "🩹 燙傷創面組織修復指南", "query": "手部燙傷創面吃什麼加速皮膚組織修復與長肉？", "badge": "創面修復"},
-        {"label": "膠原蛋白胜肽傷口癒合", "query": "燙傷傷口癒合期吃水解膠原蛋白胜肽有效嗎？", "badge": "組織再生"},
-        {"label": "維生素C + 鋅加速癒合", "query": "燙傷創面需要補充高劑量維生素C和鋅嗎？臨床指引建議？", "badge": "臨床指引"},
-        {"label": "除疤凝膠與外用敷料推薦", "query": "燙傷創面表皮癒合後的除疤凝膠與矽膠貼片怎麼挑選？", "badge": "藥局衛教"},
-        {"label": "高蛋白滋補飲品挑選", "query": "傷口創面組織修復期，有哪些低刺激高蛋白飲品推薦？", "badge": "營養補充"},
-        {"label": "創面飲食抗發炎與禁忌", "query": "皮膚燙傷創面飲食有哪些發物禁忌？咖啡或辣的能吃嗎？", "badge": "飲食禁忌"}
-    ],
-    "傷": [
-        {"label": "🩹 傷口組織修復營養", "query": "外傷創面加速癒合修復，吃什麼營養品最有效？", "badge": "創傷修復"},
-        {"label": "膠原蛋白+維生素C", "query": "傷口癒合期間補充膠原蛋白與維生素C能加速長肉嗎？", "badge": "組織再生"},
-        {"label": "避免色素沉澱抗痕指南", "query": "受傷創面如何避免色素沉澱與留疤？保健品與外用藥膏建議？", "badge": "對症指南"},
-        {"label": "高純度左旋麩醯胺酸", "query": "傷口組織修復吃左旋麩醯胺酸(Glutamine)有幫助嗎？", "badge": "臨床指引"}
-    ],
-    "關節": [
-        {"label": "膝關節卡卡無力(ESCEO)", "query": "親友膝關節退化卡卡無力，ESCEO骨關節醫學會指引首選吃什麼？", "badge": "臨床首選"},
-        {"label": "挺立UC-II與葡萄糖胺", "query": "挺立關鍵UC-II非變性二型膠原蛋白跟葡萄糖胺有何差別？哪個有效？", "badge": "實證比較"},
-        {"label": "硫酸鹽葡萄糖胺(藥品級)", "query": "結晶型硫酸鹽葡萄糖胺跟一般食品級鹽酸鹽葡萄糖胺吸收率差別？", "badge": "藥局推薦"},
-        {"label": "檸檬酸鈣+維生素D3(NOF)", "query": "美國骨質疏鬆學會NOF建議：檸檬酸鈣加D3如何幫助骨質密度？", "badge": "骨密指引"},
-        {"label": "肌少症乳清蛋白補充", "query": "親友走路無力容易跌倒，肌少症補充哪種蛋白質最容易吸收？", "badge": "肌力維護"},
-        {"label": "半夜小腿抽筋補鈣鎂", "query": "親友半夜常因關節或小腿抽筋痛醒，如何補充鈣鎂？", "badge": "對症舒緩"}
-    ],
-    "骨": [
-        {"label": "骨質疏鬆補鈣防跌指引", "query": "親友骨質密度低、容易骨折，補鈣與維生素D3臨床最新指引？", "badge": "骨密指引"},
-        {"label": "骨折術後加速骨痂生長", "query": "親友骨折術後調養，吃什麼能加速骨痂形成與骨骼癒合？", "badge": "術後調養"},
-        {"label": "挺立高鈣錠+活性D3", "query": "挺立高鈣強力錠配合活性D3對親友吸收率好嗎？會引起便秘嗎？", "badge": "實證檢驗"},
-        {"label": "非變性二型膠原蛋白UC-II", "query": "保護骨關節與軟骨韌性，UC-II每天建議劑量是多少？", "badge": "臨床推薦"}
-    ],
-    "失眠": [
-        {"label": "親友失眠睡不好吃什麼？", "query": "親友長期失眠、淺眠多夢，吃什麼保健品溫和安全不依賴？", "badge": "好眠推薦"},
-        {"label": "三得利芝麻明EX+GABA", "query": "三得利芝麻明EX結合GABA，對改善中老年人淺眠睡眠品質有效嗎？", "badge": "實證檢驗"},
-        {"label": "鈣鎂黃金比例幫助入睡", "query": "睡前補充檸檬酸鈣加鎂，有助於中樞神經放鬆與肌肉舒緩嗎？", "badge": "神經放鬆"},
-        {"label": "⚠️ 安眠藥與保健品撞藥", "query": "親友如果有吃西藥安眠藥或抗焦慮藥，可以吃GABA或褪黑激素嗎？", "badge": "撞藥防錯"}
-    ],
-    "眼": [
-        {"label": "游離型葉黃素AREDS 2", "query": "親友眼睛老化、黃斑部模糊，符合NIH AREDS 2指引葉黃素怎麼挑？", "badge": "AREDS 2"},
-        {"label": "玉米黃素黃金比例10:2", "query": "葉黃素跟玉米黃素黃金比例10:2對抗藍光與水晶體抗氧化有何實證？", "badge": "實證檢驗"},
-        {"label": "白內障保養與抗氧化營養", "query": "親友有輕微白內障，補充蝦紅素或花青素對眼睛微血管循環有用嗎？", "badge": "對症指引"}
-    ],
-    "痛風": [
-        {"label": "⚠️ 痛風高尿酸飲食禁忌", "query": "親友尿酸過高容易痛風發作，有哪些保健食品和補品絕對不能吃？", "badge": "飲食禁忌"},
-        {"label": "酸櫻桃萃取與尿酸代謝", "query": "酸櫻桃萃取物或芹菜籽對輔助尿酸代謝有醫學實證嗎？", "badge": "實證檢驗"},
-        {"label": "痛風親友降發炎保健推薦", "query": "痛風發作期關節紅腫熱痛，日常有哪些溫和抗發炎營養素？", "badge": "發炎舒緩"}
-    ],
-    "血脂": [
-        {"label": "⚠️ 降血脂藥+紅麴重複成分", "query": "親友有吃降血脂藥（Statin），可以再吃紅麴嗎？會不會重複劑量傷肝或肌肉？", "badge": "撞藥防錯"},
-        {"label": "高膽固醇飲食怎麼吃？", "query": "親友膽固醇偏高，日常飲食與烹調方式要注意什麼？", "badge": "飲食指引"},
-        {"label": "魚油與植物固醇挑選", "query": "高血脂的親友適合吃魚油或植物固醇嗎？怎麼挑比較安全？", "badge": "實證檢驗"},
-        {"label": "三酸甘油脂偏高怎麼辦", "query": "親友三酸甘油脂偏高，除了吃藥以外生活上可以怎麼改善？", "badge": "對症指南"}
-    ],
-    "腎": [
-        {"label": "⚠️ 腎臟病止痛藥禁忌", "query": "腎功能不好的親友可以吃市售止痛藥（NSAID）嗎？有什麼風險？", "badge": "撞藥防錯"},
-        {"label": "⚠️ 腎友保健品要避開什麼", "query": "慢性腎臟病親友吃保健品要特別避開哪些成分？", "badge": "TFDA警示"},
-        {"label": "低蛋白飲食與營養補充", "query": "慢性腎臟病親友需要控制蛋白質，營養品要怎麼挑選？", "badge": "營養指引"},
-        {"label": "高鉀高磷食物怎麼避", "query": "腎臟病親友飲食要注意哪些高鉀、高磷的食物？", "badge": "飲食禁忌"}
-    ],
-    "心臟": [
-        {"label": "⚠️ 心臟病用藥與保健品", "query": "親友有心臟病在服藥，吃保健品前要注意哪些交互作用？", "badge": "撞藥防錯"},
-        {"label": "輔酶Q10對心臟有幫助嗎", "query": "心臟病或裝支架的親友補充輔酶Q10有實證幫助嗎？", "badge": "實證檢驗"},
-        {"label": "心臟病適合的運動強度", "query": "心臟病親友適合做什麼運動？強度要怎麼拿捏？", "badge": "臨床指引"},
-        {"label": "胸悶喘不過氣何時就醫", "query": "親友有心臟病，出現哪些症狀需要立刻就醫？", "badge": "安全評估"}
-    ],
-    "肝": [
-        {"label": "⚠️ 保健品會不會傷肝？", "query": "肝功能不好的親友吃保健品，有哪些成分可能加重肝臟負擔？", "badge": "撞藥防錯"},
-        {"label": "脂肪肝飲食與生活調整", "query": "親友有脂肪肝，飲食和生活習慣要怎麼調整？", "badge": "對症指南"},
-        {"label": "B群與護肝產品挑選", "query": "常熬夜或肝指數偏高的親友，B群或護肝產品怎麼挑？", "badge": "實證檢驗"}
-    ],
-    "失智": [
-        {"label": "預防失智的生活習慣", "query": "親友記憶力變差，有哪些生活習慣有助於延緩失智？", "badge": "臨床指引"},
-        {"label": "銀杏與魚油對記憶力", "query": "銀杏或魚油對親友記憶力有實證幫助嗎？會跟其他藥物衝突嗎？", "badge": "實證檢驗"},
-        {"label": "居家防走失與安全", "query": "家中親友有失智症狀，居家安全與防走失要注意什麼？", "badge": "照護指引"},
-        {"label": "帕金森氏症營養照護", "query": "帕金森氏症親友吃藥期間，飲食與蛋白質攝取要注意什麼？", "badge": "營養指引"}
-    ],
-    "腸胃": [
-        {"label": "便秘吃什麼比較好？", "query": "親友長期便秘，飲食、益生菌或纖維補充品怎麼選比較溫和？", "badge": "腸道健康"},
-        {"label": "⚠️ 胃藥與保健品間隔", "query": "親友有吃胃藥（制酸劑），跟鈣片、鐵劑等保健品要間隔多久？", "badge": "撞藥防錯"},
-        {"label": "胃食道逆流飲食禁忌", "query": "胃食道逆流的親友平常飲食要避開哪些東西？", "badge": "飲食禁忌"},
-        {"label": "腸胃敏感益生菌挑選", "query": "腸胃敏感、容易拉肚子的親友，益生菌要怎麼挑？", "badge": "實證檢驗"}
-    ],
-    "呼吸": [
-        {"label": "感冒期間吃什麼恢復快", "query": "親友感冒中，飲食與營養補充有什麼建議？", "badge": "對症舒緩"},
-        {"label": "⚠️ 感冒藥與慢性病用藥", "query": "有慢性病在吃藥的親友，可以自行吃市售感冒藥嗎？", "badge": "撞藥防錯"},
-        {"label": "提升免疫力保健品", "query": "親友容易感冒，維生素C、D或鋅等保健品有實證幫助嗎？", "badge": "實證檢驗"},
-        {"label": "氣喘或過敏性鼻炎保養", "query": "有氣喘或過敏性鼻炎的親友，換季時居家要怎麼保養？", "badge": "照護指引"}
-    ],
-    "疲勞": [
-        {"label": "常熬夜要補什麼？", "query": "親友工作常熬夜加班，B群、魚油或其他保健品該怎麼補？", "badge": "元氣補充"},
-        {"label": "⚠️ 提神飲料與咖啡因", "query": "親友每天喝很多提神飲料或咖啡，對身體有什麼影響？", "badge": "安全評估"},
-        {"label": "壓力大睡不好怎麼調整", "query": "親友壓力大、睡眠品質差，生活上可以怎麼調整？", "badge": "對症指南"},
-        {"label": "久坐肩頸痠痛舒緩", "query": "上班族親友久坐肩頸痠痛，有哪些伸展或保健方式？", "badge": "症狀舒緩"}
-    ],
-    "癌症": [
-        {"label": "⚠️ 化療期間保健品禁忌", "query": "親友正在化療，哪些保健品或中藥可能影響治療效果？", "badge": "撞藥防錯"},
-        {"label": "化療期間營養補充", "query": "化療期間食慾差的親友，營養品與飲食要怎麼安排？", "badge": "營養指引"},
-        {"label": "術後與放療後調養", "query": "癌症術後或放療後的親友，日常調養與營養補充有什麼建議？", "badge": "術後調養"}
-    ],
-    "孕產": [
-        {"label": "⚠️ 孕期保健品要避開什麼", "query": "懷孕的親友吃保健品，有哪些成分要避免？葉酸要怎麼補？", "badge": "安全評估"},
-        {"label": "孕期營養補充重點", "query": "懷孕期間鐵、鈣、DHA 要怎麼補充比較適合？", "badge": "營養指引"},
-        {"label": "產後坐月子調養", "query": "產後的親友坐月子期間，飲食與營養補充有什麼建議？", "badge": "照護指引"},
-        {"label": "哺乳期用藥與保健品", "query": "哺乳中的親友吃藥或保健品要注意什麼？", "badge": "撞藥防錯"}
-    ],
-    "皮膚": [
-        {"label": "濕疹乾癢保濕照護", "query": "親友有濕疹或皮膚乾癢，日常保濕與飲食要注意什麼？", "badge": "對症舒緩"},
-        {"label": "⚠️ 過敏體質保健品挑選", "query": "過敏體質的親友吃保健品，要注意哪些可能的過敏原？", "badge": "安全評估"},
-        {"label": "膠原蛋白對皮膚有用嗎", "query": "膠原蛋白或維生素C對親友皮膚健康有實證幫助嗎？", "badge": "實證檢驗"}
-    ],
-    "default": [
-        {"label": "銀髮綜合維他命挑選", "query": "銀髮親友日常保養，綜合維他命該怎麼挑選最均衡安全？", "badge": "日常保養"},
-        {"label": "Costco 深海魚油 (EPA/DHA)", "query": "親友保養心血管與大腦，Costco深海魚油好嗎？rTG型態差別？", "badge": "外購檢驗"},
-        {"label": "肩頸痠痛肌肉僵硬舒緩", "query": "親友肩頸經常痠痛僵硬，補充高單位B群還是外用貼布有效？", "badge": "症狀舒緩"},
-        {"label": "提升元氣消除疲勞首選", "query": "親友容易疲勞、體力變差，適合補充什麼滋補營養品？", "badge": "元氣補充"},
-        {"label": "益生菌調節腸道與免疫(WGO)", "query": "世界胃腸病學組織WGO指引：親友日常補充益生菌能改善消化嗎？", "badge": "腸道健康"},
-        {"label": "半夜小腿抽筋補鈣鎂", "query": "親友半夜睡覺小腿容易抽筋，該補充鈣還是鎂？", "badge": "對症舒緩"}
-    ]
-}
-
 _LEADING_EMOJI = re.compile(r"^[\s☀-➿⬀-⯿️\U0001F000-\U0001FAFF]+")
 
 def normalize_chip(chip: Dict[str, Any]) -> Dict[str, Any]:
@@ -160,88 +15,234 @@ def normalize_chip(chip: Dict[str, Any]) -> Dict[str, Any]:
 def normalize_chips(chips) -> List[Dict[str, Any]]:
     return [normalize_chip(c) for c in (chips or []) if isinstance(c, dict)]
 
+
+# =========================================================================
+# Track 1：依親友病況產生快速提問（規則式，零延遲）
+#
+# 每一類病況各有一組提問，順序是「撞藥防錯 → 就醫警訊 → 飲食／照護 → 實證保健」。
+# 每題的 expect 是預期會由 AI 守護助理檢索到的文獻 id（或 symptom:穴位舒緩類別），
+# 由 tests/test_quick_questions.py 逐題驗證，確保點下去的回答和病況真的有關。
+# =========================================================================
+DRUG, ALERT, DIET, CARE, EVID = "撞藥防錯", "就醫警訊", "飲食指引", "照護指引", "實證保健"
+
+
+def _c(label, query, badge, expect):
+    return {"label": label, "query": query, "badge": badge,
+            "warning": badge in (DRUG, ALERT), "expect": expect}
+
+
+CONDITION_CATEGORIES = [
+    ("抗凝血", ["warfarin", "抗凝血", "可邁丁", "普栓達", "拜瑞妥", "艾必克凝", "阿斯匹靈", "aspirin", "保栓通", "plavix", "noac", "心房顫動"], [
+        _c("抗凝血藥能吃納豆激酶嗎", "親友在吃抗凝血藥，可以吃納豆激酶嗎？會不會增加出血風險？", DRUG, ["lit_nattokinase_10"]),
+        _c("抗凝血藥能吃魚油嗎", "親友在吃抗凝血藥，可以吃高濃度魚油或薑黃嗎？", DRUG, ["lit_omega3_02", "lit_curcumin_05"]),
+        _c("抗凝血藥能吃銀杏嗎", "親友在吃抗凝血藥，可以吃銀杏改善循環嗎？", DRUG, ["lit_ginkgo_11"]),
+        _c("抗凝血藥能喝蔓越莓嗎", "親友在吃抗凝血藥，可以喝高濃縮蔓越莓汁嗎？", DRUG, ["lit_cranberry_mannose_15"]),
+        _c("頭痛能自己買止痛藥嗎", "親友在吃抗凝血藥，感冒頭痛可以自己買消炎止痛藥嗎？", DRUG, ["lit_cold_meds_32", "lit_nsaid_ckd_16"]),
+        _c("膝蓋痛選哪種較安全", "親友在吃抗凝血藥又膝蓋痛，葡萄糖胺或 UC-II 比較安全嗎？", EVID, ["lit_glucosamine_07", "lit_ucii_12"]),
+    ]),
+    ("腎臟病", ["腎", "洗腎", "透析", "ckd"], [
+        _c("腎病能吃止痛藥嗎", "腎功能不好的親友，可以自己吃布洛芬這類消炎止痛藥嗎？", DRUG, ["lit_nsaid_ckd_16"]),
+        _c("腎友能用低鈉鹽嗎", "腎臟病親友想減鹽，可以改用低鈉鹽嗎？", DRUG, ["lit_ckd_diet_17", "lit_bp_diet_26"]),
+        _c("高鉀高磷食物怎麼避", "腎臟病親友飲食要避開哪些高鉀、高磷的食物？", DIET, ["lit_ckd_diet_17"]),
+        _c("腎友能吃楊桃嗎", "腎臟病親友可以吃楊桃或喝楊桃汁嗎？", DIET, ["lit_ckd_diet_17"]),
+        _c("腎友營養品怎麼挑", "腎臟病親友還沒洗腎，一般高蛋白營養品可以喝嗎？", DIET, ["lit_ckd_diet_17"]),
+        _c("腎友能吃中藥補品嗎", "腎臟病親友可以吃中草藥或親戚送的補品嗎？", DRUG, ["lit_ckd_diet_17"]),
+    ]),
+    ("糖尿病", ["糖尿", "血糖", "胰島素", "降糖", "metformin", "滅醣敏"], [
+        _c("降糖藥能吃苦瓜胜肽嗎", "親友在吃降血糖藥，可以吃苦瓜胜肽或肉桂來控糖嗎？", DRUG, ["lit_glucose_supp_22"]),
+        _c("低血糖要怎麼處理", "親友有糖尿病，低血糖會有哪些症狀？發生時要怎麼處理？", ALERT, ["lit_glucose_supp_22"]),
+        _c("能喝含糖滋補飲嗎", "糖尿病親友可以喝蜂蜜水或含糖的滋補飲品嗎？", DIET, ["lit_glucose_supp_22"]),
+        _c("腳有傷口怎麼照顧", "糖尿病親友腳有小傷口、手腳麻，平常要怎麼照顧？", CARE, ["lit_diabetes_foot_23"]),
+        _c("手腳麻補B群有用嗎", "親友手腳末梢刺痛麻木，補充活性維生素 B 群（B1、B6、B12）有幫助嗎？", EVID, ["lit_vitamin_b_13"]),
+        _c("眼睛保養葉黃素", "糖尿病親友想保養眼睛黃斑部，葉黃素怎麼挑？", EVID, ["lit_lutein_01"]),
+    ]),
+    ("高血壓", ["血壓", "脈優", "amlodipine", "losartan", "valsartan", "降壓"], [
+        _c("降壓藥能吃葡萄柚嗎", "親友在吃降血壓藥，可以吃葡萄柚或喝葡萄柚汁嗎？", DRUG, ["lit_grapefruit_19"]),
+        _c("高血壓能吃甘草嗎", "高血壓親友可以吃甘草、甘草喉糖或含甘草的中藥嗎？", DRUG, ["lit_bp_diet_26"]),
+        _c("鼻塞能吃感冒藥嗎", "高血壓親友感冒鼻塞，可以吃綜合感冒藥嗎？", DRUG, ["lit_cold_meds_32"]),
+        _c("高血壓飲食怎麼減鹽", "高血壓親友飲食要怎麼減鹽？得舒飲食怎麼吃？", DIET, ["lit_bp_diet_26"]),
+        _c("高血壓適合什麼運動", "高血壓親友適合做什麼運動？強度要怎麼拿捏？", CARE, ["lit_exercise_25"]),
+        _c("高血壓吃魚油有用嗎", "高血壓親友補充魚油對心血管有幫助嗎？", EVID, ["lit_omega3_02"]),
+    ]),
+    ("高血脂", ["血脂", "膽固醇", "三酸甘油", "statin", "立普妥", "冠脂妥", "降血脂"], [
+        _c("降血脂藥能吃紅麴嗎", "親友在吃 Statin 降血脂藥，可以再吃紅麴保健品（Monacolin K）嗎？", DRUG, ["lit_red_yeast_09"]),
+        _c("降血脂藥能吃葡萄柚嗎", "親友在吃降血脂藥，可以喝葡萄柚汁嗎？", DRUG, ["lit_grapefruit_19"]),
+        _c("降脂藥肌肉痠補Q10", "親友吃降血脂藥後肌肉痠痛，補充輔酶 Q10 有幫助嗎？", EVID, ["lit_coq10_06"]),
+        _c("膽固醇高怎麼吃", "親友膽固醇偏高，飲食和生活要怎麼調整？", DIET, ["lit_lipid_lifestyle_27"]),
+        _c("三酸甘油脂高怎麼辦", "親友三酸甘油脂偏高，除了吃藥還能怎麼改善？", DIET, ["lit_lipid_lifestyle_27"]),
+        _c("高血脂吃魚油有用嗎", "高血脂的親友適合補充 Omega-3 魚油（EPA／DHA）嗎？", EVID, ["lit_omega3_02"]),
+    ]),
+    ("心臟病", ["心臟", "心律", "心衰", "支架", "冠心", "心肌", "心絞痛"], [
+        _c("哪些症狀要立刻就醫", "親友有心臟病，出現哪些症狀要立刻打 119？", ALERT, ["lit_heart_warning_24"]),
+        _c("心臟病能吃感冒藥嗎", "心臟病親友感冒了，可以吃綜合感冒藥嗎？", DRUG, ["lit_cold_meds_32"]),
+        _c("裝支架能做什麼運動", "心臟病或裝過支架的親友，適合做什麼運動？", CARE, ["lit_exercise_25"]),
+        _c("心臟病飲食怎麼吃", "心臟病親友要怎麼減鹽？得舒飲食適合嗎？", DIET, ["lit_bp_diet_26", "lit_lipid_lifestyle_27"]),
+        _c("心臟保養Q10有用嗎", "心臟病親友補充輔酶 Q10 有實證幫助嗎？", EVID, ["lit_coq10_06"]),
+    ]),
+    ("肝病", ["肝"], [
+        _c("保健品會傷肝嗎", "肝功能不好的親友，吃保健品會不會增加肝臟負擔？", DRUG, ["lit_liver_28"]),
+        _c("肝不好能吃普拿疼嗎", "肝功能不好的親友，感冒可以吃普拿疼嗎？劑量要注意什麼？", DRUG, ["lit_cold_meds_32", "lit_liver_28"]),
+        _c("肝指數高能吃紅麴嗎", "肝指數偏高的親友可以吃紅麴保健品嗎？", DRUG, ["lit_red_yeast_09", "lit_liver_28"]),
+        _c("脂肪肝怎麼改善", "親友有脂肪肝，飲食和生活要怎麼調整？", DIET, ["lit_liver_28"]),
+    ]),
+    ("癌症", ["癌", "化療", "放療", "腫瘤", "標靶"], [
+        _c("化療能吃中藥補品嗎", "親友正在化療，可以吃保健品或中藥補身體嗎？", DRUG, ["lit_cancer_care_35"]),
+        _c("化療能吃益生菌嗎", "親友正在化療，可以吃益生菌嗎？", DRUG, ["lit_cancer_care_35", "lit_probiotics_03"]),
+        _c("化療沒食慾怎麼補", "化療期間食慾很差的親友，營養要怎麼補充？", DIET, ["lit_cancer_care_35"]),
+        _c("治療後怎麼調養", "癌症術後或放療後的親友，日常調養要注意什麼？", CARE, ["lit_cancer_care_35"]),
+    ]),
+    ("懷孕哺乳", ["懷孕", "孕婦", "孕期", "產後", "哺乳", "坐月子"], [
+        _c("孕期能吃Q10嗎", "懷孕的親友可以吃輔酶 Q10 或維生素 A 嗎？", DRUG, ["lit_pregnancy_34", "lit_coq10_06"]),
+        _c("哺乳期吃藥要注意", "哺乳中的親友吃藥或保健品要注意什麼？", DRUG, ["lit_pregnancy_34"]),
+        _c("懷孕怎麼補葉酸鐵", "懷孕的親友要怎麼補充葉酸和鐵？", EVID, ["lit_pregnancy_34"]),
+        _c("產後怎麼補營養", "產後坐月子的親友，鐵和葉酸等營養要怎麼補充？", DIET, ["lit_pregnancy_34"]),
+    ]),
+    ("甲狀腺", ["甲狀腺", "levothyroxine", "昂特欣", "eltroxin"], [
+        _c("甲狀腺藥和鈣片間隔", "親友吃甲狀腺藥，跟鈣片、鐵劑要間隔多久？", DRUG, ["lit_med_spacing_20"]),
+        _c("甲狀腺藥能配胃藥嗎", "親友吃甲狀腺藥，同時有吃胃藥要注意什麼？", DRUG, ["lit_med_spacing_20"]),
+    ]),
+    ("痛風", ["痛風", "尿酸"], [
+        _c("發作能自己吃止痛藥嗎", "痛風發作時，親友可以自己吃止痛藥嗎？", DRUG, ["lit_gout_18", "lit_nsaid_ckd_16"]),
+        _c("痛風要避開哪些食物", "親友有痛風，飲食要避開哪些食物？", DIET, ["lit_gout_18"]),
+        _c("痛風能喝酒或飲料嗎", "痛風的親友可以喝啤酒或含糖飲料嗎？", DIET, ["lit_gout_18"]),
+        _c("酸櫻桃能降尿酸嗎", "酸櫻桃或芹菜籽保健品真的能降尿酸嗎？", EVID, ["lit_gout_18"]),
+        _c("補維生素C能降尿酸嗎", "痛風親友補充維生素 C 可以降尿酸嗎？", EVID, ["lit_gout_18", "lit_immunity_33"]),
+    ]),
+    ("失智", ["失智", "記憶", "阿茲海默", "認知"], [
+        _c("怎麼降低失智風險", "親友記憶力變差，生活上怎麼做能降低失智風險？", CARE, ["lit_dementia_29"]),
+        _c("失智長輩防走失", "家中長輩有失智症狀，居家安全和防走失要注意什麼？", CARE, ["lit_dementia_29"]),
+        _c("銀杏魚油能防失智嗎", "銀杏或魚油可以預防失智嗎？", EVID, ["lit_dementia_29"]),
+    ]),
+    ("帕金森", ["帕金森"], [
+        _c("左多巴要怎麼吃", "帕金森氏症親友吃左多巴，跟吃飯的時間要怎麼安排？", DRUG, ["lit_parkinson_30"]),
+        _c("帕金森能吃鐵劑嗎", "帕金森氏症親友需要補鐵，跟左多巴要間隔多久？", DRUG, ["lit_parkinson_30"]),
+        _c("帕金森蛋白質怎麼吃", "帕金森氏症親友的飲食，蛋白質要怎麼吃？", DIET, ["lit_parkinson_30"]),
+    ]),
+    ("失眠", ["失眠", "睡", "安眠", "焦慮"], [
+        _c("安眠藥能加助眠品嗎", "親友有吃安眠藥，可以再吃 GABA 或褪黑激素嗎？", DRUG, ["lit_sleep_meds_21", "lit_gaba_sesamin_08"]),
+        _c("吃安眠藥夜間防跌", "親友吃安眠藥後半夜起床，要注意什麼？", CARE, ["lit_sleep_meds_21"]),
+        _c("褪黑激素能自己買嗎", "在台灣褪黑激素可以自己買來吃嗎？", EVID, ["lit_sleep_meds_21"]),
+        _c("淺眠能吃GABA嗎", "親友淺眠多夢，GABA 或芝麻素保健品有幫助嗎？", EVID, ["lit_gaba_sesamin_08"]),
+        _c("睡不好穴位按摩", "親友失眠睡不好，有哪些穴位按摩和睡前放鬆方法？", CARE, ["symptom:insomnia"]),
+    ]),
+    ("腸胃", ["胃", "腸", "便秘", "消化", "逆流", "腹瀉"], [
+        _c("胃藥和鈣片間隔多久", "親友有吃胃藥，跟鈣片、鐵劑要間隔多久？", DRUG, ["lit_med_spacing_20"]),
+        _c("抗生素能配益生菌嗎", "親友在吃抗生素，可以同時吃益生菌嗎？", DRUG, ["lit_probiotics_03"]),
+        _c("長期吃胃藥的影響", "親友長期吃胃藥，會影響營養吸收嗎？", DRUG, ["lit_gerd_31"]),
+        _c("胃食道逆流怎麼吃", "胃食道逆流的親友，飲食和睡前要注意什麼？", DIET, ["lit_gerd_31"]),
+        _c("便秘吃益生菌有用嗎", "親友常便秘，吃益生菌有幫助嗎？", EVID, ["lit_probiotics_03"]),
+    ]),
+    ("感冒免疫", ["感冒", "咳", "氣喘", "肺", "鼻炎", "流感", "免疫"], [
+        _c("慢性病能吃感冒藥嗎", "有慢性病在吃藥的親友，可以自己買綜合感冒藥嗎？", DRUG, ["lit_cold_meds_32"]),
+        _c("普拿疼一天能吃多少", "親友感冒發燒吃普拿疼，一天最多能吃多少？", DRUG, ["lit_cold_meds_32"]),
+        _c("維生素C能防感冒嗎", "親友容易感冒，補充維生素 C 可以預防嗎？", EVID, ["lit_immunity_33"]),
+        _c("要補維生素D或鋅嗎", "容易感冒的親友，需要補充維生素 D 或鋅嗎？", EVID, ["lit_immunity_33"]),
+    ]),
+    ("骨骼關節", ["關節", "膝", "退化", "骨", "肌少", "抽筋"], [
+        _c("骨鬆藥和鈣片怎麼錯開", "親友吃骨質疏鬆藥，跟鈣片要怎麼錯開時間？", DRUG, ["lit_med_spacing_20"]),
+        _c("關節痛能常吃止痛藥嗎", "親友關節痛，可以長期吃消炎止痛藥嗎？", DRUG, ["lit_nsaid_ckd_16"]),
+        _c("膝蓋退化吃葡萄糖胺", "親友膝關節退化，吃葡萄糖胺有用嗎？", EVID, ["lit_glucosamine_07"]),
+        _c("UC-II和葡萄糖胺差別", "UC-II 非變性二型膠原蛋白跟葡萄糖胺有什麼差別？", EVID, ["lit_ucii_12", "lit_glucosamine_07"]),
+        _c("關節痛吃薑黃素有用嗎", "親友關節痛，吃薑黃素保健品有幫助嗎？", EVID, ["lit_curcumin_05"]),
+        _c("骨鬆怎麼補鈣和D", "親友骨質疏鬆，檸檬酸鈣和維生素 D3 要怎麼補充？", EVID, ["lit_calcium_d3_04"]),
+        _c("膝蓋痛熱敷與按摩", "親友膝蓋痛，居家可以怎麼熱敷和按摩舒緩？", CARE, ["symptom:knee_joint"]),
+    ]),
+    ("眼睛", ["眼", "視力", "黃斑", "白內障", "青光眼"], [
+        _c("青光眼能吃感冒藥嗎", "有青光眼的親友，可以吃綜合感冒藥嗎？", DRUG, ["lit_cold_meds_32"]),
+        _c("黃斑部葉黃素怎麼挑", "親友黃斑部退化，葉黃素和玉米黃素怎麼挑？", EVID, ["lit_lutein_01"]),
+        _c("葉黃素一天吃多少", "葉黃素一天吃多少才適合？", EVID, ["lit_lutein_01"]),
+        _c("眼睛乾澀怎麼舒緩", "親友眼睛乾澀、容易疲勞，居家可以怎麼舒緩？", CARE, ["symptom:eye_strain"]),
+    ]),
+    ("傷口", ["燙傷", "燒傷", "傷口", "創面", "術後", "褥瘡", "開刀"], [
+        _c("有傷口能吃魚油嗎", "親友還在術後恢復期，可以吃 Omega-3 魚油或薑黃素嗎？會影響凝血嗎？", DRUG, ["lit_omega3_02", "lit_curcumin_05", "lit_zinc_wound_14"]),
+        _c("術後能吃銀杏納豆嗎", "親友剛開完刀，可以吃銀杏或納豆激酶嗎？", DRUG, ["lit_ginkgo_11", "lit_nattokinase_10"]),
+        _c("傷口癒合吃什麼", "親友有褥瘡或術後傷口癒合慢，要補充哪些營養？", EVID, ["lit_zinc_wound_14"]),
+        _c("燙傷補鋅和蛋白質", "親友燙傷，補充鋅和蛋白質能幫助傷口癒合嗎？", EVID, ["lit_zinc_wound_14"]),
+    ]),
+    ("泌尿道", ["泌尿", "尿道", "頻尿", "膀胱"], [
+        _c("吃蔓越莓要注意什麼", "親友有在吃藥，吃高濃縮蔓越莓要注意什麼？", DRUG, ["lit_cranberry_mannose_15"]),
+        _c("蔓越莓能防尿道炎嗎", "親友常泌尿道感染，吃蔓越莓有幫助嗎？", EVID, ["lit_cranberry_mannose_15"]),
+    ]),
+    ("皮膚", ["皮膚", "濕疹", "異位性", "乾癢", "過敏"], [
+        _c("過敏體質吃保健品", "過敏體質的親友吃保健品要注意什麼？", DRUG, ["lit_skin_care_36"]),
+        _c("皮膚乾癢怎麼保濕", "親友皮膚乾癢、濕疹，日常要怎麼保濕？", CARE, ["lit_skin_care_36"]),
+        _c("冬天皮膚癢怎麼辦", "長輩冬天皮膚很癢，洗澡和保養要注意什麼？", CARE, ["lit_skin_care_36"]),
+    ]),
+    ("疲勞", ["熬夜", "疲勞", "加班", "壓力", "上班族", "疲倦"], [
+        _c("熬夜會傷肝嗎", "親友常熬夜，會傷肝嗎？需要吃護肝保健品嗎？", DIET, ["lit_liver_28"]),
+        _c("常熬夜補B群有用嗎", "親友常熬夜容易疲勞，補充 B 群有幫助嗎？", EVID, ["lit_vitamin_b_13"]),
+        _c("容易累補Q10有用嗎", "親友容易疲倦、體力差，補充輔酶 Q10 有幫助嗎？", EVID, ["lit_coq10_06"]),
+        _c("肩頸痠痛怎麼舒緩", "親友久坐肩頸痠痛，有哪些伸展和熱敷方法？", CARE, ["symptom:neck_shoulder"]),
+    ]),
+]
+
+# 沒有對應病況（例如「日常養生」）時的日常保養提問
+DEFAULT_CHIPS = [
+    _c("吃藥和保健品怎麼錯開", "長輩有吃藥也有吃保健品，要怎麼錯開時間？", DRUG, ["lit_med_spacing_20"]),
+    _c("保健品吃太多會傷肝嗎", "長輩同時吃很多種保健品，會不會傷肝？", DRUG, ["lit_liver_28"]),
+    _c("長輩骨質怎麼保養", "長輩想保養骨質，鈣和維生素 D 要怎麼補？", EVID, ["lit_calcium_d3_04"]),
+    _c("長輩適合什麼運動", "長輩適合做什麼運動？一週要做多少？", CARE, ["lit_exercise_25"]),
+    _c("眼睛保養葉黃素", "長輩想保養眼睛，葉黃素怎麼挑？", EVID, ["lit_lutein_01"]),
+    _c("維生素C能防感冒嗎", "長輩容易感冒，補充維生素 C 可以預防嗎？", EVID, ["lit_immunity_33"]),
+]
+
+MAX_CHIPS = 8
+_NEGATIONS = ("未", "無", "非", "沒有", "不是", "否認")
+
+
+def _mentions(text: str, keyword: str) -> bool:
+    """病況有提到關鍵字，且不是「無糖尿病」「沒有高血壓」這類否定說法"""
+    start = text.find(keyword)
+    while start != -1:
+        before = text[max(0, start - 3):start]
+        if not any(n in before for n in _NEGATIONS):
+            return True
+        start = text.find(keyword, start + 1)
+    return False
+
+
+def matched_categories(condition: str) -> List[str]:
+    cond = (condition or "").lower()
+    return [name for name, keywords, _ in CONDITION_CATEGORIES if any(_mentions(cond, k) for k in keywords)]
+
+
 def get_clinical_rule_chips(condition: str = "日常養生", name: str = "親友") -> List[Dict[str, Any]]:
     return normalize_chips(_get_clinical_rule_chips(condition, name))
 
-def _get_clinical_rule_chips(condition: str = "日常養生", name: str = "親友") -> List[Dict[str, Any]]:
+
+def _get_clinical_rule_chips(condition: str = "日常養生", name: str = "親友", keep_expect: bool = False) -> List[Dict[str, Any]]:
     """
-    Track 1: Instantly matches the condition string to high-relevance clinical question chips.
-    Returns 6 to 8 tailored chips with zero latency.
+    依病況挑出相關的快速提問：有多種病況時輪流各取一題（每類先放撞藥防錯題），
+    讓每個病況都有代表題；病況對應不到時用日常保養題，題數不足時也以日常保養題補滿。
     """
-    cond_clean = (condition or "").lower().strip()
-    matched_chips: List[Dict[str, Any]] = []
+    names = set(matched_categories(condition))
+    groups = [chips for cat, _, chips in CONDITION_CATEGORIES if cat in names]
 
-    # Priority matching
-    if "warfarin" in cond_clean or "抗凝血" in cond_clean:
-        matched_chips.extend(CLINICAL_DISEASE_TAGS_MAP["warfarin"])
-    elif "血壓" in cond_clean or "心血管" in cond_clean:
-        matched_chips.extend(CLINICAL_DISEASE_TAGS_MAP["血壓"])
-    
-    if "糖" in cond_clean or "低gi" in cond_clean or "胰島素" in cond_clean:
-        matched_chips.extend(CLINICAL_DISEASE_TAGS_MAP["糖"])
+    picked: List[Dict[str, Any]] = []
+    seen = set()
+    depth = max((len(g) for g in groups), default=0)
+    for i in range(depth):
+        for g in groups:
+            if i < len(g) and g[i]["label"] not in seen and len(picked) < MAX_CHIPS:
+                seen.add(g[i]["label"])
+                picked.append(g[i])
+    for chip in DEFAULT_CHIPS:
+        if len(picked) >= 6:
+            break
+        if chip["label"] not in seen:
+            seen.add(chip["label"])
+            picked.append(chip)
 
-    if "燙傷" in cond_clean or "燒傷" in cond_clean:
-        matched_chips.extend(CLINICAL_DISEASE_TAGS_MAP["燙傷"])
-    elif "傷" in cond_clean or "創面" in cond_clean or "術後" in cond_clean:
-        matched_chips.extend(CLINICAL_DISEASE_TAGS_MAP["傷"])
+    result = []
+    for chip in picked[:MAX_CHIPS]:
+        c = dict(chip)
+        if name and name != "親友":
+            c["query"] = c["query"].replace("親友", name)
+        if not keep_expect:
+            c.pop("expect", None)
+        result.append(c)
+    return result
 
-    if "膝" in cond_clean or "關節" in cond_clean or "退化" in cond_clean or "軟骨" in cond_clean:
-        matched_chips.extend(CLINICAL_DISEASE_TAGS_MAP["關節"])
-    
-    if "骨" in cond_clean or "骨折" in cond_clean or "肌少" in cond_clean or "抽筋" in cond_clean:
-        matched_chips.extend(CLINICAL_DISEASE_TAGS_MAP["骨"])
-
-    if "眠" in cond_clean or "睡" in cond_clean or "焦慮" in cond_clean:
-        matched_chips.extend(CLINICAL_DISEASE_TAGS_MAP["失眠"])
-
-    if "眼" in cond_clean or "視力" in cond_clean or "黃斑" in cond_clean or "白內障" in cond_clean:
-        matched_chips.extend(CLINICAL_DISEASE_TAGS_MAP["眼"])
-
-    if "痛風" in cond_clean or "尿酸" in cond_clean:
-        matched_chips.extend(CLINICAL_DISEASE_TAGS_MAP["痛風"])
-
-    # 擴充疾病類型（關鍵字 → 晶片分類）
-    for keywords, map_key in [
-        (("血脂", "膽固醇", "三酸甘油", "statin"), "血脂"),
-        (("腎", "洗腎", "透析", "ckd"), "腎"),
-        (("心臟", "心律", "心衰", "支架", "冠心"), "心臟"),
-        (("肝",), "肝"),
-        (("失智", "記憶", "帕金森", "阿茲海默"), "失智"),
-        (("胃", "腸", "便秘", "消化", "逆流", "腹瀉"), "腸胃"),
-        (("感冒", "咳", "氣喘", "肺", "鼻炎", "免疫", "流感"), "呼吸"),
-        (("熬夜", "疲勞", "加班", "壓力", "上班族", "累"), "疲勞"),
-        (("癌", "化療", "放療", "腫瘤"), "癌症"),
-        (("懷孕", "孕", "產後", "哺乳", "坐月子"), "孕產"),
-        (("皮膚", "濕疹", "異位性", "過敏", "乾癢"), "皮膚"),
-    ]:
-        if any(k in cond_clean for k in keywords):
-            matched_chips.extend(CLINICAL_DISEASE_TAGS_MAP[map_key])
-
-    # Remove duplicate labels
-    seen_labels = set()
-    unique_chips = []
-    for chip in matched_chips:
-        if chip["label"] not in seen_labels:
-            seen_labels.add(chip["label"])
-            # Personalize query with recipient name
-            c = dict(chip)
-            if "親友" in c["query"] and name and name != "親友":
-                c["query"] = c["query"].replace("親友", name)
-            unique_chips.append(c)
-
-    # If too few chips, top up with default general care chips
-    if len(unique_chips) < 6:
-        for chip in CLINICAL_DISEASE_TAGS_MAP["default"]:
-            if chip["label"] not in seen_labels:
-                seen_labels.add(chip["label"])
-                c = dict(chip)
-                if "親友" in c["query"] and name and name != "親友":
-                    c["query"] = c["query"].replace("親友", name)
-                unique_chips.append(c)
-            if len(unique_chips) >= 7:
-                break
-
-    return unique_chips[:8]
 
 def generate_ai_recipient_chips(
     elder_name: str,

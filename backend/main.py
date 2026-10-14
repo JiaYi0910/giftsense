@@ -56,7 +56,7 @@ from chips_generator import get_clinical_rule_chips, generate_ai_recipient_chips
 
 # AI 守護助理每日免費詢問次數；可用關懷點數兌換額外次數
 AI_GUARD_DAILY_LIMIT = 3
-AI_GUARD_REDEEM_COST = 50
+from database import AI_GUARD_REDEEM_COST, round_points, format_points  # 1 點兌換 3 次
 AI_GUARD_REDEEM_EXTRA = 3
 
 from linebot import LineBotApi, WebhookHandler
@@ -184,7 +184,7 @@ class OrderCreateRequest(BaseModel):
 
 class PointsTxRequest(BaseModel):
     account: str = "test"
-    amount: int
+    amount: float
     title: str
 
 class GreetingGenerateRequest(BaseModel):
@@ -406,7 +406,7 @@ def guard_redeem(req: GuardRedeemRequest):
         "success": True,
         "message": f"已使用 {AI_GUARD_REDEEM_COST} 點兌換 {AI_GUARD_REDEEM_EXTRA} 次詢問！",
         "quota": quota,
-        "new_points": profile["points"] - AI_GUARD_REDEEM_COST
+        "new_points": round_points(profile["points"] - AI_GUARD_REDEEM_COST)
     }
 
 @app.post("/api/tfda/check")
@@ -1067,7 +1067,7 @@ def api_add_points_alias(req: PointsTxRequest):
     add_points_transaction(account=target_account, amount=req.amount, title=req.title)
     profile = get_user_profile(target_account)
     updated_points = profile["points"] if profile else req.amount
-    return {"success": True, "message": f"成功新增 {req.amount} 點！", "new_points": updated_points}
+    return {"success": True, "message": f"成功新增 {format_points(req.amount)} 點！", "new_points": updated_points}
 
 @app.get("/api/user/profile")
 def api_get_user_profile(account: str = None):

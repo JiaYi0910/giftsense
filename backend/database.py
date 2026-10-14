@@ -18,6 +18,21 @@ from product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
 # 💡 設定 TURSO_DATABASE_URL 後改用 Turso 雲端資料庫（Render 免費方案重啟時資料才不會消失）
 from db_backend import USE_TURSO, connect_turso, bootstrap_turso_from_sqlite
 
+# 點數規則（2026/10/15 起改為小額回饋，1 點折抵 $1）
+SIGNUP_BONUS_POINTS = 5        # 新會員註冊禮
+AI_GUARD_REDEEM_COST = 1       # 兌換 AI 守護助理 3 次詢問所需點數
+
+
+def round_points(value) -> float:
+    """點數保留到小數第 2 位，避免浮點數累加出現 0.30000000000000004"""
+    return round(float(value or 0), 2)
+
+
+def format_points(value) -> str:
+    v = round_points(value)
+    return str(int(v)) if v == int(v) else f"{v:g}"
+
+
 def get_db():
     if USE_TURSO:
         return connect_turso()
@@ -322,6 +337,72 @@ def init_db():
             (json.dumps({"done_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}),)
         )
 
+    # 一次性：點數改為小額回饋（2026/10/15）。舊紀錄依新規則換算，並把差額反映到會員點數
+    if not cursor.execute("SELECT 1 FROM system_config WHERE key = 'points_rescale_20261015'").fetchone():
+        rescale = [
+            ("title = '新會員註冊獎勵' AND amount = 100", 100, SIGNUP_BONUS_POINTS),
+            ("title LIKE '發送關懷卡：%' AND amount = 10", 10, REWARD_RULES["care_card"]["amount"]),
+            ("title = '小熊每週關懷加碼' AND amount = 50", 50, REWARD_RULES["mascot_weekly"]["amount"]),
+            ("title LIKE '兌換 AI 守護助理詢問%' AND amount = -50", -50, -AI_GUARD_REDEEM_COST),
+        ]
+        for where, old_amount, new_amount in rescale:
+            for r in cursor.execute(f"SELECT account FROM points_ledger WHERE {where}").fetchall():
+                cursor.execute(
+                    "UPDATE users SET points = ROUND(points + ?, 2) WHERE account = ? OR email = ?",
+                    (new_amount - old_amount, r["account"], r["account"])
+                )
+            cursor.execute(f"UPDATE points_ledger SET amount = ? WHERE {where}", (new_amount,))
+        cursor.execute("UPDATE reward_claims SET amount = ? WHERE claim_key LIKE 'care_card:%' AND amount = 10",
+                       (REWARD_RULES["care_card"]["amount"],))
+        cursor.execute("UPDATE reward_claims SET amount = ? WHERE claim_key LIKE 'mascot_weekly:%' AND amount = 50",
+                       (REWARD_RULES["mascot_weekly"]["amount"],))
+        cursor.execute(
+            "INSERT OR REPLACE INTO system_config (key, value_json) VALUES ('points_rescale_20261015', ?)",
+            (json.dumps({"done_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}),)
+        )
+
+    # 一次性：補上用藥安全與照護指引文獻（已存在的文獻不覆蓋，保留管理員的編輯）
+    if not cursor.execute("SELECT 1 FROM system_config WHERE key = 'knowledge_guidance_20261015'").fetchone():
+        try:
+            from clinical_guidance import GUIDANCE_LITERATURES
+        except ImportError:
+            GUIDANCE_LITERATURES = []
+        for lit in GUIDANCE_LITERATURES:
+            if cursor.execute("SELECT 1 FROM clinical_knowledge WHERE id = ?", (lit["id"],)).fetchone():
+                continue
+            cursor.execute("""
+            INSERT INTO clinical_knowledge (
+                id, title, authority, category, ingredient,
+                evidence_level, recommended_dose, mechanism,
+                contraindications, target_symptoms_json, citation
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                lit["id"], lit["title"], lit.get("authority", ""), lit.get("category", ""), lit.get("ingredient", ""),
+                lit.get("evidenceLevel", ""), lit.get("recommendedDose", ""), lit.get("mechanism", ""),
+                lit.get("contraindications", ""), json.dumps(lit.get("targetSymptoms", []), ensure_ascii=False),
+                lit.get("citation", "")
+            ))
+        cursor.execute(
+            "INSERT OR REPLACE INTO system_config (key, value_json) VALUES ('knowledge_guidance_20261015', ?)",
+            (json.dumps({"done_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}),)
+        )
+
+    # 一次性：快速提問改為依病況分類的新題庫，重新產生每位親友的提問
+    if not cursor.execute("SELECT 1 FROM system_config WHERE key = 'quick_chips_v2_20261015'").fetchone():
+        try:
+            from chips_generator import get_clinical_rule_chips as _rule_chips
+            for rec in cursor.execute("SELECT id, name, condition FROM recipients").fetchall():
+                cursor.execute(
+                    "UPDATE recipients SET quick_tags_json = ? WHERE id = ?",
+                    (json.dumps(_rule_chips(rec["condition"], rec["name"]), ensure_ascii=False), rec["id"])
+                )
+            cursor.execute(
+                "INSERT OR REPLACE INTO system_config (key, value_json) VALUES ('quick_chips_v2_20261015', ?)",
+                (json.dumps({"done_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}),)
+            )
+        except Exception as e:
+            print("Notice: quick chips refresh deferred:", e)
+
     cursor.execute("SELECT COUNT(*) FROM users WHERE account = 'admin'")
     if cursor.fetchone()[0] == 0:
         cursor.execute("""
@@ -613,7 +694,7 @@ def authenticate_user(account: str, password_raw: str):
             "account": user["account"],
             "name": user["name"],
             "role": user["role"],
-            "points": user["points"],
+            "points": round_points(user["points"]),
             "phone": user.get("phone", ""),
             "birthday": user.get("birthday", ""),
             "bio": user.get("bio", ""),
@@ -632,7 +713,7 @@ def register_user(account: str, password_raw: str, name: str = None, role: str =
     display_name = name if name and name.strip() else account
     # 💡 一律註冊為一般會員，避免帳號含 admin 或前端傳 role 就取得管理員權限
     assigned_role = "user"
-    initial_points = 100
+    initial_points = SIGNUP_BONUS_POINTS
 
     # 點數先寫 0，再由下方的點數交易加上註冊獎勵（避免重複計算成 200 點）
     conn.execute("""
@@ -664,6 +745,8 @@ def _public_user(row):
     user = dict(row)
     user.pop("password_hash", None)
     user["avatar_url"] = resolve_avatar_url(user)
+    if "points" in user:
+        user["points"] = round_points(user["points"])
     return user
 
 AVATAR_MAX_LENGTH = 450_000  # 約 330KB 圖片（base64）；前端上傳前會先縮到 512px
@@ -723,7 +806,7 @@ def find_or_create_social_user(provider: str, social_id: str, email: str = "", e
 
     conn.close()
     if created:
-        add_points_transaction(row["account"], 100, "新會員註冊獎勵")
+        add_points_transaction(row["account"], SIGNUP_BONUS_POINTS, "新會員註冊獎勵")
         return {**get_user_profile(row["account"]), "is_new_user": True}
     return _public_user(row)
 
@@ -739,6 +822,7 @@ def get_user_profile(account: str):
         return None
     d = dict(row)
     d["avatar_url"] = resolve_avatar_url(d)
+    d["points"] = round_points(d.get("points"))
     return d
 
 def _recipient_row_to_dict(row):
@@ -898,9 +982,10 @@ def get_points_ledger(account: str = "test"):
     conn = get_db()
     rows = conn.execute("SELECT * FROM points_ledger WHERE account = ? OR user_account = ? ORDER BY id DESC", (account, account)).fetchall()
     conn.close()
-    return [dict(r) for r in rows]
+    return [{**dict(r), "amount": round_points(r["amount"])} for r in rows]
 
-def add_points_transaction(account: str, amount: int, title: str):
+def add_points_transaction(account: str, amount: float, title: str):
+    amount = round_points(amount)
     now = datetime.now()
     date_str = now.strftime("%Y/%m/%d")
     exp_year = now.year + 3
@@ -913,7 +998,7 @@ def add_points_transaction(account: str, amount: int, title: str):
         (account, amount, title, date_str, expire_str, tx_type, account)
     )
     conn.execute(
-        "UPDATE users SET points = points + ? WHERE account = ? OR email = ?",
+        "UPDATE users SET points = ROUND(points + ?, 2) WHERE account = ? OR email = ?",
         (amount, account, account)
     )
     conn.commit()
@@ -1225,12 +1310,14 @@ def find_recipient_name_by_line_id(line_user_id: str):
 
 # =========================================================================
 # 回饋點數規則（由後端控管次數上限）
+# 參考蝦皮蝦幣與 ShopBack：1 點折抵 $1，點數主要來自購物回饋；
+# 註冊與日常互動只給小額點數，避免一開始就能折抵太多
 # =========================================================================
 REWARD_RULES = {
-    # 發送關懷卡：每位親友每天 +10，每天最多 5 張
-    "care_card": {"amount": 10, "title": "發送關懷卡：給【{recipient}】", "daily_cap": 5},
-    # 與小熊互動：每週 +50
-    "mascot_weekly": {"amount": 50, "title": "小熊每週關懷加碼"},
+    # 發送關懷卡：每位親友每天 +0.1，每天最多 5 張（每天最多 0.5 點）
+    "care_card": {"amount": 0.1, "title": "發送關懷卡：給【{recipient}】", "daily_cap": 5},
+    # 與小熊互動：每週 +0.5
+    "mascot_weekly": {"amount": 0.5, "title": "小熊每週關懷加碼"},
 }
 
 def claim_reward(account: str, action: str, recipient: str = ""):
@@ -1266,7 +1353,7 @@ def claim_reward(account: str, action: str, recipient: str = ""):
     conn.close()
 
     add_points_transaction(account, rule["amount"], rule["title"].format(recipient=recipient or "親友"))
-    return {"success": True, "awarded": rule["amount"], "message": f"獲得 {rule['amount']} 點關懷回饋！"}
+    return {"success": True, "awarded": rule["amount"], "message": f"獲得 {format_points(rule['amount'])} 點關懷回饋！"}
 
 # =========================================================================
 # 購物回饋（ShopBack 模式）：透過 GiftSense 前往藥局購物，確認購物後依金額回饋點數

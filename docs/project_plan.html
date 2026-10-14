@@ -24,7 +24,7 @@
              box-shadow: 0 10px 30px rgba(37,99,235,.08); display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 18px; align-items: center; }
   .progress b { font-size: 15px; color: var(--blue-deep); }
   .bar { margin-top: 10px; height: 12px; border-radius: 999px; background: var(--blue-soft); border: 1px solid var(--blue-border); overflow: hidden; }
-  .bar i { display: block; height: 100%; width: 82%; background: linear-gradient(90deg, #34D399, #059669); border-radius: 999px; }
+  .bar i { display: block; height: 100%; width: 83%; background: linear-gradient(90deg, #34D399, #059669); border-radius: 999px; }
   .progress small { display: block; margin-top: 6px; color: var(--muted); font-size: 12.5px; }
   .stat { border-left: 1px solid var(--line); padding-left: 18px; }
   .stat b { display: block; font-size: 30px; line-height: 1.1; }
@@ -63,20 +63,20 @@
 <header>
   <div class="wrap">
     <h1>GiftSense 專案規劃</h1>
-    <p>更新日期：2026/10/14 · 網站：<a href="https://giftsense-vjbu.onrender.com">https://giftsense-vjbu.onrender.com</a> · 系統說明：<a href="https://giftsense-vjbu.onrender.com/guide">https://giftsense-vjbu.onrender.com/guide</a></p>
+    <p>更新日期：2026/10/15 · 網站：<a href="https://giftsense-vjbu.onrender.com">https://giftsense-vjbu.onrender.com</a> · 系統說明：<a href="https://giftsense-vjbu.onrender.com/guide">https://giftsense-vjbu.onrender.com/guide</a></p>
   </div>
 </header>
 <div class="wrap">
   <div class="summary">
-    <div class="progress"><b>整體進度 82%</b><div class="bar"><i></i></div><small>已完成 37 項 / 共 45 項（不含範圍外）</small></div>
-    <div class="stat done"><b>37</b><span>已完成</span></div>
+    <div class="progress"><b>整體進度 83%</b><div class="bar"><i></i></div><small>已完成 40 項 / 共 48 項（不含範圍外）</small></div>
+    <div class="stat done"><b>40</b><span>已完成</span></div>
     <div class="stat todo"><b>4</b><span>待辦</span></div>
     <div class="stat check"><b>4</b><span>展示前確認</span></div>
   </div>
 </div>
 <main class="wrap">
   <section class="card done">
-    <h2><span class="dot"></span>已完成<em>37 項</em></h2>
+    <h2><span class="dot"></span>已完成<em>40 項</em></h2>
     <div class="grid">
       <div class="group">
         <h3>基礎架構與部署<span>5</span></h3>
@@ -85,7 +85,7 @@
           <li class="done">FastAPI 後端部署在 Render，推送 GitHub main 後自動部署</li>
           <li class="done">Turso 雲端資料庫，Render 重啟也不會掉資料（設定見 <a href="TURSO_SETUP.md">TURSO_SETUP.md</a>）</li>
           <li class="done">伺服器使用台灣時間</li>
-          <li class="done">舊點數紀錄已清除（保留新會員註冊 +100），聊天時間已校正</li>
+          <li class="done">舊點數紀錄已清除並依新規則換算，聊天時間已校正</li>
         </ul>
       </div>
       <div class="group">
@@ -120,20 +120,23 @@
         </ul>
       </div>
       <div class="group">
-        <h3>AI 守護助理<span>3</span></h3>
+        <h3>AI 守護助理<span>5</span></h3>
         <ul>
-          <li class="done">實證文獻檢索（RAG）加上 TFDA 8 條交互作用規則</li>
-          <li class="done">每天 3 次，可用暖幣兌換更多次</li>
+          <li class="done">實證文獻檢索（RAG）：15 篇保健成分文獻加上 21 篇用藥安全與照護指引，共 36 篇</li>
+          <li class="done">18 條藥物／食物／保健品交互作用規則（修正高血壓、糖尿病的誤判）</li>
+          <li class="done">快速提問依 22 類病況分類、共 104 題，每題都驗證會檢索到對應資料（<code>backend/tests/test_quick_questions.py</code>）</li>
+          <li class="done">每天 3 次，可用 1 點兌換 3 次</li>
           <li class="done">管理員的 RAG 測試台不限次數，附有深度測試題</li>
         </ul>
       </div>
       <div class="group">
-        <h3>暖心選物與暖幣<span>4</span></h3>
+        <h3>暖心選物與暖幣<span>5</span></h3>
         <ul>
           <li class="done">12 項商品，四大連鎖藥局實際查價（2026/10/13）</li>
           <li class="done">依病況比對推薦，固定顯示 3 項，標示首選和同規格最低價</li>
           <li class="done">購物回饋（模擬）：前往藥局網站，回到 App 確認購買後點數入帳</li>
           <li class="done">回饋 $1 = 1 點，折抵 1 點 = $1，點數效期 3 年</li>
+          <li class="done">贈點改為小額（參考蝦皮與 ShopBack）：註冊 +5、關懷卡 +0.1、小熊每週 +0.5，點數可到小數第 2 位</li>
         </ul>
       </div>
       <div class="group">
