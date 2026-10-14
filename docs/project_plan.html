@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GiftSense 專案規劃</title>
+<style>
+  :root {
+    --blue: #2563EB; --blue-dark: #1D4ED8; --blue-deep: #1E3A8A; --blue-soft: #EFF6FF; --blue-border: #BFDBFE;
+    --ink: #0F172A; --slate: #475569; --muted: #64748B; --line: #E2E8F0; --bg: #F4F8FF;
+    --green: #059669; --green-soft: #ECFDF5; --amber: #B45309; --amber-soft: #FFFBEB;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.7; font-size: 15px;
+          font-family: -apple-system, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; }
+  a { color: var(--blue-dark); }
+  code { background: #EEF4FF; color: var(--blue-deep); padding: 1px 6px; border-radius: 6px; font-size: 13px; font-family: "SF Mono", Consolas, monospace; }
+  header { background: linear-gradient(135deg, #3B82F6, #1D4ED8 60%, #1E3A8A); color: #fff; padding: 48px 20px 84px; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+  header h1 { margin: 0 0 6px; font-size: 32px; letter-spacing: .5px; }
+  header p { margin: 0; opacity: .92; font-size: 14px; }
+  header a { color: #fff; }
+  .summary { margin-top: -56px; background: #fff; border: 1px solid var(--blue-border); border-radius: 22px; padding: 22px 24px;
+             box-shadow: 0 10px 30px rgba(37,99,235,.08); display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 18px; align-items: center; }
+  .progress b { font-size: 15px; color: var(--blue-deep); }
+  .bar { margin-top: 10px; height: 12px; border-radius: 999px; background: var(--blue-soft); border: 1px solid var(--blue-border); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 82%; background: linear-gradient(90deg, #34D399, #059669); border-radius: 999px; }
+  .progress small { display: block; margin-top: 6px; color: var(--muted); font-size: 12.5px; }
+  .stat { border-left: 1px solid var(--line); padding-left: 18px; }
+  .stat b { display: block; font-size: 30px; line-height: 1.1; }
+  .stat span { font-size: 13px; color: var(--slate); }
+  .stat.done b { color: var(--green); } .stat.todo b { color: var(--amber); } .stat.check b { color: var(--blue-dark); }
+  main { padding: 8px 0 60px; }
+  .card { margin-top: 24px; background: #fff; border: 1px solid var(--blue-border); border-radius: 22px; padding: 22px 24px; }
+  h2 { margin: 0 0 14px; font-size: 21px; color: var(--blue-deep); display: flex; align-items: center; gap: 10px; }
+  h2 em { font-style: normal; font-size: 13px; font-weight: 700; color: var(--muted); background: var(--blue-soft); border-radius: 999px; padding: 2px 10px; }
+  h2 .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--blue); }
+  .card.done h2 .dot { background: var(--green); } .card.todo h2 .dot { background: #F59E0B; } .card.info h2 .dot { background: #94A3B8; }
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+  .grid.two { grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); }
+  .group { border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; background: #FCFDFF; }
+  h3 { margin: 0 0 8px; font-size: 15.5px; color: var(--blue-dark); display: flex; justify-content: space-between; align-items: center; }
+  h3 span { font-size: 12px; color: var(--muted); font-weight: 700; }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { position: relative; padding: 5px 0 5px 28px; font-size: 14px; border-top: 1px dashed var(--line); }
+  li:first-child { border-top: 0; }
+  li::before { content: ""; position: absolute; left: 0; top: 8px; width: 16px; height: 16px; border-radius: 5px; box-sizing: border-box; }
+  li.done::before { background: var(--green); }
+  li.done::after { content: ""; position: absolute; left: 5px; top: 10px; width: 5px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  li.todo::before { border: 2px solid #F59E0B; background: var(--amber-soft); }
+  li.info::before { width: 8px; height: 8px; top: 12px; left: 4px; border-radius: 50%; background: #94A3B8; }
+  footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 10px 20px 40px; }
+  @media (max-width: 760px) {
+    .summary { grid-template-columns: repeat(3, 1fr); }
+    .progress { grid-column: 1 / -1; }
+    .stat:first-of-type { border-left: 0; padding-left: 0; }
+    .grid.two { grid-template-columns: 1fr; }
+  }
+  @media print { header { padding-bottom: 70px; } .card { break-inside: avoid; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>GiftSense 專案規劃</h1>
+    <p>更新日期：2026/10/14 · 網站：<a href="https://giftsense-vjbu.onrender.com">https://giftsense-vjbu.onrender.com</a> · 系統說明：<a href="https://giftsense-vjbu.onrender.com/guide">https://giftsense-vjbu.onrender.com/guide</a></p>
+  </div>
+</header>
+<div class="wrap">
+  <div class="summary">
+    <div class="progress"><b>整體進度 82%</b><div class="bar"><i></i></div><small>已完成 37 項 / 共 45 項（不含範圍外）</small></div>
+    <div class="stat done"><b>37</b><span>已完成</span></div>
+    <div class="stat todo"><b>4</b><span>待辦</span></div>
+    <div class="stat check"><b>4</b><span>展示前確認</span></div>
+  </div>
+</div>
+<main class="wrap">
+  <section class="card done">
+    <h2><span class="dot"></span>已完成<em>37 項</em></h2>
+    <div class="grid">
+      <div class="group">
+        <h3>基礎架構與部署<span>5</span></h3>
+        <ul>
+          <li class="done">Flutter 前端，同一套程式碼產出網頁版和 Android App</li>
+          <li class="done">FastAPI 後端部署在 Render，推送 GitHub main 後自動部署</li>
+          <li class="done">Turso 雲端資料庫，Render 重啟也不會掉資料（設定見 <a href="TURSO_SETUP.md">TURSO_SETUP.md</a>）</li>
+          <li class="done">伺服器使用台灣時間</li>
+          <li class="done">舊點數紀錄已清除（保留新會員註冊 +100），聊天時間已校正</li>
+        </ul>
+      </div>
+      <div class="group">
+        <h3>會員與登入<span>8</span></h3>
+        <ul>
+          <li class="done">帳號密碼註冊和登入</li>
+          <li class="done">Google 登入</li>
+          <li class="done">Facebook 登入：網域和 email 權限已設定，2026/10/13 測試成功（設定見 <a href="SOCIAL_LOGIN_SETUP.md">SOCIAL_LOGIN_SETUP.md</a>）</li>
+          <li class="done">Apple 按鈕點下去顯示「尚未開放」</li>
+          <li class="done">頭貼：帶入第三方登入的大頭照，沒有就用預設圖示，也可以自行上傳</li>
+          <li class="done">個人資料編輯介面</li>
+          <li class="done">連續登入天數（中斷一天就從第 1 天重算）</li>
+          <li class="done">網頁版 Cookie 同意，以及公開的隱私權政策頁 <code>/privacy</code></li>
+        </ul>
+      </div>
+      <div class="group">
+        <h3>親友與 LINE<span>4</span></h3>
+        <ul>
+          <li class="done">親友檔案（病況、用藥、專屬快速提問）</li>
+          <li class="done">LINE 綁定碼，一個 LINE 帳號只綁一位親友</li>
+          <li class="done">LINE 機器人：Flex 關懷卡、圖文選單，親友在 LINE 的回覆會回到聊天室</li>
+          <li class="done">傳情小站聊天室介面，最新訊息在最下面，時間已同步</li>
+        </ul>
+      </div>
+      <div class="group">
+        <h3>今日守護（首頁）<span>4</span></h3>
+        <ul>
+          <li class="done">中央氣象署即時天氣（已確認連線正常）</li>
+          <li class="done">依病況和語氣產生關懷叮嚀，3 秒送出關懷卡</li>
+          <li class="done">用藥安全雷達和快速提問</li>
+          <li class="done">首頁滿版、不用往下捲；藍色主題、動畫、全站對齊</li>
+        </ul>
+      </div>
+      <div class="group">
+        <h3>AI 守護助理<span>3</span></h3>
+        <ul>
+          <li class="done">實證文獻檢索（RAG）加上 TFDA 8 條交互作用規則</li>
+          <li class="done">每天 3 次，可用暖幣兌換更多次</li>
+          <li class="done">管理員的 RAG 測試台不限次數，附有深度測試題</li>
+        </ul>
+      </div>
+      <div class="group">
+        <h3>暖心選物與暖幣<span>4</span></h3>
+        <ul>
+          <li class="done">12 項商品，四大連鎖藥局實際查價（2026/10/13）</li>
+          <li class="done">依病況比對推薦，固定顯示 3 項，標示首選和同規格最低價</li>
+          <li class="done">購物回饋（模擬）：前往藥局網站，回到 App 確認購買後點數入帳</li>
+          <li class="done">回饋 $1 = 1 點，折抵 1 點 = $1，點數效期 3 年</li>
+        </ul>
+      </div>
+      <div class="group">
+        <h3>管理後台<span>3</span></h3>
+        <ul>
+          <li class="done">獨立的管理介面，密碼由 Render 環境變數 <code>ADMIN_PASSWORD</code> 設定，登入後核發通行證</li>
+          <li class="done">實證文獻庫可新增、編輯、刪除，改完 AI 立即使用新資料</li>
+          <li class="done">系統總覽、後端設定</li>
+        </ul>
+      </div>
+      <div class="group">
+        <h3>iPhone 與 Android<span>2</span></h3>
+        <ul>
+          <li class="done">iPhone Safari「加入主畫面」：圖示、啟動畫面、操作提示，小熊圖片已修正</li>
+          <li class="done">新版 APK 已安裝到 Android 模擬器</li>
+        </ul>
+      </div>
+      <div class="group">
+        <h3>測試與文件<span>4</span></h3>
+        <ul>
+          <li class="done">後端 8 組測試在本機資料庫和 Turso 兩種模式都通過；<code>flutter analyze</code> 沒有錯誤</li>
+          <li class="done">系統說明網頁 <code>/guide</code>，共 9 節：架構、功能架構、流程、技術、ER、DFD、點數、Demo 腳本（原始檔 <a href="giftsense_system_guide.html">giftsense_system_guide.html</a>）</li>
+          <li class="done">7 張圖檔（<a href="diagrams/">diagrams/</a>）</li>
+          <li class="done">Turso、iOS、第三方登入三份設定說明</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  <section class="card todo">
+    <h2><span class="dot"></span>未完成／待確認<em>8 項</em></h2>
+    <div class="grid two">
+      <div class="group">
+        <h3>待辦<span>4</span></h3>
+        <ul>
+          <li class="todo"><b>iOS 原生 App</b>：在 Mac 上用 Xcode 建置，以免費 Apple ID 安裝到手機（每 7 天要重裝一次），步驟見 <a href="IOS_SETUP.md">IOS_SETUP.md</a></li>
+          <li class="todo"><b>Apple 登入</b>：需要 Apple Developer Program（每年 US$99）；目前採免費方式，只顯示「尚未開放」，要不要做待決定</li>
+          <li class="todo"><b>Android 模擬器上的 App 被「數位健康」暫停</b>：在模擬器點「Unpause app」才能開啟</li>
+          <li class="todo"><b>對照隊友的待辦清單（.docx）</b>：隊友的修改已於 2026/10/08 合併，清單上是否還有未處理的項目需再確認</li>
+        </ul>
+      </div>
+      <div class="group">
+        <h3>展示前確認<span>4</span></h3>
+        <ul>
+          <li class="todo"><b>Facebook／Google 是否只開放測試帳號</b>：Facebook App 若仍在開發模式、Google 登入若仍在「測試」狀態，只有名單內的帳號能登入；要讓評審自行試用需先切成正式上線</li>
+          <li class="todo"><b>LINE 免費方案推播額度</b>：官方帳號免費方案每月推播則數有上限，到 LINE 後台確認實際數字，避免展示期間用完</li>
+          <li class="todo"><b>藥局價格</b>：目前是 2026/10/13 手動查價的固定資料，沒有自動更新，展示前可再查一次</li>
+          <li class="todo"><b>喚醒網站</b>：Render 免費方案閒置會休眠，展示前 3 分鐘先開啟網站（第一次載入約 30–60 秒）</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  <section class="card info">
+    <h2><span class="dot"></span>範圍外（維持現狀）<em>2 項</em></h2>
+    <div class="grid two">
+      <div class="group">
+        
+        <ul>
+          <li class="info">購物回饋為模擬流程，沒有串接真實藥局訂單或聯盟行銷</li>
+          <li class="info">只使用免費方案：Render、Turso、LINE 官方帳號、中央氣象署開放資料</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+</main>
+<footer>由 docs/PROJECT_PLAN.md 產生</footer>
+</body>
+</html>
