@@ -270,6 +270,8 @@ def init_db():
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
+    # 須在下方一次性補入指引文獻之前判斷，否則全新資料庫會只剩指引文獻、略過原本的國家級臨床文獻
+    knowledge_was_empty = cursor.execute("SELECT COUNT(*) FROM clinical_knowledge").fetchone()[0] == 0
 
     # 6. system_config 表格
     cursor.execute("""
@@ -504,8 +506,7 @@ def init_db():
             )
 
     # 全新資料庫時預先寫入國家級臨床文獻
-    cursor.execute("SELECT COUNT(*) FROM clinical_knowledge")
-    if cursor.fetchone()[0] == 0:
+    if knowledge_was_empty:
         try:
             from vector_store import FULL_CLINICAL_LITERATURES
             for lit in FULL_CLINICAL_LITERATURES:
