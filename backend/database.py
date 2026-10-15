@@ -14,8 +14,8 @@ os.environ["TZ"] = "CST-8"
 if hasattr(time, "tzset"):
     time.tzset()
 
-# 測試可用 GIFTSENSE_DB_PATH 指向暫存複本，避免改到 repo 內的 caregift.db
-DB_PATH = os.getenv("GIFTSENSE_DB_PATH") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "caregift.db")
+# CAREGIFT_DB_PATH：測試時指向一份暫存的資料庫副本，不動到 repo 內附的 caregift.db
+DB_PATH = os.getenv("CAREGIFT_DB_PATH") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "caregift.db")
 
 # 💡 暖心選物商品資料（藥局官網實際查價）統一放在 product_catalog.py，init_db 啟動時同步寫入
 from product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS

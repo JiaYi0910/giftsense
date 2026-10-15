@@ -24,7 +24,7 @@ TEST_DB = os.path.join(_TMP_DIR, "caregift.db")
 shutil.copy(os.path.join(BACKEND, "caregift.db"), TEST_DB)
 
 ADMIN_PASSWORD = "admin-test-password"
-os.environ["GIFTSENSE_DB_PATH"] = TEST_DB
+os.environ["CAREGIFT_DB_PATH"] = TEST_DB
 os.environ["AUTH_TOKEN_SECRET"] = "test-only-auth-secret"
 os.environ["ADMIN_PASSWORD"] = ADMIN_PASSWORD
 for _key in ("TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "GEMINI_API_KEY", "ADMIN_TOKEN_SECRET"):
