@@ -128,6 +128,21 @@ def test_product_name_spacing_does_not_matter():
     assert order["product_name"] == LUTEIN and order["est_price"] == 1800
 
 
+def test_search_keyword_from_old_app_still_matches():
+    # 舊版 App 的暖心選物送的是搜尋關鍵字（search_kw），不是完整品名
+    _, token = new_member()
+    order = track(token, "克補 B群 鐵", "大樹藥局")
+    assert order["product_name"] == "【克補】B 群 + 鐵加強錠 (100錠/瓶)" and order["est_price"] == 720
+
+
+def test_product_id_takes_priority_over_name():
+    _, token = new_member()
+    res = click(token, "隨便的名稱", "大樹藥局", product_id="rec_q10_01")
+    assert res["success"] and res["cashback"]["product_name"] == Q10 and res["cashback"]["est_price"] == 748
+    res = click(token, LUTEIN, "大樹藥局", product_id="rec_not_exist")
+    assert not res["success"]  # ID 錯誤時不改用名稱，避免用別的商品價格
+
+
 @pytest.mark.parametrize("product,pharmacy", [
     ("自己輸入的商品", "大樹藥局"),
     (Q10, "啄木鳥藥局"),  # 這家藥局沒有這項商品的查價

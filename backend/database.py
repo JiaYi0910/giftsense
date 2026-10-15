@@ -1556,13 +1556,17 @@ def _get_cashback_for_account(order_id: str, account: str):
 def _norm_product_name(name: str) -> str:
     return re.sub(r"\s+", "", name or "")
 
-def find_catalog_price(product_name: str, pharmacy: str):
-    """依商品名稱與藥局，從暖心選物商品資料庫找出查價金額；找不到回傳 None"""
+def find_catalog_price(product_name: str, pharmacy: str, product_id: str = ""):
+    """依商品（ID，或完整品名／搜尋關鍵字）與藥局，從暖心選物商品資料庫找出查價金額；找不到回傳 None。
+    舊版 App 的暖心選物送的是搜尋關鍵字，所以兩種名稱都比對"""
     target = _norm_product_name(product_name)
-    if not target or not pharmacy:
+    if (not target and not product_id) or not pharmacy:
         return None
     for product in get_all_recommendation_products():
-        if _norm_product_name(product.get("product_name")) != target:
+        if product_id:
+            if product["id"] != product_id:
+                continue
+        elif target not in (_norm_product_name(product.get("product_name")), _norm_product_name(product.get("search_kw"))):
             continue
         for offer in product.get("pharmacy_comparison") or []:
             name = offer.get("pharmacy") or ""

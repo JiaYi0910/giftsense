@@ -214,7 +214,8 @@ class FamilyMessageRequest(BaseModel):
     timestamp: Optional[str] = None
 
 class ReferralClickRequest(BaseModel):
-    product_name: str
+    product_name: str = ""
+    product_id: Optional[str] = None  # 暖心選物商品 ID（有送時優先以 ID 查價）
     pharmacy: str
     price: Optional[int] = None  # 舊版 App 會送；金額一律以伺服器的查價為準，這個值不採用
     recipient: str = "親友"
@@ -530,7 +531,7 @@ def pharmacy_referral_click(req: ReferralClickRequest, member: str = Depends(cur
     _ensure_same_account(member, req.account)
     if not get_user_profile(member):
         return {"success": False, "message": "請先登入，才能追蹤購物回饋", "official_url": req.official_url}
-    offer = find_catalog_price(req.product_name, req.pharmacy)
+    offer = find_catalog_price(req.product_name, req.pharmacy, req.product_id or "")
     if not offer:
         return {"success": False, "message": "這項商品沒有查價資料，暫不提供購物回饋", "official_url": req.official_url}
     order = create_cashback_click(
