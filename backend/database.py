@@ -552,6 +552,39 @@ def init_db():
     conn.commit()
     conn.close()
     save_recommendation_products(DEFAULT_RECOMMENDATION_PRODUCTS)
+    _lock_tracked_cashback_prices()
+
+def _lock_tracked_cashback_prices():
+    """一次性：舊版「追蹤中」的購物回饋金額是 App 送來的價格，改成商品資料庫的查價；
+    查不到查價的商品不提供回饋，直接取消追蹤（需在商品資料同步後執行）"""
+    conn = get_db()
+    done = conn.execute("SELECT 1 FROM system_config WHERE key = 'cashback_locked_price_20261015'").fetchone()
+    conn.close()
+    if done:
+        return
+    conn = get_db()
+    rows = conn.execute("SELECT id, product_name, pharmacy FROM cashback_orders WHERE status = 'tracked'").fetchall()
+    conn.close()
+    now_str = datetime.now().strftime(_TIME_FMT)
+    conn = get_db()
+    for row in rows:
+        offer = find_catalog_price(row["product_name"], row["pharmacy"])
+        if offer:
+            conn.execute(
+                "UPDATE cashback_orders SET est_price = ?, product_name = ?, pharmacy = ? WHERE id = ? AND status = 'tracked'",
+                (offer["price"], offer["product_name"], offer["pharmacy"], row["id"])
+            )
+        else:
+            conn.execute(
+                "UPDATE cashback_orders SET status = 'rejected', settled_at = ? WHERE id = ? AND status = 'tracked'",
+                (now_str, row["id"])
+            )
+    conn.execute(
+        "INSERT OR REPLACE INTO system_config (key, value_json) VALUES ('cashback_locked_price_20261015', ?)",
+        (json.dumps({"done_at": now_str, "tracked": len(rows)}),)
+    )
+    conn.commit()
+    conn.close()
 
 def save_clinical_knowledge(item: dict):
     conn = get_db()

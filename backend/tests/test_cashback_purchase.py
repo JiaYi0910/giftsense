@@ -254,6 +254,33 @@ def test_only_owner_can_confirm():
     assert db_row(order["id"])["status"] == "tracked"
 
 
+def test_legacy_tracked_orders_get_catalog_price_or_are_cancelled():
+    account, token = new_member()
+    now = datetime.now().strftime(TIME_FMT)
+    conn = database.get_db()  # 舊版 App 建立的追蹤：價格是用戶端送來的
+    conn.execute("""INSERT INTO cashback_orders (id, account, pharmacy, product_name, est_price, rate, status, created_at)
+                    VALUES (?, ?, '大樹藥局', ?, 1, 0.05, 'tracked', ?)""", (f"LEGACY_A_{_RUN}", account, LUTEIN, now))
+    conn.execute("""INSERT INTO cashback_orders (id, account, pharmacy, product_name, est_price, rate, status, created_at)
+                    VALUES (?, ?, '大樹藥局', '魚油', 999, 0.05, 'tracked', ?)""", (f"LEGACY_B_{_RUN}", account, now))
+    conn.execute("DELETE FROM system_config WHERE key = 'cashback_locked_price_20261015'")
+    conn.commit()
+    conn.close()
+
+    database._lock_tracked_cashback_prices()
+    assert db_row(f"LEGACY_A_{_RUN}")["est_price"] == 1800
+    legacy_b = db_row(f"LEGACY_B_{_RUN}")
+    assert legacy_b["status"] == "rejected" and legacy_b["settled_at"]
+    assert confirm(token, f"LEGACY_A_{_RUN}")["order"]["order_amount"] == 1800
+
+    # 只執行一次
+    conn = database.get_db()
+    conn.execute("UPDATE cashback_orders SET est_price = 5 WHERE id = ?", (f"LEGACY_B_{_RUN}",))
+    conn.commit()
+    conn.close()
+    database._lock_tracked_cashback_prices()
+    assert db_row(f"LEGACY_B_{_RUN}")["est_price"] == 5
+
+
 def test_purchase_endpoints_require_member_token():
     for method, path, body in (
         ("POST", "/api/pharmacy/referral-click", {"product_name": LUTEIN, "pharmacy": "大樹藥局", "official_url": "x"}),
