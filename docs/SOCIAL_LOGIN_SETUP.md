@@ -18,7 +18,8 @@
 | `FACEBOOK_APP_ID` / `FACEBOOK_APP_SECRET` | 驗證 Facebook token | Facebook 登入會回「尚未設定」 |
 | `APPLE_CLIENT_IDS` | iOS Bundle ID 與 Services ID（逗號分隔） | 只接受 `com.example.giftsense` |
 | `ANDROID_PACKAGE_NAME` | Apple 網頁流程轉回 App 用 | `com.example.giftsense` |
-| `LINE_CHANNEL_ACCESS_TOKEN` / `LINE_CHANNEL_SECRET` | LINE 官方帳號 | 沿用程式內的舊值 |
+| `LINE_CHANNEL_SECRET` | **必填**：驗證 LINE webhook 的 `X-Line-Signature` | `/api/line/webhook` 拒絕所有請求（503），LINE 綁定與親友回覆都收不到 |
+| `LINE_CHANNEL_ACCESS_TOKEN` | **必填**：推播關懷卡、回覆 LINE 訊息 | LINE 推播與回覆直接略過，其他功能照常 |
 | `LINE_BOT_BASIC_ID` | 官方帳號 ID（例如 `@123abcde`），產生加好友連結用 | 後端自動向 LINE 查詢 |
 
 ## 1. Google（已可使用，Android 上架前要補設定）
@@ -73,7 +74,8 @@
 1. [LINE Developers](https://developers.line.biz/console/) 的 Messaging API channel：
    - Webhook URL：`https://giftsense-vjbu.onrender.com/api/line/webhook`
    - 開啟「Use webhook」
-2. 後端現在會**驗證 `X-Line-Signature`**，所以 `LINE_CHANNEL_SECRET` 必須正確，否則 webhook 會回 400。
+2. 後端會**驗證 `X-Line-Signature`**，所以 `LINE_CHANNEL_SECRET` 必須正確，否則 webhook 會回 400；沒設定時一律回 503。
+   兩把 LINE 金鑰只放在 Render → Environment（或本機 `backend/.env`），程式碼內沒有預設值。部署後可開 `/api/health`，`line_channel_secret`、`line_channel_access_token` 都應為 `configured`。
 3. 綁定流程：
    1. App →「親友健康資料庫」→ 點親友旁邊的綠色 🔗 按鈕，產生 6 位數綁定碼（24 小時有效、用一次就失效）。
    2. 按「複製邀請訊息」，貼給親友。

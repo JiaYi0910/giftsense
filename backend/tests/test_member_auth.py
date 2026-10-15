@@ -361,7 +361,8 @@ def test_public_endpoints_stay_open(monkeypatch):
         assert client.get(path).status_code == 200, path
 
 
-def test_line_webhook_uses_signature_not_member_token():
+def test_line_webhook_uses_signature_not_member_token(monkeypatch):
+    monkeypatch.setattr(main, "LINE_CHANNEL_SECRET", "test-only-line-secret")  # 金鑰只從環境變數來，測試自己給
     body = json.dumps({"events": []}).encode()
     assert client.post("/api/line/webhook", content=body, headers={"X-Line-Signature": "bad"}).status_code == 400
     sig = base64.b64encode(hmac.new(main.LINE_CHANNEL_SECRET.encode(), body, hashlib.sha256).digest()).decode()

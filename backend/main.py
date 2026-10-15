@@ -59,9 +59,6 @@ AI_GUARD_DAILY_LIMIT = 3
 from database import AI_GUARD_REDEEM_COST, SIGNUP_BONUS_POINTS, round_points, format_points  # 1 點兌換 3 次
 AI_GUARD_REDEEM_EXTRA = 3
 
-from linebot import LineBotApi, WebhookHandler
-from linebot.models import MessageEvent, TextMessage, TextSendMessage, AudioMessage
-
 # 1. 💡 必須最先建立 FastAPI 實例 (app)
 app = FastAPI(
     title="GiftSense Real Python Backend",
@@ -100,15 +97,21 @@ def startup_warmup_cache():
             print(f"Pharmacy cache warmup failed: {exc}")
     threading.Thread(target=_warmup, daemon=True).start()
 
-# 💡 優先讀取環境變數（Render Environment / backend/.env），未設定時沿用原本的值
-LINE_CHANNEL_ACCESS_TOKEN = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN") or "xKlKMiLS8T7bm2m4Are0ztmzeUxFPU41UIknxVmaQDK8NzJu6gpvGnjog5/7Cj+SjHAKFITOQt99ni5rQtQy/CMjJBFxyWL6Ioi48VN6up3EenRoMmEwaMrtoSQISvzxxRnEgGM7mzyZz6klFR0jqQdB04t89/1O/w1cDnyilFU="
-LINE_CHANNEL_SECRET = os.environ.get("LINE_CHANNEL_SECRET") or "98c83668779c7c870958d335b2b4de76"
+# 💡 LINE 金鑰只從環境變數讀取（Render → Environment / backend/.env），不寫在程式碼裡。
+#   缺 LINE_CHANNEL_SECRET：/api/line/webhook 拒絕所有請求（無法驗證簽章，避免被偽造）
+#   缺 LINE_CHANNEL_ACCESS_TOKEN：LINE 推播、回覆直接略過，其他功能照常
+LINE_CHANNEL_ACCESS_TOKEN = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN", "").strip()
+LINE_CHANNEL_SECRET = os.environ.get("LINE_CHANNEL_SECRET", "").strip()
+if not LINE_CHANNEL_SECRET:
+    print("【警告】未設定 LINE_CHANNEL_SECRET：LINE webhook 會拒絕所有請求，長輩在 LINE 的訊息與綁定都收不到")
+if not LINE_CHANNEL_ACCESS_TOKEN:
+    print("【警告】未設定 LINE_CHANNEL_ACCESS_TOKEN：LINE 推播與回覆會略過，關懷卡不會送到長輩的 LINE")
 ANDROID_PACKAGE_NAME = os.environ.get("ANDROID_PACKAGE_NAME", "com.example.giftsense")
 _line_bot_basic_id_cache = {"value": os.environ.get("LINE_BOT_BASIC_ID", "")}
 
 def _get_line_bot_basic_id() -> str:
     """取得 LINE 官方帳號 ID（如 @123abcde），用來產生加好友連結"""
-    if _line_bot_basic_id_cache["value"]:
+    if _line_bot_basic_id_cache["value"] or not LINE_CHANNEL_ACCESS_TOKEN:
         return _line_bot_basic_id_cache["value"]
     try:
         res = requests.get(
@@ -123,11 +126,10 @@ def _get_line_bot_basic_id() -> str:
     return _line_bot_basic_id_cache["value"]
 
 def _verify_line_signature(body: bytes, signature: str) -> bool:
+    if not LINE_CHANNEL_SECRET:
+        return False
     digest = hmac.new(LINE_CHANNEL_SECRET.encode("utf-8"), body, hashlib.sha256).digest()
     return hmac.compare_digest(base64.b64encode(digest).decode("utf-8"), signature or "")
-
-line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
-handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
 class LoginRequest(BaseModel):
     account: str
@@ -285,7 +287,9 @@ def health_check():
         "vector_engine": "MedicalVectorStore (High-Dimensional Cosine)",
         "tfda_engine": "TFDAService (Official Black Box Registry)",
         # 只回報是否已設定，不回傳金鑰本身
-        "auth_token_secret": "configured" if _token_secret_base("member") else "missing"
+        "auth_token_secret": "configured" if _token_secret_base("member") else "missing",
+        "line_channel_secret": "configured" if LINE_CHANNEL_SECRET else "missing",
+        "line_channel_access_token": "configured" if LINE_CHANNEL_ACCESS_TOKEN else "missing"
     }
 
 # =========================================================================
@@ -820,7 +824,7 @@ def post_family_message(req: FamilyMessageRequest, member: str = Depends(current
     if member != req.elder:
         # 💡 只推播給寄件者帳號底下的這位親友，避免不同使用者的同名親友收到別人的訊息
         target_line_id = find_recipient_line_id(req.elder, member)
-        if target_line_id:
+        if target_line_id and LINE_CHANNEL_ACCESS_TOKEN:
             url = "https://api.line.me/v2/bot/message/push"
             headers = {
                 "Content-Type": "application/json",
@@ -847,6 +851,11 @@ def post_family_message(req: FamilyMessageRequest, member: str = Depends(current
 async def line_webhook(request: Request):
     signature = request.headers.get('X-Line-Signature', '')
     body = await request.body()
+
+    # 💡 沒有 Channel secret 就無法驗證簽章，一律拒絕，避免有人偽造綁定或長輩訊息
+    if not LINE_CHANNEL_SECRET:
+        print("LINE webhook 未設定 LINE_CHANNEL_SECRET，已拒絕此請求")
+        raise HTTPException(status_code=503, detail="LINE webhook is not configured")
 
     # 💡 驗證請求確實來自 LINE 平台
     if not _verify_line_signature(body, signature):
@@ -1099,6 +1108,8 @@ def _handle_line_event(event: dict):
         _store("🎨 [LINE 貼圖]", "sticker")
 
 def _download_line_audio(msg_id: str) -> str:
+    if not LINE_CHANNEL_ACCESS_TOKEN:
+        return "[語音訊息下載失敗]"
     try:
         audio_res = requests.get(
             f"https://api-data.line.me/v2/bot/message/{msg_id}/content",
@@ -1117,6 +1128,8 @@ def _download_line_audio(msg_id: str) -> str:
 
 def _line_reply(reply_token: Optional[str], user_id: str, messages: List[Dict[str, Any]]):
     """優先使用 Reply API（不佔官方帳號每月訊息額度），失敗時才改用 Push"""
+    if not LINE_CHANNEL_ACCESS_TOKEN:
+        return
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {LINE_CHANNEL_ACCESS_TOKEN}"

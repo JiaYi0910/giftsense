@@ -5,13 +5,12 @@
   python tools/setup_line_richmenu.py           # 預覽，不會改動 LINE
   python tools/setup_line_richmenu.py --apply   # 刪除舊的 GiftSense 選單、建立新選單並設為預設
 
-Channel access token 讀取順序：環境變數 LINE_CHANNEL_ACCESS_TOKEN → backend/.env → main.py 內的預設值
+Channel access token 讀取順序：環境變數 LINE_CHANNEL_ACCESS_TOKEN → backend/.env（程式碼內不放金鑰）
 按鈕送出的文字由 main.py 的 LINE webhook 處理（LINE_CMD_*）。
 """
 import argparse
 import json
 import os
-import re
 import sys
 
 import requests
@@ -39,11 +38,7 @@ def load_token() -> str:
                 value = line.split("=", 1)[1].strip().strip('"').strip("'")
                 if value:
                     return value
-    main_src = open(os.path.join(BACKEND_DIR, "main.py"), encoding="utf-8").read()
-    match = re.search(r'LINE_CHANNEL_ACCESS_TOKEN = os\.environ\.get\("LINE_CHANNEL_ACCESS_TOKEN"\) or "([^"]+)"', main_src)
-    if match:
-        return match.group(1)
-    raise SystemExit("找不到 LINE_CHANNEL_ACCESS_TOKEN")
+    raise SystemExit("找不到 LINE_CHANNEL_ACCESS_TOKEN：請設定環境變數，或寫在 backend/.env")
 
 
 def build_menu() -> dict:
