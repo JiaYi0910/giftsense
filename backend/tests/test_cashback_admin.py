@@ -1,16 +1,13 @@
 """
-購物回饋的管理與額度：
+購物回饋的管理：
 - 管理員在 7 天待入帳期間可以檢視所有會員的待入帳回饋，並填寫原因駁回（不給點數）
-- 每位會員每天最多送 Gemini 辨識 RECEIPT_SCAN_DAILY_LIMIT 張收據（次數存在資料庫），
-  重複的圖片等送 Gemini 前就擋下的上傳不算次數
 
 執行（在 backend 資料夾）：
     python -m pytest tests/test_cashback_admin.py -q
     或 python tests/test_cashback_admin.py
 
-測試使用 caregift.db 的暫存複本，不會改到 repo 內的資料庫；Gemini 一律以假的回應取代，不連線 Google。
+測試使用 caregift.db 的暫存複本，不會改到 repo 內的資料庫。
 """
-import base64
 import itertools
 import os
 import shutil
@@ -29,7 +26,7 @@ ADMIN_PASSWORD = "admin-test-password"  # 與 test_member_auth.py 相同，同�
 os.environ["CAREGIFT_DB_PATH"] = TEST_DB
 os.environ["AUTH_TOKEN_SECRET"] = "test-only-auth-secret"
 os.environ["ADMIN_PASSWORD"] = ADMIN_PASSWORD
-for _key in ("TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "GEMINI_API_KEY", "GEMINI_RECEIPT_MODEL", "ADMIN_TOKEN_SECRET"):
+for _key in ("TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "ADMIN_TOKEN_SECRET"):
     os.environ.pop(_key, None)
 
 os.chdir(BACKEND)  # main.py 以相對路徑掛載 static/uploads
@@ -43,7 +40,6 @@ if database.DB_PATH != TEST_DB:  # 同一個 pytest 行程裡已有其他測試�
 assert not database.USE_TURSO, "測試不可連線 Turso"
 
 import main  # noqa: E402
-import receipt_scanner  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
 
 client = TestClient(main.app)  # 不用 with：不跑 startup 的藥局爬蟲預熱與自動入帳排程
@@ -58,7 +54,7 @@ def bearer(token):
 
 
 def new_member():
-    """每次註冊新會員：每日辨識次數各自從 0 開始，測試之間不互相影響"""
+    """每次註冊新會員：每日確認購買的筆數各自從 0 開始，測試之間不互相影響"""
     account = f"cb_admin_{_RUN}_{next(_unique)}@example.test"
     data = client.post("/api/auth/register", json={
         "account": account, "password": f"pw-{account}", "name": account,
@@ -74,60 +70,26 @@ def admin():
     return {**bearer(data["user_token"]), "X-Admin-Token": data["admin_token"]}
 
 
-class FakeGemini:
-    """取代 receipt_scanner.call_gemini：每次回傳一張新的有效收據（訂單號碼不重複）"""
-
-    def __init__(self):
-        self.calls = 0
-        self.overrides = {}
-        self.error = None
-
-    def __call__(self, image_bytes, mime_type):
-        self.calls += 1
-        if self.error:
-            raise self.error
-        data = {
-            "is_receipt": True,
-            "document_type": "e_invoice",
-            "store_name": "大樹醫藥股份有限公司 新莊中正門市",
-            "order_number": f"ADM-{_RUN}-{next(_unique)}",
-            "purchase_time": (datetime.now() + timedelta(minutes=2)).strftime("%Y-%m-%d %H:%M"),
-            "total_amount": 1000,
-            "confidence": 0.95,
-        }
-        data.update(self.overrides)
-        return data
-
-
-@pytest.fixture
-def gemini(monkeypatch):
-    fake = FakeGemini()
-    monkeypatch.setattr(receipt_scanner, "call_gemini", fake)
-    return fake
-
-
-def image_data_url():
-    payload = b"\x89PNG\r\n\x1a\n" + f"admin-receipt-{_RUN}-{next(_unique)}".encode()
-    return "data:image/png;base64," + base64.b64encode(payload).decode()
+PRODUCT = "【HAC 永信】晶亮葉黃膠囊 (120粒/瓶)"  # 大樹藥局查價 $1,800，回饋 5% = 90 點
+PRICE, POINTS = 1800, 90
 
 
 def track(token):
     res = client.post("/api/pharmacy/referral-click", headers=bearer(token), json={
-        "product_name": "葉黃素", "pharmacy": "大樹藥局", "price": 1000, "official_url": "https://example.test",
+        "product_name": PRODUCT, "pharmacy": "大樹藥局", "price": 1, "official_url": "https://example.test",
     }).json()
-    assert res["success"]
+    assert res["success"], res["message"]
     return res["cashback"]
 
 
-def upload(token, order_id, image=None):
-    res = client.post(f"/api/cashback/{order_id}/receipt", headers=bearer(token),
-                      json={"image": image or image_data_url()})
+def confirm(token, order_id):
+    res = client.post(f"/api/cashback/{order_id}/purchase", headers=bearer(token), json={})
     assert res.status_code == 200
     return res.json()
 
 
 def pending_order(token):
-    res = upload(token, track(token)["id"])
+    res = confirm(token, track(token)["id"])
     assert res["success"], res["message"]
     return res["order"]
 
@@ -144,14 +106,6 @@ def set_credit_after(order_id, value):
     conn.execute("UPDATE cashback_orders SET credit_after = ? WHERE id = ?", (value, order_id))
     conn.commit()
     conn.close()
-
-
-def scans_used_today(account):
-    conn = database.get_db()
-    row = conn.execute("SELECT used FROM receipt_scan_usage WHERE account = ? AND date_str = ?",
-                       (account, datetime.now().strftime("%Y-%m-%d"))).fetchone()
-    conn.close()
-    return row["used"] if row else 0
 
 
 def points_of(token):
@@ -172,7 +126,7 @@ def reject(admin, order_id, reason="會員已退貨"):
 
 # ---------------------------------------------------------------- 管理員：待入帳清單
 
-def test_admin_sees_pending_cashback_of_all_members(admin, gemini):
+def test_admin_sees_pending_cashback_of_all_members(admin):
     acc_a, tok_a = new_member()
     acc_b, tok_b = new_member()
     first = pending_order(tok_a)
@@ -185,16 +139,16 @@ def test_admin_sees_pending_cashback_of_all_members(admin, gemini):
     ids = [o["id"] for o in data["orders"]]
     assert first["id"] in ids and second["id"] in ids
     assert ids.index(first["id"]) < ids.index(second["id"])  # 最快入帳的排前面
-    assert tracked["id"] not in ids  # 還沒上傳收據的不在清單
+    assert tracked["id"] not in ids  # 還沒確認購買的不在清單
     listed = next(o for o in data["orders"] if o["id"] == second["id"])
-    assert listed["account"] == acc_b and listed["order_amount"] == 1000 and listed["points"] == 50
-    assert listed["receipt_store"] and listed["receipt_order_no"] and listed["credit_after"]
-    assert "receipt_hash" not in listed
+    assert listed["account"] == acc_b and listed["order_amount"] == PRICE and listed["points"] == POINTS
+    assert listed["product_name"] == PRODUCT and listed["credit_after"]
+    assert "receipt_hash" not in listed and "rejected_by" not in listed
     assert data["summary"]["count"] == len(data["orders"])
     assert data["summary"]["points"] == sum(o["points"] for o in data["orders"])
 
 
-def test_pending_list_credits_due_cashback_first(admin, gemini):
+def test_pending_list_credits_due_cashback_first(admin):
     _, token = new_member()
     order = pending_order(token)
     set_credit_after(order["id"], (datetime.now() - timedelta(minutes=1)).strftime(TIME_FMT))
@@ -204,7 +158,7 @@ def test_pending_list_credits_due_cashback_first(admin, gemini):
     assert db_row(order["id"])["status"] == "confirmed"
 
 
-def test_legacy_pending_without_credit_time_listed_last_and_rejectable(admin, gemini):
+def test_legacy_pending_without_credit_time_listed_last_and_rejectable(admin):
     account, token = new_member()
     legacy = track(token)
     conn = database.get_db()  # 舊版模擬的待確認紀錄：沒有 credit_after，不會自動入帳
@@ -223,7 +177,7 @@ def test_legacy_pending_without_credit_time_listed_last_and_rejectable(admin, ge
 
 # ---------------------------------------------------------------- 管理員：駁回
 
-def test_reject_keeps_points_from_being_credited(admin, gemini):
+def test_reject_keeps_points_from_being_credited(admin):
     account, token = new_member()
     order = pending_order(token)
     before = points_of(token)
@@ -254,7 +208,7 @@ def test_reject_keeps_points_from_being_credited(admin, gemini):
     assert order["id"] not in [o["id"] for o in admin_pending(admin)["orders"]]
 
 
-def test_member_cancel_still_shows_cancelled(gemini):
+def test_member_cancel_still_shows_cancelled():
     _, token = new_member()
     order = track(token)
     assert client.post(f"/api/cashback/{order['id']}/cancel", headers=bearer(token), json={}).json()["success"]
@@ -267,7 +221,7 @@ def test_member_cancel_still_shows_cancelled(gemini):
     ("   ", "請填寫駁回原因"),
     ("退" * (database.REJECT_REASON_MAX_LENGTH + 1), "字以內"),
 ])
-def test_reject_requires_short_reason(admin, gemini, reason, expected):
+def test_reject_requires_short_reason(admin, reason, expected):
     _, token = new_member()
     order = pending_order(token)
     res = reject(admin, order["id"], reason)
@@ -275,7 +229,7 @@ def test_reject_requires_short_reason(admin, gemini, reason, expected):
     assert db_row(order["id"])["status"] == "pending"
 
 
-def test_reject_only_pending_orders(admin, gemini):
+def test_reject_only_pending_orders(admin):
     _, token = new_member()
     tracked = track(token)
     res = reject(admin, tracked["id"])
@@ -292,7 +246,7 @@ def test_reject_only_pending_orders(admin, gemini):
     assert not missing["success"] and "找不到" in missing["message"]
 
 
-def test_cannot_reject_after_pending_window(admin, gemini):
+def test_cannot_reject_after_pending_window(admin):
     _, token = new_member()
     order = pending_order(token)
     before = points_of(token)
@@ -301,17 +255,17 @@ def test_cannot_reject_after_pending_window(admin, gemini):
     res = reject(admin, order["id"])
     assert not res["success"] and "已入帳" in res["message"]
     assert db_row(order["id"])["status"] == "confirmed"
-    assert points_of(token) == pytest.approx(before + 50)
+    assert points_of(token) == pytest.approx(before + POINTS)
 
 
-def test_rejected_receipt_cannot_be_uploaded_again(admin, gemini):
+def test_rejected_purchase_cannot_be_confirmed_again_same_day(admin):
     _, token = new_member()
-    image = image_data_url()
-    first = upload(token, track(token)["id"], image=image)["order"]
+    first = pending_order(token)
     assert reject(admin, first["id"])["success"]
 
-    res = upload(token, track(token)["id"], image=image)
-    assert not res["success"] and "已經登錄過" in res["message"]
+    # 被駁回的購買仍算今天的筆數：同一商品同一藥局不能馬上再確認一次換點數
+    res = confirm(token, track(token)["id"])
+    assert not res["success"] and "每天只能回饋 1 次" in res["message"]
 
 
 def test_admin_cashback_endpoints_reject_members(admin):
@@ -326,102 +280,3 @@ def test_admin_cashback_endpoints_reject_members(admin):
         # 管理員的「會員」通行證也不能當管理員通行證
         member_token = admin["Authorization"].split(" ", 1)[1]
         assert client.request(method, path, json=body, headers={"X-Admin-Token": member_token}).status_code == 401
-
-
-# ---------------------------------------------------------------- 每日辨識次數
-
-def test_daily_scan_limit(gemini):
-    limit = database.RECEIPT_SCAN_DAILY_LIMIT
-    assert limit == 10
-    account, token = new_member()
-
-    gemini.overrides = {"confidence": 0.3}  # 看不清楚、要重拍的也有送 Gemini，一樣算次數
-    first = upload(token, track(token)["id"])
-    assert not first["success"] and first["retake"]
-    assert first["scan_quota"]["used"] == 1 and first["scan_quota"]["remaining"] == limit - 1
-
-    gemini.overrides = {}
-    for i in range(limit - 1):
-        res = upload(token, track(token)["id"])
-        assert res["success"], res["message"]
-    assert res["scan_quota"]["remaining"] == 0
-    assert gemini.calls == limit
-
-    order = track(token)
-    blocked = upload(token, order["id"])
-    assert not blocked["success"] and blocked["limit_reached"] and not blocked["retake"]
-    assert "明天" in blocked["message"] and f"每天 {limit} 次" in blocked["message"]
-    assert gemini.calls == limit  # 超過上限就不再送 Gemini
-    assert db_row(order["id"])["status"] == "tracked"  # 追蹤保留，明天還能上傳
-    assert scans_used_today(account) == limit
-
-    # 其他會員不受影響
-    _, other = new_member()
-    assert upload(other, track(other)["id"])["success"]
-
-
-def test_rejections_before_gemini_do_not_count(gemini):
-    account, token = new_member()
-    image = image_data_url()
-    assert upload(token, track(token)["id"], image=image)["success"]
-    assert scans_used_today(account) == 1
-
-    for _ in range(database.RECEIPT_SCAN_DAILY_LIMIT + 2):
-        dup = upload(token, track(token)["id"], image=image)
-        assert not dup["success"] and "已經登錄過" in dup["message"]
-    bad = upload(token, track(token)["id"], image="data:text/plain;base64,aGVsbG8=")
-    assert not bad["success"] and bad["retake"]
-    assert gemini.calls == 1
-    assert scans_used_today(account) == 1
-
-    assert upload(token, track(token)["id"])["success"]  # 還能正常上傳新的收據
-    assert scans_used_today(account) == 2
-
-
-def test_gemini_outage_does_not_use_up_quota(gemini):
-    account, token = new_member()
-    gemini.error = receipt_scanner.ReceiptScanError("HTTP 503")
-    for _ in range(3):
-        res = upload(token, track(token)["id"])
-        assert not res["success"] and "暫時無法使用" in res["message"]
-    assert gemini.calls == 3
-    assert scans_used_today(account) == 0
-
-
-def test_limit_is_stored_in_database(gemini):
-    account, token = new_member()
-    today = datetime.now().strftime("%Y-%m-%d")
-    yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
-    conn = database.get_db()  # 例如服務重啟前已辨識滿 10 張；昨天的次數不影響今天
-    conn.execute("INSERT INTO receipt_scan_usage (account, date_str, used) VALUES (?, ?, ?)",
-                 (account, yesterday, 99))
-    conn.execute("INSERT INTO receipt_scan_usage (account, date_str, used) VALUES (?, ?, ?)",
-                 (account, today, database.RECEIPT_SCAN_DAILY_LIMIT))
-    conn.commit()
-    conn.close()
-
-    res = upload(token, track(token)["id"])
-    assert not res["success"] and res["limit_reached"]
-    assert gemini.calls == 0
-
-    conn = database.get_db()
-    conn.execute("DELETE FROM receipt_scan_usage WHERE account = ? AND date_str = ?", (account, today))
-    conn.commit()
-    conn.close()
-    assert upload(token, track(token)["id"])["success"]
-
-
-def test_reserve_never_exceeds_limit(monkeypatch):
-    monkeypatch.setattr(database, "RECEIPT_SCAN_DAILY_LIMIT", 3)
-    account, _ = new_member()
-    results = [database.reserve_receipt_scan(account)[0] for _ in range(5)]
-    assert results == [True, True, True, False, False]
-    allowed, quota = database.reserve_receipt_scan(account)
-    assert not allowed and quota == {**quota, "used": 3, "limit": 3, "remaining": 0}
-
-    database.release_receipt_scan(account, quota["date"])
-    assert database.reserve_receipt_scan(account)[0]
-
-
-if __name__ == "__main__":
-    sys.exit(pytest.main([__file__, "-q"]))

@@ -39,9 +39,10 @@ from database import (
     get_ai_guard_quota, consume_ai_guard_quota, add_ai_guard_bonus,
     find_or_create_social_user, create_line_bind_code, bind_line_by_code,
     unbind_recipient_line, find_recipient_line_id, get_line_binding_info, claim_reward,
-    create_cashback_click, list_cashback_orders, check_cashback_receipt_upload, record_cashback_receipt,
-    settle_due_cashback, cancel_tracked_cashback, CASHBACK_RATES, CASHBACK_PENDING_DAYS,
-    reserve_receipt_scan, release_receipt_scan, list_pending_cashback, reject_pending_cashback,
+    create_cashback_click, list_cashback_orders, find_catalog_price, confirm_cashback_purchase,
+    cashback_purchase_quota, settle_due_cashback, cancel_tracked_cashback,
+    CASHBACK_RATES, CASHBACK_PENDING_DAYS, CASHBACK_DAILY_PURCHASE_LIMIT,
+    list_pending_cashback, reject_pending_cashback,
     add_family_message, list_family_messages, latest_family_card,
     set_user_avatar, AVATAR_MAX_LENGTH, check_in_user
 )
@@ -55,7 +56,6 @@ from auto_order import execute_auto_order
 from weather_service import get_live_weather
 from greeting_generator import generate_ai_greeting
 from chips_generator import get_clinical_rule_chips, generate_ai_recipient_chips
-from receipt_scanner import scan_receipt, ReceiptScanError
 
 # AI 守護助理每日免費詢問次數；可用關懷點數兌換額外次數
 AI_GUARD_DAILY_LIMIT = 3
@@ -216,17 +216,13 @@ class FamilyMessageRequest(BaseModel):
 class ReferralClickRequest(BaseModel):
     product_name: str
     pharmacy: str
-    price: int
+    price: Optional[int] = None  # 舊版 App 會送；金額一律以伺服器的查價為準，這個值不採用
     recipient: str = "親友"
     official_url: str
     account: Optional[str] = None
 
 class CashbackActionRequest(BaseModel):
     account: Optional[str] = None
-
-class CashbackReceiptRequest(BaseModel):
-    # 只收圖片；購物金額一律由伺服器辨識收據取得，用戶端送來的 amount 等欄位會被忽略
-    image: str = ""  # data:image/...;base64,...
 
 class CashbackRejectRequest(BaseModel):
     reason: str = ""
@@ -299,7 +295,7 @@ def health_check():
         "auth_token_secret": "configured" if _token_secret_base("member") else "missing",
         "line_channel_secret": "configured" if LINE_CHANNEL_SECRET else "missing",
         "line_channel_access_token": "configured" if LINE_CHANNEL_ACCESS_TOKEN else "missing",
-        "gemini_api_key": "configured" if os.environ.get("GEMINI_API_KEY", "").strip() else "missing"  # 收據辨識
+        "gemini_api_key": "configured" if os.environ.get("GEMINI_API_KEY", "").strip() else "missing"  # 生成式 AI 回覆（選用）
     }
 
 # =========================================================================
@@ -529,24 +525,27 @@ def pharmacy_auto_order(req: AutoOrderRequest, admin: str = Depends(current_admi
 
 @app.post("/api/pharmacy/referral-click")
 def pharmacy_referral_click(req: ReferralClickRequest, member: str = Depends(current_member)):
-    # 💡 ShopBack 模式：點擊只建立「購物追蹤」，上傳收據後才回饋點數（不再點擊就送點）
+    # 💡 ShopBack 模式：點擊只建立「購物追蹤」，確認購買後才回饋點數（不再點擊就送點）
+    #    金額在這裡依商品資料庫的查價鎖定，用戶端送來的價格不採用，之後也無法修改
     _ensure_same_account(member, req.account)
     if not get_user_profile(member):
         return {"success": False, "message": "請先登入，才能追蹤購物回饋", "official_url": req.official_url}
+    offer = find_catalog_price(req.product_name, req.pharmacy)
+    if not offer:
+        return {"success": False, "message": "這項商品沒有查價資料，暫不提供購物回饋", "official_url": req.official_url}
     order = create_cashback_click(
-        account=member, pharmacy=req.pharmacy, product_name=req.product_name,
-        est_price=req.price, recipient=req.recipient, official_url=req.official_url
+        account=member, pharmacy=offer["pharmacy"], product_name=offer["product_name"],
+        est_price=offer["price"], recipient=req.recipient, official_url=req.official_url
     )
     return {
         "success": True,
         "cashback": order,
-        "message": f"已開始追蹤購物回饋：在【{req.pharmacy}】完成購物後上傳收據，可獲得約 {order['rate_percent']}% 點數回饋",
+        "message": (f"已開始追蹤購物回饋：在【{offer['pharmacy']}】完成購物後回到 GiftSense 確認，"
+                    f"依查價 ${offer['price']:,} 回饋約 {order['rate_percent']}%"),
         "official_url": req.official_url
     }
 
-# 購物回饋（ShopBack 模式）：上傳收據 → Gemini 辨識金額 → 待入帳 7 天 → 自動入帳
-RECEIPT_IMAGE_MAX_BYTES = 8 * 1024 * 1024
-_RECEIPT_DATA_URL = re.compile(r"^data:(image/(?:png|jpe?g|webp|heic|heif));base64,([A-Za-z0-9+/=\s]+)$")
+# 購物回饋（ShopBack 模式，模擬流程）：前往購買時鎖定查價金額 → 確認購買 → 待入帳 7 天 → 自動入帳
 
 def _settle_cashback_quietly(account: Optional[str] = None):
     # 待入帳期滿的回饋在會員讀取資料時順便入帳；失敗不影響原本的請求
@@ -570,50 +569,24 @@ def api_list_cashback(account: Optional[str] = None, member: str = Depends(curre
     _settle_cashback_quietly(member)
     return {
         "success": True, "rates": CASHBACK_RATES, "pending_days": CASHBACK_PENDING_DAYS,
+        "purchase_quota": cashback_purchase_quota(member),
         **list_cashback_orders(member)
     }
 
-@app.post("/api/cashback/{order_id}/receipt")
-def api_upload_cashback_receipt(order_id: str, req: CashbackReceiptRequest, member: str = Depends(current_member)):
-    match = _RECEIPT_DATA_URL.match((req.image or "").strip())
-    if not match:
-        return {"success": False, "retake": True, "message": "請上傳 JPG、PNG、WebP 或 HEIC 格式的收據照片"}
-    mime_type = "image/jpeg" if match.group(1) == "image/jpg" else match.group(1)
-    try:
-        image_bytes = base64.b64decode(re.sub(r"\s", "", match.group(2)), validate=True)
-    except ValueError:
-        return {"success": False, "retake": True, "message": "收據圖片無法讀取，請重新選擇"}
-    if not image_bytes or len(image_bytes) > RECEIPT_IMAGE_MAX_BYTES:
-        return {"success": False, "retake": True, "message": "收據圖片太大，請重新拍攝或選擇較小的圖片"}
-    receipt_hash = hashlib.sha256(image_bytes).hexdigest()
-
-    # 先做不需要辨識的檢查，重複或不能上傳的紀錄就不必送 Gemini
-    order, error = check_cashback_receipt_upload(order_id, member, receipt_hash)
+@app.post("/api/cashback/{order_id}/purchase")
+def api_confirm_cashback_purchase(order_id: str, req: CashbackActionRequest, member: str = Depends(current_member)):
+    # 不接受任何金額欄位：回饋依點擊時鎖定的查價金額計算
+    _ensure_same_account(member, req.account)
+    order, error = confirm_cashback_purchase(order_id, member)
+    quota = cashback_purchase_quota(member)
     if error:
-        return {"success": False, "retake": False, "message": error, "order": order}
-    # 每次辨識都會用到 Gemini 免費額度：每位會員每天限辨識 RECEIPT_SCAN_DAILY_LIMIT 張（上面擋下的不算）
-    allowed, scan_quota = reserve_receipt_scan(member)
-    if not allowed:
-        return {
-            "success": False, "retake": False, "limit_reached": True, "scan_quota": scan_quota, "order": order,
-            "message": (f"今天的收據辨識次數已用完（每天 {scan_quota['limit']} 次），請明天再上傳。"
-                        "這筆購物追蹤會保留，不影響回饋點數"),
-        }
-    try:
-        scan = scan_receipt(image_bytes, mime_type)
-    except ReceiptScanError as e:
-        print("收據辨識失敗:", e)
-        release_receipt_scan(member, scan_quota["date"])
-        return {"success": False, "retake": False, "message": "收據辨識服務暫時無法使用，請稍後再試", "order": order}
-    order, error, retake = record_cashback_receipt(order_id, member, scan, receipt_hash)
-    if error:
-        return {"success": False, "retake": retake, "message": error, "order": order, "scan_quota": scan_quota}
+        return {"success": False, "message": error, "order": order, "purchase_quota": quota}
     return {
         "success": True,
-        "message": (f"已登錄 {order['pharmacy']} 收據 ${order['order_amount']:,}，"
+        "message": (f"已登錄 {order['pharmacy']} 購買 ${order['order_amount']:,}，"
                     f"{order['points']} 點回饋將在 {CASHBACK_PENDING_DAYS} 天後自動入帳"),
         "order": order,
-        "scan_quota": scan_quota,
+        "purchase_quota": quota,
     }
 
 @app.post("/api/cashback/{order_id}/cancel")
@@ -624,7 +597,7 @@ def api_cancel_cashback(order_id: str, req: CashbackActionRequest, member: str =
         return {"success": False, "message": error, "order": order}
     return {"success": True, "message": "已取消這筆購物追蹤", "order": order}
 
-# 管理後台：待入帳期間（7 天）可檢視所有會員的回饋，發現退貨或收據可疑時駁回（不給點數）
+# 管理後台：待入帳期間（7 天）可檢視所有會員的回饋，發現退貨或異常購買時駁回（不給點數）
 @app.get("/api/admin/cashback/pending")
 def api_admin_pending_cashback(admin: str = Depends(current_admin)):
     return {"success": True, "pending_days": CASHBACK_PENDING_DAYS, **list_pending_cashback()}

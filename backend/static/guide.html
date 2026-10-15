@@ -405,7 +405,7 @@
     <tr><th>模組</th><th>說明</th></tr>
     <tr><td>今日守護</td><td>中央氣象署即時天氣、依親友病況與語氣（撒嬌／台語／端莊）產生關懷叮嚀、3 秒發送關懷卡、連續守護天數、用藥安全雷達與專屬快速提問。</td></tr>
     <tr><td>AI 守護助理</td><td>RAG 檢索實證文獻 ＋ TFDA 交互作用規則，判斷保健品與親友用藥是否衝突，給出機轉、引用與安全的商品建議；每日 3 次，可用暖幣兌換。</td></tr>
-    <tr><td>暖心選物</td><td>依親友病況比對商品（主要病況加權、禁忌病況排除），固定推薦 3 項，四大連鎖藥局比價並標示同規格最低價；購物回饋（ShopBack 模式，模擬）。</td></tr>
+    <tr><td>暖心選物</td><td>依親友病況比對商品（主要病況加權、禁忌病況排除），固定推薦 3 項，四大連鎖藥局比價並標示同規格最低價；購物回饋（ShopBack 模式，模擬流程：金額依查價鎖定，使用者無法修改）。</td></tr>
     <tr><td>傳情小站</td><td>家人 × 親友的一對一聊天室；訊息同步推播到親友 LINE，親友從 LINE 回覆會回到聊天室。</td></tr>
     <tr><td>暖幣存摺</td><td>關懷卡、小熊互動、購物回饋累積點數；1 點可折抵 $1（與回饋比例一致），也可兌換 AI 守護詢問次數，效期 3 年。</td></tr>
     <tr><td>管理後台</td><td>系統總覽、實證文獻庫（新增／編輯／刪除即時更新 RAG）、RAG 測試台（測試情境＋深度題、不限次數）、後端設定。</td></tr>
@@ -719,21 +719,18 @@ sequenceDiagram
   participant A as GiftSense
   participant S as FastAPI 後端
   participant P as 藥局網站
-  participant G as Google Gemini
   U->>A: 點「前往購買」
-  A->>S: POST /api/pharmacy/referral-click
-  S-->>A: 建立回饋追蹤（狀態：追蹤中）
+  A->>S: POST /api/pharmacy/referral-click（商品、藥局，不送價格）
+  S->>S: 依商品資料庫查價鎖定金額（狀態：追蹤中）
+  S-->>A: 回饋追蹤（查價金額、預計回饋）
   A->>P: 開啟藥局商品頁
   U->>P: 瀏覽／購買
   U->>A: 回到 GiftSense（偵測回到前景）
-  A-->>U: 「歡迎回來！完成購買了嗎？」
-  U->>A: 已完成購買，拍照或選擇收據
-  A->>S: POST /api/cashback/:id/receipt（只送圖片）
-  S->>G: 收據圖片
-  G-->>S: 藥局、訂單號碼、購買時間、金額
-  S->>S: 檢查藥局、時間、重複、金額上限（狀態：待入帳）
-  S-->>A: 辨識結果（金額唯讀）
-  A-->>U: 「收據已登錄，N 點將於 7 天後自動入帳」
+  A-->>U: 「歡迎回來！完成購買了嗎？」（金額唯讀）
+  U->>A: 我已完成購買
+  A->>S: POST /api/cashback/:id/purchase（不送金額）
+  S->>S: 檢查每日上限（每天 3 筆、同商品同藥局 1 筆），採用鎖定金額（狀態：待入帳）
+  S-->>A: 「已登錄購買，N 點將於 7 天後自動入帳」
   S->>S: 7 天期滿自動寫入點數明細（狀態：已入帳）
     </pre>
   </div>
@@ -983,13 +980,13 @@ flowchart TD
     <tr><td><span class="tag t-blue">註冊</span>新會員註冊獎勵</td><td><b>+5</b></td><td>帳密註冊或第一次用 Google／Facebook 登入時發放一次</td></tr>
     <tr><td><span class="tag t-blue">關懷</span>發送關懷卡</td><td><b>+0.1</b></td><td>每位親友每天 1 次；每天最多 5 張，即每天最多 0.5 點（領取鍵 <code>care_card:日期:親友</code>）</td></tr>
     <tr><td><span class="tag t-blue">互動</span>小熊每週加碼</td><td><b>+0.5</b></td><td>點首頁小熊兩下；每週（ISO 週）1 次</td></tr>
-    <tr><td><span class="tag t-amber">購物</span>購物回饋</td><td><b>依金額</b></td><td>見下方公式；上傳收據由 Gemini 辨識金額，待入帳 7 天後自動入帳</td></tr>
+    <tr><td><span class="tag t-amber">購物</span>購物回饋</td><td><b>依金額</b></td><td>見下方公式；金額依查價鎖定，確認購買後待入帳 7 天自動入帳</td></tr>
   </table>
 
   <div class="note" style="margin-top:10px">設計原則（2026/10/15 調整）：參考蝦皮蝦幣與 ShopBack，1 點折抵 $1，點數主要來自購物回饋；註冊與日常互動只給小額點數（每月最多約 17 點），避免一開始就能折抵太多。點數保留到小數第 2 位，折抵時以整數點計算。舊紀錄已依新規則換算（100 → 5、10 → 0.1、50 → 0.5、兌換 −50 → −1）。</div>
 
   <h3>購物回饋公式</h3>
-  <div class="formula">回饋點數 ＝ 四捨五入（收據辨識金額 × 藥局回饋比例）　·　回饋 $1 ＝ 1 點 ＝ 折抵 $1</div>
+  <div class="formula">回饋點數 ＝ 四捨五入（藥局查價金額 × 藥局回饋比例）　·　回饋 $1 ＝ 1 點 ＝ 折抵 $1</div>
   <table style="margin-top:10px">
     <tr><th>藥局</th><th>回饋比例</th><th>計算範例</th><th>回饋點數</th></tr>
     <tr><td>大樹藥局</td><td>5%</td><td>挺立 UC-II $849 × 5% = 42.45</td><td><b>42 點</b></td></tr>
@@ -1004,8 +1001,8 @@ flowchart TD
 <div class="st">
   <div class="st-dot"></div>
   <div class="st-arrow"><span>點「前往購買」</span></div>
-  <div class="st-node"><b>追蹤中</b><small><code>tracked</code> 已開啟藥局網站</small></div>
-  <div class="st-arrow"><span>上傳收據，Gemini 辨識金額並通過檢查</span></div>
+  <div class="st-node"><b>追蹤中</b><small><code>tracked</code> 已鎖定查價金額</small></div>
+  <div class="st-arrow"><span>確認購買（未超過每日上限）</span></div>
   <div class="st-node"><b>待入帳</b><small><code>pending</code> 7 天待入帳期</small></div>
   <div class="st-split"><i><span>7 天期滿<br>自動寫入點數明細</span></i><i><span>取消追蹤，或待入帳<br>期間管理員駁回</span></i></div>
   <div class="st-row">
@@ -1014,8 +1011,8 @@ flowchart TD
   </div>
 </div>
 <!-- state:end -->
-  <div class="ok" style="margin-top:10px">防重複入帳：自動入帳時以「狀態仍為待入帳」作為更新條件，同一筆只會入帳一次；同一張收據圖片（SHA-256）與同一個訂單／發票號碼只能登錄一次。金額由伺服器辨識收據取得，使用者無法輸入或自行確認；伺服器不保存收據圖片。辨識需要環境變數 <code>GEMINI_API_KEY</code>。</div>
-  <div class="note" style="margin-top:10px">Gemini 免費額度保護：每位會員每天最多辨識 10 張收據（次數存在資料庫 <code>receipt_scan_usage</code>，重啟後仍有效）；重複的圖片、格式錯誤等送出前就擋下的上傳不算次數，辨識服務本身故障也會退回次數。<br>管理員審核：待入帳期間，管理後台「回饋審核」列出所有會員的待入帳回饋，發現退貨或收據可疑時填寫原因駁回（不給點數），會員會看到「未通過審核」與原因；同一張收據之後不能再登錄。期滿已自動入帳的回饋不能駁回。</div>
+  <div class="ok" style="margin-top:10px">金額不可更動：點「前往購買」時，後端依商品名稱與藥局從商品資料庫取出查價金額並鎖定，App 不送價格；確認購買的 API 也不接受任何金額欄位。沒有查價資料的商品不提供回饋。<br>防重複入帳：自動入帳時以「狀態仍為待入帳」作為更新條件，同一筆只會入帳一次。</div>
+  <div class="note" style="margin-top:10px">防刷點數：每位會員每天最多確認 3 筆購買，同一商品在同一藥局每天 1 筆（上限檢查與狀態更新在同一個條件更新中完成，同時送出也不會超過）。<br>管理員審核：待入帳期間，管理後台「回饋審核」列出所有會員的待入帳回饋，發現退貨或異常購買時填寫原因駁回（不給點數），會員會看到「未通過審核」與原因；期滿已自動入帳的回饋不能駁回。</div>
 
   <h3>使用點數</h3>
   <table>
@@ -1071,9 +1068,9 @@ flowchart TD
         <div class="say">結合 RAG 實證文獻與 TFDA 交互作用規則，先檢查會不會撞藥。</div>
         <div class="expect">回覆附文獻引用與四大藥局比價。</div></li>
       <li><span class="time">3 分</span><span class="step-title">暖心選物 × 購物回饋</span>
-        <div>展示「最推薦」商品、同規格最低價（米黃標示）、「日常保養推薦」補滿 3 項 → 點「前往最低價」開啟藥局網站 → 切回 GiftSense → 「完成購買了嗎？」→ 拍照或選擇收據 → 辨識收據中 → 顯示唯讀金額與入帳日期 → 開暖幣存摺看「待入帳」。</div>
-        <div class="say">商品依病況比對，有禁忌的不推薦（例如服用抗凝血劑不推薦魚油）；回饋採 ShopBack 模式，目前為模擬流程。</div>
-        <div class="expect">金幣動畫與點數跳動，存摺出現「已入帳」。</div></li>
+        <div>展示「最推薦」商品、同規格最低價（米黃標示）、「日常保養推薦」補滿 3 項 → 點「前往最低價」開啟藥局網站 → 切回 GiftSense → 「完成購買了嗎？」（顯示查價金額，無法修改）→ 我已完成購買 → 顯示入帳日期 → 開暖幣存摺看「待入帳」。</div>
+        <div class="say">商品依病況比對，有禁忌的不推薦（例如服用抗凝血劑不推薦魚油）；回饋採 ShopBack 模式，目前為模擬流程，金額依藥局查價鎖定、使用者無法修改。</div>
+        <div class="expect">存摺出現「待入帳」與預計入帳日期，7 天後自動入帳。</div></li>
       <li><span class="time">1 分</span><span class="step-title">個人資料與頭貼</span>
         <div>帳號選單 → 個人資料設定 → 點頭貼上傳照片；說明 Google／Facebook 會自動帶入大頭照。</div>
         <div class="expect">右上角頭貼立即更新。</div></li>
@@ -1097,7 +1094,7 @@ flowchart TD
       <li><span class="time">1 分</span><span class="step-title">換頭貼</span>
         <div>帳號選單 → 個人資料設定 → 點頭貼 → Android 相簿選剛拍的照片。</div></li>
       <li><span class="time">1.5 分</span><span class="step-title">購物回饋（真的開啟瀏覽器）</span>
-        <div>暖心選物 → 前往購買 → 開啟 Chrome 藥局頁 → 按返回鍵回到 GiftSense → 完成購買 → 點數入帳。</div>
+        <div>暖心選物 → 前往購買 → 開啟 Chrome 藥局頁 → 按返回鍵回到 GiftSense → 我已完成購買 → 待入帳。</div>
         <div class="say">App 從背景回到前景時自動詢問，流程跟真正的回饋平台一樣。</div></li>
       <li><span class="time">1 分</span><span class="step-title">傳情小站</span>
         <div>手機版聊天室：上方切換親友、快速問候語、圓形送出鍵。</div></li>

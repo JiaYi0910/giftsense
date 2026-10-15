@@ -2,6 +2,7 @@ import sqlite3
 import json
 import hmac
 import os
+import re
 import time
 import uuid
 
@@ -206,16 +207,6 @@ def init_db():
     )
     """)
 
-    # 4.6.5 receipt_scan_usage 表格（購物回饋收據每日送 Gemini 辨識的次數，依帳號計算）
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS receipt_scan_usage (
-        account TEXT NOT NULL,
-        date_str TEXT NOT NULL,
-        used INTEGER DEFAULT 0,
-        PRIMARY KEY (account, date_str)
-    )
-    """)
-
     # 4.7 reward_claims 表格（回饋點數領取紀錄，用來限制每日／每週次數）
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS reward_claims (
@@ -243,7 +234,7 @@ def init_db():
     """)
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_chat_messages_owner ON chat_messages (owner_account, elder)")
 
-    # 4.8 cashback_orders 表格（ShopBack 模式購物回饋：點擊追蹤 → 上傳收據 → 7 天後自動入帳）
+    # 4.8 cashback_orders 表格（ShopBack 模式購物回饋：點擊追蹤（鎖定查價金額）→ 確認購買 → 7 天後自動入帳）
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS cashback_orders (
         id TEXT PRIMARY KEY,
@@ -262,22 +253,15 @@ def init_db():
         settled_at TEXT
     )
     """)
-    # 收據辨識結果：只存比對與防重複需要的欄位，不存圖片
     cursor.execute("PRAGMA table_info(cashback_orders)")
     existing_cb_cols = [c[1] for c in cursor.fetchall()]
     for col_name, col_type in [
-        ("receipt_order_no", "TEXT"),   # 訂單／發票號碼（去符號、轉大寫）
-        ("receipt_hash", "TEXT"),       # 收據圖片的 SHA-256，防止同一張圖重複上傳
-        ("receipt_store", "TEXT"),      # 收據上的店家名稱
-        ("receipt_doc_type", "TEXT"),   # receipt / e_invoice / order_screenshot
         ("credit_after", "TEXT"),       # 待入帳期滿、自動入帳的時間
         ("reject_reason", "TEXT"),      # 管理員在待入帳期間駁回的原因
         ("rejected_by", "TEXT"),        # 駁回的管理員帳號
     ]:
         if col_name not in existing_cb_cols:
             cursor.execute(f"ALTER TABLE cashback_orders ADD COLUMN {col_name} {col_type}")
-    cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_cashback_receipt_hash ON cashback_orders (receipt_hash)")
-    cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_cashback_receipt_order ON cashback_orders (pharmacy, receipt_order_no)")
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_cashback_status ON cashback_orders (status, credit_after)")
 
     # 5. clinical_knowledge 表格
@@ -1260,7 +1244,7 @@ def latest_family_card(owner_account: str, elder: str):
 def get_database_stats():
     conn = get_db()
     cursor = conn.cursor()
-    tables = ["users", "recipients", "orders", "points_ledger", "pharmacy_cache", "recommendation_products", "clinical_knowledge", "system_config", "cashback_orders", "ai_guard_usage", "receipt_scan_usage", "chat_messages"]
+    tables = ["users", "recipients", "orders", "points_ledger", "pharmacy_cache", "recommendation_products", "clinical_knowledge", "system_config", "cashback_orders", "ai_guard_usage", "chat_messages"]
     counts = {}
     for t in tables:
         try:
@@ -1464,16 +1448,14 @@ def claim_reward(account: str, action: str, recipient: str = ""):
     return {"success": True, "awarded": rule["amount"], "message": f"獲得 {format_points(rule['amount'])} 點關懷回饋！"}
 
 # =========================================================================
-# 購物回饋（ShopBack 模式）：透過 GiftSense 前往藥局購物，上傳收據後依金額回饋點數
-# 金額由伺服器以 Gemini 辨識收據取得（不採用使用者輸入的金額），待入帳 7 天後自動入帳
+# 購物回饋（ShopBack 模式，目前為模擬流程）：透過 GiftSense 前往藥局購物，確認購買後依金額回饋點數
+# 金額在點擊「前往購買」時由伺服器依商品資料庫的查價鎖定（不採用用戶端送來的價格），待入帳 7 天後自動入帳
 # =========================================================================
 CASHBACK_RATES = {"大樹藥局": 0.05, "杏一醫療": 0.04, "啄木鳥藥局": 0.03, "丁丁藥局": 0.03}
 CASHBACK_DEFAULT_RATE = 0.03
 POINTS_PER_CASHBACK_DOLLAR = 1  # 回饋金額每 1 元換算的點數
-CASHBACK_PENDING_DAYS = 7       # 上傳收據後的待入帳天數（期間可處理退貨），期滿自動入帳
-CASHBACK_MAX_AMOUNT = 15000     # 單筆收據可自動回饋的金額上限
-RECEIPT_MIN_CONFIDENCE = 0.7    # Gemini 辨識信心低於此值時請使用者重拍
-RECEIPT_SCAN_DAILY_LIMIT = 10   # 每位會員每天最多送 Gemini 辨識的收據張數（保護 Gemini 免費額度）
+CASHBACK_PENDING_DAYS = 7       # 確認購買後的待入帳天數（期間可處理退貨），期滿自動入帳
+CASHBACK_DAILY_PURCHASE_LIMIT = 3  # 每位會員每天最多確認幾筆購買（同商品同藥局每天另限 1 筆）
 REJECT_REASON_MAX_LENGTH = 200
 CASHBACK_STATUS_TEXT = {
     "tracked": "追蹤中",
@@ -1494,8 +1476,8 @@ def calc_cashback_points(amount: int, rate: float) -> int:
 
 def _cashback_row(row):
     d = dict(row)
-    d.pop("receipt_hash", None)
-    d.pop("rejected_by", None)
+    for key in ("receipt_hash", "rejected_by", "receipt_order_no", "receipt_store", "receipt_doc_type"):
+        d.pop(key, None)  # 舊版收據欄位與管理員帳號不回傳
     d["status_text"] = CASHBACK_STATUS_TEXT.get(d["status"], d["status"])
     if d["status"] == "rejected" and d.get("reject_reason"):
         d["status_text"] = "未通過審核"  # 管理員在待入帳期間駁回（會員自己取消的追蹤沒有原因）
@@ -1538,66 +1520,79 @@ def _get_cashback_for_account(order_id: str, account: str):
     conn.close()
     return row
 
-def check_cashback_receipt_upload(order_id: str, account: str, receipt_hash: str):
-    """送 Gemini 辨識前先檢查：追蹤紀錄是本人的、還沒登錄收據、這張圖沒用過"""
+def _norm_product_name(name: str) -> str:
+    return re.sub(r"\s+", "", name or "")
+
+def find_catalog_price(product_name: str, pharmacy: str):
+    """依商品名稱與藥局，從暖心選物商品資料庫找出查價金額；找不到回傳 None"""
+    target = _norm_product_name(product_name)
+    if not target or not pharmacy:
+        return None
+    for product in get_all_recommendation_products():
+        if _norm_product_name(product.get("product_name")) != target:
+            continue
+        for offer in product.get("pharmacy_comparison") or []:
+            name = offer.get("pharmacy") or ""
+            price = int(offer.get("price") or 0)
+            if price > 0 and (name == pharmacy or name in pharmacy or pharmacy in name):
+                return {"product_id": product["id"], "product_name": product["product_name"],
+                        "pharmacy": name, "price": price}
+    return None
+
+def cashback_purchase_quota(account: str, now: datetime = None):
+    """今天已確認的購買筆數（不論之後是否入帳或被駁回都算）"""
+    today = (now or datetime.now()).strftime("%Y-%m-%d")
+    conn = get_db()
+    used = conn.execute(
+        "SELECT COUNT(*) AS n FROM cashback_orders WHERE account = ? AND purchased_at LIKE ?",
+        (account, today + "%")
+    ).fetchone()["n"]
+    conn.close()
+    limit = CASHBACK_DAILY_PURCHASE_LIMIT
+    return {"date": today, "used": used, "limit": limit, "remaining": max(0, limit - used)}
+
+def confirm_cashback_purchase(order_id: str, account: str, now: datetime = None):
+    """使用者確認已完成購買：金額直接採用點擊時鎖定的查價金額（使用者無法輸入或修改），
+    進入待入帳，CASHBACK_PENDING_DAYS 天後自動入帳。
+    每天最多 CASHBACK_DAILY_PURCHASE_LIMIT 筆，同一商品在同一藥局每天 1 筆。
+    回傳 (紀錄, 錯誤訊息)"""
     row = _get_cashback_for_account(order_id, account)
     if not row:
         return None, "找不到這筆購物追蹤紀錄"
     if row["status"] != "tracked":
-        return _cashback_row(row), f"這筆紀錄目前是「{CASHBACK_STATUS_TEXT[row['status']]}」，無法再上傳收據"
+        return _cashback_row(row), f"這筆紀錄目前是「{CASHBACK_STATUS_TEXT[row['status']]}」，無法再確認購買"
+    amount = int(row["est_price"] or 0)
+    if amount <= 0:
+        return _cashback_row(row), "這筆追蹤沒有查價金額，無法提供購物回饋"
+
+    now = now or datetime.now()
+    today_like = now.strftime("%Y-%m-%d") + "%"
     conn = get_db()
-    used = conn.execute("SELECT 1 FROM cashback_orders WHERE receipt_hash = ?", (receipt_hash,)).fetchone()
-    conn.close()
-    if used:
-        return _cashback_row(row), "這張收據已經登錄過，同一張收據只能回饋一次"
-    return _cashback_row(row), None
-
-def record_cashback_receipt(order_id: str, account: str, scan: dict, receipt_hash: str):
-    """依收據辨識結果登錄購買：通過檢查後進入待入帳，CASHBACK_PENDING_DAYS 天後自動入帳。
-    回傳 (紀錄, 錯誤訊息, 是否請使用者重拍)"""
-    from receipt_scanner import validate_receipt  # 避免 database 載入時就需要辨識模組
-
-    order, error = check_cashback_receipt_upload(order_id, account, receipt_hash)
-    if error:
-        return order, error, False
-    now = datetime.now()
-    error, retake = validate_receipt(
-        scan, order["pharmacy"], datetime.strptime(order["created_at"], _TIME_FMT), now,
-        CASHBACK_MAX_AMOUNT, RECEIPT_MIN_CONFIDENCE,
+    # 上限檢查與更新寫在同一個條件更新裡，同時送出多筆確認也不會超過上限
+    cur = conn.execute(
+        """UPDATE cashback_orders
+           SET status = 'pending', order_amount = est_price, points = ?, purchased_at = ?, credit_after = ?
+           WHERE id = ? AND account = ? AND status = 'tracked'
+             AND (SELECT COUNT(*) FROM cashback_orders WHERE account = ? AND purchased_at LIKE ?) < ?
+             AND NOT EXISTS (SELECT 1 FROM cashback_orders
+                             WHERE account = ? AND pharmacy = ? AND product_name = ? AND purchased_at LIKE ?)""",
+        (calc_cashback_points(amount, row["rate"]), now.strftime(_TIME_FMT),
+         (now + timedelta(days=CASHBACK_PENDING_DAYS)).strftime(_TIME_FMT),
+         order_id, account,
+         account, today_like, CASHBACK_DAILY_PURCHASE_LIMIT,
+         account, row["pharmacy"], row["product_name"], today_like)
     )
-    if error:
-        return order, error, retake
-
-    conn = get_db()
-    try:
-        if conn.execute(
-            "SELECT 1 FROM cashback_orders WHERE pharmacy = ? AND receipt_order_no = ?",
-            (order["pharmacy"], scan["order_number"])
-        ).fetchone():
-            return order, "這筆訂單（發票）已經登錄過，同一筆購物只能回饋一次", False
-        amount = scan["total_amount"]
-        try:
-            cur = conn.execute(
-                """UPDATE cashback_orders
-                   SET status = 'pending', order_amount = ?, points = ?, purchased_at = ?, credit_after = ?,
-                       receipt_order_no = ?, receipt_hash = ?, receipt_store = ?, receipt_doc_type = ?
-                   WHERE id = ? AND account = ? AND status = 'tracked'""",
-                (amount, calc_cashback_points(amount, order["rate"]),
-                 scan["purchase_time"].strftime(_TIME_FMT),
-                 (now + timedelta(days=CASHBACK_PENDING_DAYS)).strftime(_TIME_FMT),
-                 scan["order_number"], receipt_hash, scan["store_name"], scan["document_type"],
-                 order_id, account)
-            )
-            conn.commit()
-        except sqlite3.IntegrityError:  # 同時送出同一張收據：唯一索引擋下第二筆
-            conn.rollback()
-            return order, "這張收據已經登錄過，同一張收據只能回饋一次", False
-        if cur.rowcount != 1:
-            return order, "這筆紀錄已經登錄過收據", False
-        row = conn.execute("SELECT * FROM cashback_orders WHERE id = ?", (order_id,)).fetchone()
-    finally:
-        conn.close()
-    return _cashback_row(row), None, False
+    conn.commit()
+    updated = cur.rowcount == 1
+    row = conn.execute("SELECT * FROM cashback_orders WHERE id = ?", (order_id,)).fetchone()
+    conn.close()
+    if updated:
+        return _cashback_row(row), None
+    if row["status"] != "tracked":
+        return _cashback_row(row), "這筆紀錄已經確認過購買"
+    if cashback_purchase_quota(account, now)["remaining"] <= 0:
+        return _cashback_row(row), f"今天的購物回饋已達 {CASHBACK_DAILY_PURCHASE_LIMIT} 筆上限，請明天再確認"
+    return _cashback_row(row), "同一商品在同一藥局每天只能回饋 1 次，請明天再確認"
 
 def settle_due_cashback(account: str = None, now: datetime = None) -> int:
     """待入帳期滿的回饋自動入帳；account 為 None 時處理所有會員。回傳入帳筆數"""
@@ -1629,7 +1624,7 @@ def settle_due_cashback(account: str = None, now: datetime = None) -> int:
     return len(credited)
 
 def cancel_tracked_cashback(order_id: str, account: str):
-    """使用者取消還沒上傳收據的追蹤（已上傳收據的回饋不能由使用者變更）"""
+    """使用者取消還沒確認購買的追蹤（已確認的回饋不能由使用者變更）"""
     row = _get_cashback_for_account(order_id, account)
     if not row:
         return None, "找不到這筆購物追蹤紀錄"
@@ -1644,35 +1639,6 @@ def cancel_tracked_cashback(order_id: str, account: str):
     row = conn.execute("SELECT * FROM cashback_orders WHERE id = ?", (order_id,)).fetchone()
     conn.close()
     return _cashback_row(row), None
-
-def reserve_receipt_scan(account: str):
-    """送 Gemini 辨識前占用一次今日次數；已達 RECEIPT_SCAN_DAILY_LIMIT 時回傳 (False, quota)。
-    以條件更新占用，同一會員同時送出多張收據也不會超過上限"""
-    limit = RECEIPT_SCAN_DAILY_LIMIT
-    today = datetime.now().strftime("%Y-%m-%d")
-    conn = get_db()
-    conn.execute("INSERT OR IGNORE INTO receipt_scan_usage (account, date_str, used) VALUES (?, ?, 0)", (account, today))
-    cur = conn.execute(
-        "UPDATE receipt_scan_usage SET used = used + 1 WHERE account = ? AND date_str = ? AND used < ?",
-        (account, today, limit)
-    )
-    reserved = cur.rowcount == 1
-    conn.commit()
-    used = conn.execute(
-        "SELECT used FROM receipt_scan_usage WHERE account = ? AND date_str = ?", (account, today)
-    ).fetchone()["used"]
-    conn.close()
-    return reserved, {"date": today, "used": used, "limit": limit, "remaining": max(0, limit - used)}
-
-def release_receipt_scan(account: str, date_str: str):
-    """辨識服務無法使用時退回占用的次數（不是使用者的問題，不算次數）"""
-    conn = get_db()
-    conn.execute(
-        "UPDATE receipt_scan_usage SET used = used - 1 WHERE account = ? AND date_str = ? AND used > 0",
-        (account, date_str)
-    )
-    conn.commit()
-    conn.close()
 
 def list_pending_cashback():
     """管理員檢視所有會員的待入帳回饋：最快入帳的排前面，舊版模擬紀錄（沒有入帳時間、不會自動入帳）排最後"""
@@ -1690,8 +1656,7 @@ def list_pending_cashback():
     }
 
 def reject_pending_cashback(order_id: str, admin_account: str, reason: str):
-    """管理員在待入帳期間駁回回饋（退貨、收據可疑等）：不給點數。
-    收據的雜湊與訂單號碼保留在紀錄上，同一張收據不能再拿來登錄"""
+    """管理員在待入帳期間駁回回饋（退貨、異常購買等）：不給點數"""
     reason = (reason or "").strip()
     if not reason:
         return None, "請填寫駁回原因"

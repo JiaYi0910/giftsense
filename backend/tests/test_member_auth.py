@@ -132,7 +132,7 @@ MEMBER_ENDPOINTS = [
     ("POST", "/api/guard/redeem", {"account": ALICE}),
     ("POST", "/api/pharmacy/referral-click", {"product_name": "魚油", "pharmacy": "大樹藥局", "price": 500, "official_url": "https://example.test", "account": ALICE}),
     ("GET", "/api/cashback?account=" + ALICE, None),
-    ("POST", "/api/cashback/cb_x/receipt", {"image": "data:image/png;base64,AAAA", "amount": 100}),
+    ("POST", "/api/cashback/cb_x/purchase", {"amount": 100}),
     ("POST", "/api/cashback/cb_x/cancel", {"account": ALICE}),
     ("GET", "/api/orders", None),
     ("POST", "/api/orders", {"order_id": "o1", "items": [], "total": "$1", "recipient": "奶奶"}),
@@ -274,7 +274,7 @@ def test_points_and_profile_follow_token(alice, bob):
 
 def test_cashback_orders_are_isolated(alice, bob):
     click = client.post("/api/pharmacy/referral-click", headers=bearer(alice), json={
-        "product_name": "魚油", "pharmacy": "大樹藥局", "price": 500, "official_url": "https://example.test",
+        "product_name": "【歐3加福】精萃濃縮 EPA 魚油 (60顆/瓶)", "pharmacy": "大樹藥局", "price": 500, "official_url": "https://example.test",
     }).json()
     assert click["success"]
     order_id = click["cashback"]["id"]
@@ -325,7 +325,7 @@ ADMIN_ENDPOINTS = [
     ("POST", "/api/points/add", {"account": BOB, "amount": 999, "title": "自己加點"}),
     ("POST", "/api/pharmacy/auto-order", {"product_name": "魚油", "price": 500}),
     ("GET", "/api/admin/cashback/pending", None),
-    ("POST", "/api/admin/cashback/CB_X/reject", {"reason": "收據可疑"}),
+    ("POST", "/api/admin/cashback/CB_X/reject", {"reason": "購買紀錄異常"}),
 ]
 
 
