@@ -132,9 +132,8 @@ MEMBER_ENDPOINTS = [
     ("POST", "/api/guard/redeem", {"account": ALICE}),
     ("POST", "/api/pharmacy/referral-click", {"product_name": "魚油", "pharmacy": "大樹藥局", "price": 500, "official_url": "https://example.test", "account": ALICE}),
     ("GET", "/api/cashback?account=" + ALICE, None),
-    ("POST", "/api/cashback/cb_x/simulate-purchase", {"account": ALICE, "amount": 100}),
-    ("POST", "/api/cashback/cb_x/simulate-confirm", {"account": ALICE}),
-    ("POST", "/api/cashback/cb_x/simulate-cancel", {"account": ALICE}),
+    ("POST", "/api/cashback/cb_x/receipt", {"image": "data:image/png;base64,AAAA", "amount": 100}),
+    ("POST", "/api/cashback/cb_x/cancel", {"account": ALICE}),
     ("GET", "/api/orders", None),
     ("POST", "/api/orders", {"order_id": "o1", "items": [], "total": "$1", "recipient": "奶奶"}),
     ("POST", "/api/orders/o1/cancel", None),
@@ -280,7 +279,7 @@ def test_cashback_orders_are_isolated(alice, bob):
     assert click["success"]
     order_id = click["cashback"]["id"]
 
-    hijack = client.post(f"/api/cashback/{order_id}/simulate-purchase", headers=bearer(bob), json={"amount": 9999}).json()
+    hijack = client.post(f"/api/cashback/{order_id}/cancel", headers=bearer(bob), json={}).json()
     assert not hijack["success"]
     bob_orders = client.get("/api/cashback", headers=bearer(bob)).json()["orders"]
     assert order_id not in [o["id"] for o in bob_orders]

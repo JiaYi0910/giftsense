@@ -233,7 +233,7 @@ def init_db():
     """)
     cursor.execute("CREATE INDEX IF NOT EXISTS idx_chat_messages_owner ON chat_messages (owner_account, elder)")
 
-    # 4.8 cashback_orders 表格（ShopBack 模式購物回饋：點擊追蹤 → 完成購物 → 藥局確認後入帳）
+    # 4.8 cashback_orders 表格（ShopBack 模式購物回饋：點擊追蹤 → 上傳收據 → 7 天後自動入帳）
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS cashback_orders (
         id TEXT PRIMARY KEY,
@@ -252,6 +252,21 @@ def init_db():
         settled_at TEXT
     )
     """)
+    # 收據辨識結果：只存比對與防重複需要的欄位，不存圖片
+    cursor.execute("PRAGMA table_info(cashback_orders)")
+    existing_cb_cols = [c[1] for c in cursor.fetchall()]
+    for col_name, col_type in [
+        ("receipt_order_no", "TEXT"),   # 訂單／發票號碼（去符號、轉大寫）
+        ("receipt_hash", "TEXT"),       # 收據圖片的 SHA-256，防止同一張圖重複上傳
+        ("receipt_store", "TEXT"),      # 收據上的店家名稱
+        ("receipt_doc_type", "TEXT"),   # receipt / e_invoice / order_screenshot
+        ("credit_after", "TEXT"),       # 待入帳期滿、自動入帳的時間
+    ]:
+        if col_name not in existing_cb_cols:
+            cursor.execute(f"ALTER TABLE cashback_orders ADD COLUMN {col_name} {col_type}")
+    cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_cashback_receipt_hash ON cashback_orders (receipt_hash)")
+    cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_cashback_receipt_order ON cashback_orders (pharmacy, receipt_order_no)")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_cashback_status ON cashback_orders (status, credit_after)")
 
     # 5. clinical_knowledge 表格
     cursor.execute("""
@@ -1437,18 +1452,22 @@ def claim_reward(account: str, action: str, recipient: str = ""):
     return {"success": True, "awarded": rule["amount"], "message": f"獲得 {format_points(rule['amount'])} 點關懷回饋！"}
 
 # =========================================================================
-# 購物回饋（ShopBack 模式）：透過 GiftSense 前往藥局購物，確認購物後依金額回饋點數
-# 目前尚未與藥局正式合作，「完成購物」與「藥局確認」由模擬操作觸發
+# 購物回饋（ShopBack 模式）：透過 GiftSense 前往藥局購物，上傳收據後依金額回饋點數
+# 金額由伺服器以 Gemini 辨識收據取得（不採用使用者輸入的金額），待入帳 7 天後自動入帳
 # =========================================================================
 CASHBACK_RATES = {"大樹藥局": 0.05, "杏一醫療": 0.04, "啄木鳥藥局": 0.03, "丁丁藥局": 0.03}
 CASHBACK_DEFAULT_RATE = 0.03
 POINTS_PER_CASHBACK_DOLLAR = 1  # 回饋金額每 1 元換算的點數
+CASHBACK_PENDING_DAYS = 7       # 上傳收據後的待入帳天數（期間可處理退貨），期滿自動入帳
+CASHBACK_MAX_AMOUNT = 15000     # 單筆收據可自動回饋的金額上限
+RECEIPT_MIN_CONFIDENCE = 0.7    # Gemini 辨識信心低於此值時請使用者重拍
 CASHBACK_STATUS_TEXT = {
     "tracked": "追蹤中",
-    "pending": "回饋待確認",
+    "pending": "待入帳",
     "confirmed": "已入帳",
-    "rejected": "訂單取消",
+    "rejected": "已取消",
 }
+_TIME_FMT = "%Y-%m-%d %H:%M:%S"
 
 def cashback_rate_for(pharmacy: str) -> float:
     for name, rate in CASHBACK_RATES.items():
@@ -1461,6 +1480,7 @@ def calc_cashback_points(amount: int, rate: float) -> int:
 
 def _cashback_row(row):
     d = dict(row)
+    d.pop("receipt_hash", None)
     d["status_text"] = CASHBACK_STATUS_TEXT.get(d["status"], d["status"])
     d["rate_percent"] = round(d["rate"] * 100, 1)
     d["est_points"] = calc_cashback_points(d.get("order_amount") or d.get("est_price") or 0, d["rate"])
@@ -1474,7 +1494,7 @@ def create_cashback_click(account: str, pharmacy: str, product_name: str, est_pr
     conn.execute(
         """INSERT INTO cashback_orders (id, account, recipient, pharmacy, product_name, est_price, rate, status, official_url, created_at)
            VALUES (?, ?, ?, ?, ?, ?, ?, 'tracked', ?, ?)""",
-        (click_id, account, recipient, pharmacy, product_name, int(est_price or 0), rate, official_url, now.strftime("%Y-%m-%d %H:%M:%S"))
+        (click_id, account, recipient, pharmacy, product_name, int(est_price or 0), rate, official_url, now.strftime(_TIME_FMT))
     )
     conn.commit()
     row = conn.execute("SELECT * FROM cashback_orders WHERE id = ?", (click_id,)).fetchone()
@@ -1501,51 +1521,111 @@ def _get_cashback_for_account(order_id: str, account: str):
     conn.close()
     return row
 
-def simulate_cashback_purchase(order_id: str, account: str, amount: int = 0):
-    """模擬藥局回傳「已完成購物」：記錄訂單金額，回饋進入待確認"""
+def check_cashback_receipt_upload(order_id: str, account: str, receipt_hash: str):
+    """送 Gemini 辨識前先檢查：追蹤紀錄是本人的、還沒登錄收據、這張圖沒用過"""
     row = _get_cashback_for_account(order_id, account)
     if not row:
         return None, "找不到這筆購物追蹤紀錄"
     if row["status"] != "tracked":
-        return _cashback_row(row), f"這筆紀錄目前是「{CASHBACK_STATUS_TEXT[row['status']]}」，無法再次回報購物"
-    amount = int(amount or row["est_price"] or 0)
-    if amount <= 0:
-        return _cashback_row(row), "請輸入購物金額"
-    points = calc_cashback_points(amount, row["rate"])
+        return _cashback_row(row), f"這筆紀錄目前是「{CASHBACK_STATUS_TEXT[row['status']]}」，無法再上傳收據"
     conn = get_db()
-    conn.execute(
-        "UPDATE cashback_orders SET status = 'pending', order_amount = ?, points = ?, purchased_at = ? WHERE id = ?",
-        (amount, points, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), order_id)
-    )
-    conn.commit()
-    row = conn.execute("SELECT * FROM cashback_orders WHERE id = ?", (order_id,)).fetchone()
+    used = conn.execute("SELECT 1 FROM cashback_orders WHERE receipt_hash = ?", (receipt_hash,)).fetchone()
     conn.close()
+    if used:
+        return _cashback_row(row), "這張收據已經登錄過，同一張收據只能回饋一次"
     return _cashback_row(row), None
 
-def settle_cashback(order_id: str, account: str, approve: bool = True):
-    """模擬藥局確認訂單：approve=True 回饋點數入帳；False 視為訂單取消、不給點"""
+def record_cashback_receipt(order_id: str, account: str, scan: dict, receipt_hash: str):
+    """依收據辨識結果登錄購買：通過檢查後進入待入帳，CASHBACK_PENDING_DAYS 天後自動入帳。
+    回傳 (紀錄, 錯誤訊息, 是否請使用者重拍)"""
+    from receipt_scanner import validate_receipt  # 避免 database 載入時就需要辨識模組
+
+    order, error = check_cashback_receipt_upload(order_id, account, receipt_hash)
+    if error:
+        return order, error, False
+    now = datetime.now()
+    error, retake = validate_receipt(
+        scan, order["pharmacy"], datetime.strptime(order["created_at"], _TIME_FMT), now,
+        CASHBACK_MAX_AMOUNT, RECEIPT_MIN_CONFIDENCE,
+    )
+    if error:
+        return order, error, retake
+
+    conn = get_db()
+    try:
+        if conn.execute(
+            "SELECT 1 FROM cashback_orders WHERE pharmacy = ? AND receipt_order_no = ?",
+            (order["pharmacy"], scan["order_number"])
+        ).fetchone():
+            return order, "這筆訂單（發票）已經登錄過，同一筆購物只能回饋一次", False
+        amount = scan["total_amount"]
+        try:
+            cur = conn.execute(
+                """UPDATE cashback_orders
+                   SET status = 'pending', order_amount = ?, points = ?, purchased_at = ?, credit_after = ?,
+                       receipt_order_no = ?, receipt_hash = ?, receipt_store = ?, receipt_doc_type = ?
+                   WHERE id = ? AND account = ? AND status = 'tracked'""",
+                (amount, calc_cashback_points(amount, order["rate"]),
+                 scan["purchase_time"].strftime(_TIME_FMT),
+                 (now + timedelta(days=CASHBACK_PENDING_DAYS)).strftime(_TIME_FMT),
+                 scan["order_number"], receipt_hash, scan["store_name"], scan["document_type"],
+                 order_id, account)
+            )
+            conn.commit()
+        except sqlite3.IntegrityError:  # 同時送出同一張收據：唯一索引擋下第二筆
+            conn.rollback()
+            return order, "這張收據已經登錄過，同一張收據只能回饋一次", False
+        if cur.rowcount != 1:
+            return order, "這筆紀錄已經登錄過收據", False
+        row = conn.execute("SELECT * FROM cashback_orders WHERE id = ?", (order_id,)).fetchone()
+    finally:
+        conn.close()
+    return _cashback_row(row), None, False
+
+def settle_due_cashback(account: str = None, now: datetime = None) -> int:
+    """待入帳期滿的回饋自動入帳；account 為 None 時處理所有會員。回傳入帳筆數"""
+    now_str = (now or datetime.now()).strftime(_TIME_FMT)
+    sql = "SELECT * FROM cashback_orders WHERE status = 'pending' AND credit_after IS NOT NULL AND credit_after <= ?"
+    params = [now_str]
+    if account:
+        sql += " AND account = ?"
+        params.append(account)
+    conn = get_db()
+    due = conn.execute(sql, params).fetchall()
+    credited = []
+    for row in due:
+        # 以狀態做條件更新，同時有多個請求在結算也只會入帳一次
+        cur = conn.execute(
+            "UPDATE cashback_orders SET status = 'confirmed', settled_at = ? WHERE id = ? AND status = 'pending'",
+            (now_str, row["id"])
+        )
+        conn.commit()
+        if cur.rowcount == 1:
+            credited.append(row)
+    conn.close()
+    for row in credited:
+        if row["points"] > 0:
+            add_points_transaction(
+                row["account"], row["points"],
+                f"購物回饋：{row['pharmacy']}（訂單 ${row['order_amount']:,} × {round(row['rate'] * 100, 1)}%）"
+            )
+    return len(credited)
+
+def cancel_tracked_cashback(order_id: str, account: str):
+    """使用者取消還沒上傳收據的追蹤（已上傳收據的回饋不能由使用者變更）"""
     row = _get_cashback_for_account(order_id, account)
     if not row:
         return None, "找不到這筆購物追蹤紀錄"
-    allowed = ("pending",) if approve else ("tracked", "pending")
-    if row["status"] not in allowed:
-        return _cashback_row(row), f"這筆紀錄目前是「{CASHBACK_STATUS_TEXT[row['status']]}」，無法執行此操作"
-    new_status = "confirmed" if approve else "rejected"
+    if row["status"] != "tracked":
+        return _cashback_row(row), f"這筆紀錄目前是「{CASHBACK_STATUS_TEXT[row['status']]}」，無法取消"
     conn = get_db()
-    # 以狀態做條件更新，避免重複入帳
-    cur = conn.execute(
-        "UPDATE cashback_orders SET status = ?, settled_at = ? WHERE id = ? AND status = ?",
-        (new_status, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), order_id, row["status"])
+    conn.execute(
+        "UPDATE cashback_orders SET status = 'rejected', settled_at = ? WHERE id = ? AND status = 'tracked'",
+        (datetime.now().strftime(_TIME_FMT), order_id)
     )
     conn.commit()
-    updated = cur.rowcount == 1
     row = conn.execute("SELECT * FROM cashback_orders WHERE id = ?", (order_id,)).fetchone()
     conn.close()
-    if approve and updated and row["points"] > 0:
-        add_points_transaction(
-            account, row["points"],
-            f"購物回饋：{row['pharmacy']}（訂單 ${row['order_amount']:,} × {round(row['rate'] * 100, 1)}%）"
-        )
     return _cashback_row(row), None
 
 init_db()

@@ -716,6 +716,7 @@ sequenceDiagram
   participant A as GiftSense
   participant S as FastAPI 後端
   participant P as 藥局網站
+  participant G as Google Gemini
   U->>A: 點「前往購買」
   A->>S: POST /api/pharmacy/referral-click
   S-->>A: 建立回饋追蹤（狀態：追蹤中）
@@ -723,12 +724,14 @@ sequenceDiagram
   U->>P: 瀏覽／購買
   U->>A: 回到 GiftSense（偵測回到前景）
   A-->>U: 「歡迎回來！完成購買了嗎？」
-  U->>A: 已完成購買（輸入實付金額）
-  A->>S: simulate-purchase（狀態：回饋待確認）
-  A->>S: simulate-confirm（模擬藥局確認）
-  S->>S: 寫入點數明細、更新暖幣（狀態：已入帳）
-  S-->>A: +N 點
-  A-->>U: 「購物回饋已存入暖幣存摺」
+  U->>A: 已完成購買，拍照或選擇收據
+  A->>S: POST /api/cashback/:id/receipt（只送圖片）
+  S->>G: 收據圖片
+  G-->>S: 藥局、訂單號碼、購買時間、金額
+  S->>S: 檢查藥局、時間、重複、金額上限（狀態：待入帳）
+  S-->>A: 辨識結果（金額唯讀）
+  A-->>U: 「收據已登錄，N 點將於 7 天後自動入帳」
+  S->>S: 7 天期滿自動寫入點數明細（狀態：已入帳）
     </pre>
   </div>
 
@@ -977,13 +980,13 @@ flowchart TD
     <tr><td><span class="tag t-blue">註冊</span>新會員註冊獎勵</td><td><b>+5</b></td><td>帳密註冊或第一次用 Google／Facebook 登入時發放一次</td></tr>
     <tr><td><span class="tag t-blue">關懷</span>發送關懷卡</td><td><b>+0.1</b></td><td>每位親友每天 1 次；每天最多 5 張，即每天最多 0.5 點（領取鍵 <code>care_card:日期:親友</code>）</td></tr>
     <tr><td><span class="tag t-blue">互動</span>小熊每週加碼</td><td><b>+0.5</b></td><td>點首頁小熊兩下；每週（ISO 週）1 次</td></tr>
-    <tr><td><span class="tag t-amber">購物</span>購物回饋</td><td><b>依金額</b></td><td>見下方公式；須完成購買並經藥局確認才入帳</td></tr>
+    <tr><td><span class="tag t-amber">購物</span>購物回饋</td><td><b>依金額</b></td><td>見下方公式；上傳收據由 Gemini 辨識金額，待入帳 7 天後自動入帳</td></tr>
   </table>
 
   <div class="note" style="margin-top:10px">設計原則（2026/10/15 調整）：參考蝦皮蝦幣與 ShopBack，1 點折抵 $1，點數主要來自購物回饋；註冊與日常互動只給小額點數（每月最多約 17 點），避免一開始就能折抵太多。點數保留到小數第 2 位，折抵時以整數點計算。舊紀錄已依新規則換算（100 → 5、10 → 0.1、50 → 0.5、兌換 −50 → −1）。</div>
 
   <h3>購物回饋公式</h3>
-  <div class="formula">回饋點數 ＝ 四捨五入（實付金額 × 藥局回饋比例）　·　回饋 $1 ＝ 1 點 ＝ 折抵 $1</div>
+  <div class="formula">回饋點數 ＝ 四捨五入（收據辨識金額 × 藥局回饋比例）　·　回饋 $1 ＝ 1 點 ＝ 折抵 $1</div>
   <table style="margin-top:10px">
     <tr><th>藥局</th><th>回饋比例</th><th>計算範例</th><th>回饋點數</th></tr>
     <tr><td>大樹藥局</td><td>5%</td><td>挺立 UC-II $849 × 5% = 42.45</td><td><b>42 點</b></td></tr>
@@ -999,16 +1002,16 @@ flowchart TD
   <div class="st-dot"></div>
   <div class="st-arrow"><span>點「前往購買」</span></div>
   <div class="st-node"><b>追蹤中</b><small><code>tracked</code> 已開啟藥局網站</small></div>
-  <div class="st-arrow"><span>回到 GiftSense，完成購買（輸入實付金額）</span></div>
-  <div class="st-node"><b>回饋待確認</b><small><code>pending</code> 等待藥局確認訂單</small></div>
-  <div class="st-split"><i><span>藥局確認<br>寫入點數明細</span></i><i><span>退貨或取消<br>不給點</span></i></div>
+  <div class="st-arrow"><span>上傳收據，Gemini 辨識金額並通過檢查</span></div>
+  <div class="st-node"><b>待入帳</b><small><code>pending</code> 7 天待入帳期</small></div>
+  <div class="st-split"><i><span>7 天期滿<br>自動寫入點數明細</span></i><i><span>上傳收據前<br>取消追蹤</span></i></div>
   <div class="st-row">
     <div class="st-node ok"><b>已入帳</b><small><code>confirmed</code> 存入暖幣存摺</small></div>
-    <div class="st-node no"><b>訂單取消</b><small><code>rejected</code> 不給點</small></div>
+    <div class="st-node no"><b>已取消</b><small><code>rejected</code> 不給點</small></div>
   </div>
 </div>
 <!-- state:end -->
-  <div class="ok" style="margin-top:10px">防重複入帳：確認時以「狀態仍為待確認」作為更新條件，同一筆訂單只會入帳一次。</div>
+  <div class="ok" style="margin-top:10px">防重複入帳：自動入帳時以「狀態仍為待入帳」作為更新條件，同一筆只會入帳一次；同一張收據圖片（SHA-256）與同一個訂單／發票號碼只能登錄一次。金額由伺服器辨識收據取得，使用者無法輸入或自行確認；伺服器不保存收據圖片。辨識需要環境變數 <code>GEMINI_API_KEY</code>。</div>
 
   <h3>使用點數</h3>
   <table>
@@ -1064,7 +1067,7 @@ flowchart TD
         <div class="say">結合 RAG 實證文獻與 TFDA 交互作用規則，先檢查會不會撞藥。</div>
         <div class="expect">回覆附文獻引用與四大藥局比價。</div></li>
       <li><span class="time">3 分</span><span class="step-title">暖心選物 × 購物回饋</span>
-        <div>展示「最推薦」商品、同規格最低價（米黃標示）、「日常保養推薦」補滿 3 項 → 點「前往最低價」開啟藥局網站 → 切回 GiftSense → 「完成購買了嗎？」→ 已完成購買 → 藥局確認中 → +N 點 → 開暖幣存摺看明細。</div>
+        <div>展示「最推薦」商品、同規格最低價（米黃標示）、「日常保養推薦」補滿 3 項 → 點「前往最低價」開啟藥局網站 → 切回 GiftSense → 「完成購買了嗎？」→ 拍照或選擇收據 → 辨識收據中 → 顯示唯讀金額與入帳日期 → 開暖幣存摺看「待入帳」。</div>
         <div class="say">商品依病況比對，有禁忌的不推薦（例如服用抗凝血劑不推薦魚油）；回饋採 ShopBack 模式，目前為模擬流程。</div>
         <div class="expect">金幣動畫與點數跳動，存摺出現「已入帳」。</div></li>
       <li><span class="time">1 分</span><span class="step-title">個人資料與頭貼</span>
