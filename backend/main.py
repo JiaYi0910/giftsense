@@ -39,7 +39,8 @@ from database import (
     get_ai_guard_quota, consume_ai_guard_quota, add_ai_guard_bonus,
     find_or_create_social_user, create_line_bind_code, bind_line_by_code,
     unbind_recipient_line, find_recipient_line_id, get_line_binding_info, claim_reward,
-    create_cashback_click, list_cashback_orders, simulate_cashback_purchase, settle_cashback, CASHBACK_RATES,
+    create_cashback_click, list_cashback_orders, check_cashback_receipt_upload, record_cashback_receipt,
+    settle_due_cashback, cancel_tracked_cashback, CASHBACK_RATES, CASHBACK_PENDING_DAYS,
     add_family_message, list_family_messages, latest_family_card,
     set_user_avatar, AVATAR_MAX_LENGTH, check_in_user
 )
@@ -53,6 +54,7 @@ from auto_order import execute_auto_order
 from weather_service import get_live_weather
 from greeting_generator import generate_ai_greeting
 from chips_generator import get_clinical_rule_chips, generate_ai_recipient_chips
+from receipt_scanner import scan_receipt, ReceiptScanError
 
 # AI 守護助理每日免費詢問次數；可用關懷點數兌換額外次數
 AI_GUARD_DAILY_LIMIT = 3
@@ -220,7 +222,10 @@ class ReferralClickRequest(BaseModel):
 
 class CashbackActionRequest(BaseModel):
     account: Optional[str] = None
-    amount: Optional[int] = None
+
+class CashbackReceiptRequest(BaseModel):
+    # 只收圖片；購物金額一律由伺服器辨識收據取得，用戶端送來的 amount 等欄位會被忽略
+    image: str = ""  # data:image/...;base64,...
 
 class TFDACheckRequest(BaseModel):
     elder_name: str = "親友"
@@ -426,6 +431,7 @@ def api_register(req: RegisterRequest):
 @app.get("/api/auth/profile")
 def api_user_profile(account: Optional[str] = None, member: str = Depends(current_member)):
     _ensure_same_account(member, account)
+    _settle_cashback_quietly(member)
     profile = get_user_profile(member)
     if not profile:
         raise HTTPException(status_code=404, detail="User not found")
@@ -518,7 +524,7 @@ def pharmacy_auto_order(req: AutoOrderRequest, admin: str = Depends(current_admi
 
 @app.post("/api/pharmacy/referral-click")
 def pharmacy_referral_click(req: ReferralClickRequest, member: str = Depends(current_member)):
-    # 💡 ShopBack 模式：點擊只建立「購物追蹤」，確認有購物後才回饋點數（不再點擊就送點）
+    # 💡 ShopBack 模式：點擊只建立「購物追蹤」，上傳收據後才回饋點數（不再點擊就送點）
     _ensure_same_account(member, req.account)
     if not get_user_profile(member):
         return {"success": False, "message": "請先登入，才能追蹤購物回饋", "official_url": req.official_url}
@@ -529,45 +535,79 @@ def pharmacy_referral_click(req: ReferralClickRequest, member: str = Depends(cur
     return {
         "success": True,
         "cashback": order,
-        "message": f"已開始追蹤購物回饋：在【{req.pharmacy}】完成購物並確認後，可獲得約 {order['rate_percent']}% 點數回饋",
+        "message": f"已開始追蹤購物回饋：在【{req.pharmacy}】完成購物後上傳收據，可獲得約 {order['rate_percent']}% 點數回饋",
         "official_url": req.official_url
     }
 
-# 購物回饋（ShopBack 模式，目前以模擬方式示範藥局回傳與確認）
+# 購物回饋（ShopBack 模式）：上傳收據 → Gemini 辨識金額 → 待入帳 7 天 → 自動入帳
+RECEIPT_IMAGE_MAX_BYTES = 8 * 1024 * 1024
+_RECEIPT_DATA_URL = re.compile(r"^data:(image/(?:png|jpe?g|webp|heic|heif));base64,([A-Za-z0-9+/=\s]+)$")
+
+def _settle_cashback_quietly(account: Optional[str] = None):
+    # 待入帳期滿的回饋在會員讀取資料時順便入帳；失敗不影響原本的請求
+    try:
+        settle_due_cashback(account=account)
+    except Exception as e:
+        print("購物回饋自動入帳失敗:", e)
+
+@app.on_event("startup")
+def startup_cashback_settler():
+    # Render 免費方案會休眠，這裡只是補強；會員讀取點數時也會結算
+    def _loop():
+        while True:
+            _settle_cashback_quietly()
+            time.sleep(3600)
+    threading.Thread(target=_loop, daemon=True).start()
+
 @app.get("/api/cashback")
 def api_list_cashback(account: Optional[str] = None, member: str = Depends(current_member)):
     _ensure_same_account(member, account)
-    return {"success": True, "rates": CASHBACK_RATES, **list_cashback_orders(member)}
-
-@app.post("/api/cashback/{order_id}/simulate-purchase")
-def api_simulate_cashback_purchase(order_id: str, req: CashbackActionRequest, member: str = Depends(current_member)):
-    _ensure_same_account(member, req.account)
-    order, error = simulate_cashback_purchase(order_id, member, req.amount or 0)
-    if error:
-        return {"success": False, "message": error, "order": order}
-    return {"success": True, "message": f"已模擬藥局回傳訂單 ${order['order_amount']:,}，預計回饋 {order['points']} 點（待藥局確認）", "order": order}
-
-@app.post("/api/cashback/{order_id}/simulate-confirm")
-def api_simulate_cashback_confirm(order_id: str, req: CashbackActionRequest, member: str = Depends(current_member)):
-    _ensure_same_account(member, req.account)
-    order, error = settle_cashback(order_id, member, approve=True)
-    if error:
-        return {"success": False, "message": error, "order": order}
-    profile = get_user_profile(member)
+    _settle_cashback_quietly(member)
     return {
-        "success": True,
-        "message": f"藥局已確認訂單，{order['points']} 點回饋已入帳！",
-        "order": order,
-        "new_points": profile["points"] if profile else None
+        "success": True, "rates": CASHBACK_RATES, "pending_days": CASHBACK_PENDING_DAYS,
+        **list_cashback_orders(member)
     }
 
-@app.post("/api/cashback/{order_id}/simulate-cancel")
-def api_simulate_cashback_cancel(order_id: str, req: CashbackActionRequest, member: str = Depends(current_member)):
+@app.post("/api/cashback/{order_id}/receipt")
+def api_upload_cashback_receipt(order_id: str, req: CashbackReceiptRequest, member: str = Depends(current_member)):
+    match = _RECEIPT_DATA_URL.match((req.image or "").strip())
+    if not match:
+        return {"success": False, "retake": True, "message": "請上傳 JPG、PNG、WebP 或 HEIC 格式的收據照片"}
+    mime_type = "image/jpeg" if match.group(1) == "image/jpg" else match.group(1)
+    try:
+        image_bytes = base64.b64decode(re.sub(r"\s", "", match.group(2)), validate=True)
+    except ValueError:
+        return {"success": False, "retake": True, "message": "收據圖片無法讀取，請重新選擇"}
+    if not image_bytes or len(image_bytes) > RECEIPT_IMAGE_MAX_BYTES:
+        return {"success": False, "retake": True, "message": "收據圖片太大，請重新拍攝或選擇較小的圖片"}
+    receipt_hash = hashlib.sha256(image_bytes).hexdigest()
+
+    # 先做不需要辨識的檢查，重複或不能上傳的紀錄就不必送 Gemini
+    order, error = check_cashback_receipt_upload(order_id, member, receipt_hash)
+    if error:
+        return {"success": False, "retake": False, "message": error, "order": order}
+    try:
+        scan = scan_receipt(image_bytes, mime_type)
+    except ReceiptScanError as e:
+        print("收據辨識失敗:", e)
+        return {"success": False, "retake": False, "message": "收據辨識服務暫時無法使用，請稍後再試", "order": order}
+    order, error, retake = record_cashback_receipt(order_id, member, scan, receipt_hash)
+    if error:
+        return {"success": False, "retake": retake, "message": error, "order": order}
+    return {
+        "success": True,
+        "message": (f"已登錄 {order['pharmacy']} 收據 ${order['order_amount']:,}，"
+                    f"{order['points']} 點回饋將在 {CASHBACK_PENDING_DAYS} 天後自動入帳"),
+        "order": order,
+    }
+
+@app.post("/api/cashback/{order_id}/cancel")
+def api_cancel_cashback(order_id: str, req: CashbackActionRequest, member: str = Depends(current_member)):
     _ensure_same_account(member, req.account)
-    order, error = settle_cashback(order_id, member, approve=False)
+    order, error = cancel_tracked_cashback(order_id, member)
     if error:
         return {"success": False, "message": error, "order": order}
-    return {"success": True, "message": "已模擬訂單取消／退貨，這筆不會回饋點數", "order": order}
+    return {"success": True, "message": "已取消這筆購物追蹤", "order": order}
 
 @app.get("/api/weather")
 def weather_forecast(city: str = "台北市", key: Optional[str] = None):
