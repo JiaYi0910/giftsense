@@ -68,20 +68,20 @@
 </header>
 <div class="wrap">
   <div class="summary">
-    <div class="progress"><b>整體進度 84%</b><div class="bar"><i></i></div><small>已完成 41 項 / 共 49 項（不含範圍外）</small></div>
-    <div class="stat done"><b>41</b><span>已完成</span></div>
+    <div class="progress"><b>整體進度 84%</b><div class="bar"><i></i></div><small>已完成 47 項 / 共 56 項（不含範圍外）</small></div>
+    <div class="stat done"><b>47</b><span>已完成</span></div>
     <div class="stat todo"><b>4</b><span>待辦</span></div>
-    <div class="stat check"><b>4</b><span>展示前確認</span></div>
+    <div class="stat check"><b>5</b><span>展示前確認</span></div>
   </div>
 </div>
 <main class="wrap">
   <section class="card done">
-    <h2><span class="dot"></span>已完成<em>41 項</em></h2>
+    <h2><span class="dot"></span>已完成<em>47 項</em></h2>
     <div class="grid">
       <div class="group">
         <h3>基礎架構與部署<span>5</span></h3>
         <ul>
-          <li class="done">Flutter 前端，同一套程式碼產出網頁版和 Android App</li>
+          <li class="done">Flutter 前端（3.47.7），同一套程式碼產出網頁版、Android 和 iOS App</li>
           <li class="done">FastAPI 後端部署在 Render，推送 GitHub main 後自動部署</li>
           <li class="done">Turso 雲端資料庫，Render 重啟也不會掉資料（設定見 <a href="TURSO_SETUP.md">TURSO_SETUP.md</a>）</li>
           <li class="done">伺服器使用台灣時間</li>
@@ -89,7 +89,7 @@
         </ul>
       </div>
       <div class="group">
-        <h3>會員與登入<span>9</span></h3>
+        <h3>會員與登入<span>10</span></h3>
         <ul>
           <li class="done">帳號密碼註冊和登入</li>
           <li class="done">Google 登入</li>
@@ -100,14 +100,16 @@
           <li class="done">連續登入天數（中斷一天就從第 1 天重算）</li>
           <li class="done">網頁版 Cookie 同意，以及公開的隱私權政策頁 <code>/privacy</code></li>
           <li class="done">密碼以 bcrypt 雜湊儲存（舊資料啟動時自動轉換）</li>
+          <li class="done">會員簽章通行證（30 天）：後端只依通行證判斷帳號，無法讀取別人的親友、聊天、點數與回饋；金鑰設在 Render 環境變數 <code>AUTH_TOKEN_SECRET</code></li>
         </ul>
       </div>
       <div class="group">
-        <h3>親友與 LINE<span>4</span></h3>
+        <h3>親友與 LINE<span>5</span></h3>
         <ul>
           <li class="done">親友檔案（病況、用藥、專屬快速提問）</li>
           <li class="done">LINE 綁定碼，一個 LINE 帳號只綁一位親友</li>
           <li class="done">LINE 機器人：Flex 關懷卡、圖文選單，親友在 LINE 的回覆會回到聊天室</li>
+          <li class="done">LINE 金鑰只從環境變數讀取，Webhook 驗證官方簽章，沒設定金鑰時一律拒絕</li>
           <li class="done">傳情小站聊天室介面，最新訊息在最下面，時間已同步</li>
         </ul>
       </div>
@@ -121,11 +123,12 @@
         </ul>
       </div>
       <div class="group">
-        <h3>AI 守護助理<span>5</span></h3>
+        <h3>AI 守護助理<span>6</span></h3>
         <ul>
           <li class="done">實證文獻檢索（RAG）：15 篇保健成分文獻加上 21 篇用藥安全與照護指引，共 36 篇</li>
           <li class="done">18 條藥物／食物／保健品交互作用規則（修正高血壓、糖尿病的誤判）</li>
-          <li class="done">快速提問依 22 類病況分類、共 104 題，每題都驗證會檢索到對應資料（<code>backend/tests/test_quick_questions.py</code>）</li>
+          <li class="done">快速提問依 22 類病況分類、共 104 題，每題都驗證會檢索到對應資料（<code>backend/tests/test_quick_questions.py</code>）；資料庫裡的文獻已和程式碼同步，正式站也是 104/104</li>
+          <li class="done">文獻庫查不到相關資料時顯示「尚未收錄」，不顯示評分和商品</li>
           <li class="done">每天 3 次，可用 1 點兌換 3 次</li>
           <li class="done">管理員的 RAG 測試台不限次數，附有深度測試題</li>
         </ul>
@@ -135,56 +138,60 @@
         <ul>
           <li class="done">12 項商品，四大連鎖藥局實際查價（2026/10/13）</li>
           <li class="done">依病況比對推薦，固定顯示 3 項，標示首選和同規格最低價</li>
-          <li class="done">購物回饋（模擬）：前往藥局網站，回到 App 確認購買後點數入帳</li>
+          <li class="done">購物回饋（模擬）：點「前往購買」時後端依查價鎖定金額，回到 App 確認購買（金額不能改），待入帳 7 天後自動入帳；每天最多確認 3 筆，同商品同藥局每天 1 筆</li>
           <li class="done">回饋 $1 = 1 點，折抵 1 點 = $1，點數效期 3 年</li>
           <li class="done">贈點改為小額（參考蝦皮與 ShopBack）：註冊 +5、關懷卡 +0.1、小熊每週 +0.5，點數可到小數第 2 位</li>
         </ul>
       </div>
       <div class="group">
-        <h3>管理後台<span>3</span></h3>
+        <h3>管理後台<span>4</span></h3>
         <ul>
           <li class="done">獨立的管理介面，密碼由 Render 環境變數 <code>ADMIN_PASSWORD</code> 設定，登入後核發通行證</li>
           <li class="done">實證文獻庫可新增、編輯、刪除，改完 AI 立即使用新資料</li>
           <li class="done">系統總覽、後端設定</li>
+          <li class="done">回饋審核：列出所有會員的待入帳回饋，入帳前可填寫原因駁回</li>
         </ul>
       </div>
       <div class="group">
-        <h3>iPhone 與 Android<span>2</span></h3>
+        <h3>iPhone 與 Android<span>3</span></h3>
         <ul>
-          <li class="done">iPhone Safari「加入主畫面」：圖示、啟動畫面、操作提示，小熊圖片已修正</li>
-          <li class="done">新版 APK 已安裝到 Android 模擬器</li>
+          <li class="done">iOS App：在 Mac 用 Xcode 建置 Release 版，以免費 Apple ID 簽署裝到 iPhone 16 Pro（每 7 天要在 Mac 重跑 <code>flutter run --release</code>），步驟見 <a href="IOS_SETUP.md">IOS_SETUP.md</a></li>
+          <li class="done">沒裝 App 的 iPhone 可用 Safari「加入主畫面」：圖示、啟動畫面、操作提示</li>
+          <li class="done">最新 APK 已安裝到 Android 模擬器，購物回饋流程實際走過一次</li>
         </ul>
       </div>
       <div class="group">
-        <h3>測試與文件<span>4</span></h3>
+        <h3>測試與文件<span>5</span></h3>
         <ul>
-          <li class="done">後端 8 組測試在本機資料庫和 Turso 兩種模式都通過；<code>flutter analyze</code> 沒有錯誤</li>
+          <li class="done">後端 pytest 138 項（<code>backend/tests</code>：會員通行證 101、購物回饋 32、LINE Webhook 5）與 104 題快速提問全數通過；<code>flutter analyze</code> 沒有錯誤</li>
           <li class="done">系統說明網頁 <code>/guide</code>，共 9 節：架構、功能架構、流程、技術、ER、DFD、點數、Demo 腳本（原始檔 <a href="giftsense_system_guide.html">giftsense_system_guide.html</a>）</li>
           <li class="done">7 張圖檔（<a href="diagrams/">diagrams/</a>）</li>
           <li class="done">Turso、iOS、第三方登入三份設定說明</li>
+          <li class="done">競賽文件（企劃書、專題簡介、解題構想書）已同步到 2026/10/15 的系統內容，存放在本機 <code>docs/</code>，不放進 git</li>
         </ul>
       </div>
     </div>
   </section>
   <section class="card todo">
-    <h2><span class="dot"></span>未完成／待確認<em>8 項</em></h2>
+    <h2><span class="dot"></span>未完成／待確認<em>9 項</em></h2>
     <div class="grid two">
       <div class="group">
         <h3>待辦<span>4</span></h3>
         <ul>
-          <li class="todo"><b>iOS 原生 App</b>：在 Mac 上用 Xcode 建置，以免費 Apple ID 安裝到手機（每 7 天要重裝一次），步驟見 <a href="IOS_SETUP.md">IOS_SETUP.md</a></li>
+          <li class="todo"><b>iPhone 上的 App 要更新</b>：目前裝的是會員通行證上線前的版本，親友、聊天、點數等會員功能會讀取失敗；到 Mac 重跑 <code>flutter run --release</code> 才會換成新版（含新的購物回饋流程）</li>
+          <li class="todo"><b>iOS 的 Google／Facebook 原生登入</b>：要在 Google Cloud 建立 iOS OAuth 用戶端、在 Meta 新增 iOS 平台（Bundle ID <code>com.jiayi.giftsense</code>），目前 iOS App 先用帳號密碼登入</li>
           <li class="todo"><b>Apple 登入</b>：需要 Apple Developer Program（每年 US$99）；目前採免費方式，只顯示「尚未開放」，要不要做待決定</li>
-          <li class="todo"><b>Android 模擬器上的 App 被「數位健康」暫停</b>：在模擬器點「Unpause app」才能開啟</li>
           <li class="todo"><b>對照隊友的待辦清單（.docx）</b>：隊友的修改已於 2026/10/08 合併，清單上是否還有未處理的項目需再確認</li>
         </ul>
       </div>
       <div class="group">
-        <h3>展示前確認<span>4</span></h3>
+        <h3>展示前確認<span>5</span></h3>
         <ul>
           <li class="todo"><b>Facebook／Google 是否只開放測試帳號</b>：Facebook App 若仍在開發模式、Google 登入若仍在「測試」狀態，只有名單內的帳號能登入；要讓評審自行試用需先切成正式上線</li>
           <li class="todo"><b>LINE 免費方案推播額度</b>：官方帳號免費方案每月推播則數有上限，到 LINE 後台確認實際數字，避免展示期間用完</li>
           <li class="todo"><b>藥局價格</b>：目前是 2026/10/13 手動查價的固定資料，沒有自動更新，展示前可再查一次</li>
           <li class="todo"><b>喚醒網站</b>：Render 免費方案閒置會休眠，展示前 3 分鐘先開啟網站（第一次載入約 30–60 秒）</li>
+          <li class="todo"><b>測試留下的回饋</b>：測試員帳號有一筆 2026/10/22 入帳的待入帳回饋（克補 $720、36 點），不需要的話可在管理後台「回饋審核」駁回</li>
         </ul>
       </div>
     </div>
@@ -195,7 +202,7 @@
       <div class="group">
         
         <ul>
-          <li class="info">購物回饋為模擬流程，沒有串接真實藥局訂單或聯盟行銷</li>
+          <li class="info">購物回饋為模擬流程（金額依藥局查價帶入），沒有串接真實藥局訂單或聯盟行銷</li>
           <li class="info">只使用免費方案：Render、Turso、LINE 官方帳號、中央氣象署開放資料</li>
         </ul>
       </div>
