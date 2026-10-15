@@ -367,7 +367,7 @@
     <h1>GiftSense 智慧關懷送禮</h1>
     <p>心意，醫觸即達 · 系統架構、流程、技術、資料模型、點數回饋與 Demo 腳本</p>
     <div class="meta">
-      <span class="pill">版本：2026/10/13</span>
+      <span class="pill">版本：2026/10/15</span>
       <span class="pill">網站：giftsense-vjbu.onrender.com</span>
       <span class="pill">網頁 · Android · iPhone · LINE</span>
     </div>
@@ -396,7 +396,7 @@
   <p class="sub">GiftSense 讓家人用一個平台照顧遠方的親友：每日依天氣與病況產生關懷提醒、用 AI 守護助理檢查保健品是否撞藥、從連鎖藥局比價挑選合適商品，並透過 LINE 把關懷卡送到親友手上。</p>
   <div class="grid g4">
     <div class="stat"><b>4 種</b><span>使用端：網頁、Android、iPhone、親友 LINE</span></div>
-    <div class="stat"><b>54 支</b><span>後端 REST API</span></div>
+    <div class="stat"><b>55 支</b><span>後端 REST API</span></div>
     <div class="stat"><b>12 項</b><span>暖心選物商品（四大藥局官網實際查價）</span></div>
     <div class="stat"><b>36 篇</b><span>實證文獻與照護指引＋18 條交互作用規則</span></div>
   </div>
@@ -408,7 +408,7 @@
     <tr><td>暖心選物</td><td>依親友病況比對商品（主要病況加權、禁忌病況排除），固定推薦 3 項，四大連鎖藥局比價並標示同規格最低價；購物回饋（ShopBack 模式，模擬流程：金額依查價鎖定，使用者無法修改）。</td></tr>
     <tr><td>傳情小站</td><td>家人 × 親友的一對一聊天室；訊息同步推播到親友 LINE，親友從 LINE 回覆會回到聊天室。</td></tr>
     <tr><td>暖幣存摺</td><td>關懷卡、小熊互動、購物回饋累積點數；1 點可折抵 $1（與回饋比例一致），也可兌換 AI 守護詢問次數，效期 3 年。</td></tr>
-    <tr><td>管理後台</td><td>系統總覽、實證文獻庫（新增／編輯／刪除即時更新 RAG）、RAG 測試台（測試情境＋深度題、不限次數）、後端設定。</td></tr>
+    <tr><td>管理後台</td><td>系統總覽、實證文獻庫（新增／編輯／刪除即時更新 RAG）、RAG 測試台（測試情境＋深度題、不限次數）、回饋審核（待入帳期間駁回異常回饋）、後端設定。</td></tr>
   </table>
 </section>
 
@@ -423,7 +423,7 @@
       <div class="nodes">
         <div class="node"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></div><b>網頁版</b><small>Flutter Web</small></div>
         <div class="node"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/></svg></div><b>Android App</b><small>Flutter APK</small></div>
-        <div class="node"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10 5h4"/></svg></div><b>iPhone</b><small>Safari 加入主畫面</small></div>
+        <div class="node"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10 5h4"/></svg></div><b>iPhone</b><small>iOS App · 加入主畫面</small></div>
         <div class="node slate"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div><b>管理員</b><small>管理後台</small></div>
         <div class="node green"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg></div><b>親友</b><small>LINE 官方帳號</small></div>
       </div>
@@ -440,7 +440,7 @@
     <div class="tier">
       <div class="tier-label"><span>LAYER 2</span><b>應用服務層</b><small>Render 免費方案</small></div>
       <div class="core-body">
-        <div class="gateway"><b>FastAPI 後端</b><span>54 支 REST API</span><span>提供 Flutter 網頁</span><span>會員／管理員 HMAC 通行證</span><span>台灣時間</span></div>
+        <div class="gateway"><b>FastAPI 後端</b><span>55 支 REST API</span><span>提供 Flutter 網頁</span><span>會員／管理員 HMAC 通行證</span><span>台灣時間</span></div>
         <div class="mods">
           <div class="mod teal"><b>會員／第三方登入</b><code>social_auth</code><em class="ext">連 Google · Facebook · Apple</em></div>
           <div class="mod"><b>AI 守護 RAG</b><code>vector_store · rag_engine</code><em>TF-IDF 檢索實證文獻</em></div>
@@ -514,6 +514,7 @@
         <tr><td>會員身分</td><td>任何方式登入成功後核發 HMAC 簽章的會員通行證（30 天），App 以 <code>Authorization: Bearer</code> 送出；後端只依通行證判斷帳號，冒用別人的帳號一律拒絕，過期就回到登入頁。簽章金鑰來自環境變數 <code>AUTH_TOKEN_SECRET</code>。</td></tr>
         <tr><td>管理員</td><td>密碼由 <code>ADMIN_PASSWORD</code> 設定；登入後另核發管理員通行證（7 天），管理後台（文獻庫、RAG 設定、資料庫匯出、購物回饋審核）必須持有，RAG 測試台憑證不限次數。</td></tr>
         <tr><td>LINE</td><td>Webhook 以 <code>LINE_CHANNEL_SECRET</code> 驗證 <code>X-Line-Signature</code>，未設定金鑰時一律拒絕；一個 LINE 帳號只綁定一位親友。</td></tr>
+        <tr><td>購物回饋</td><td>金額在「前往購買」時由後端依商品查價鎖定，確認購買的 API 不接受金額；每天最多確認 3 筆，待入帳 7 天內管理員可駁回。</td></tr>
         <tr><td>隱私</td><td>網頁版 Cookie 同意（必要／第三方登入）、公開隱私權政策 <code>/privacy</code>；聊天只看得到自己與親友的對話。</td></tr>
       </table>
     </div>
@@ -538,7 +539,7 @@
       <div class="fn-mod"><div class="fn-head"><i>06</i><b>傳情小站</b></div><ul><li>一對一聊天室</li><li>同步推播到 LINE</li><li>接收親友回覆</li><li>快速片語</li></ul></div>
       <div class="fn-mod"><div class="fn-head"><i>07</i><b>暖幣存摺</b></div><ul><li>點數明細</li><li>關懷卡・小熊回饋</li><li>購物回饋入帳</li><li>折抵<small>1 點 = $1</small></li><li>點數效期 3 年</li></ul></div>
       <div class="fn-mod line"><div class="fn-head"><i>08</i><b>LINE 親友端</b></div><ul><li>綁定 GiftSense</li><li>接收關懷卡</li><li>回覆家人訊息</li><li>圖文選單</li></ul></div>
-      <div class="fn-mod admin"><div class="fn-head"><i>09</i><b>管理後台</b></div><ul><li>系統總覽</li><li>實證文獻庫<small>新增・編輯・刪除</small></li><li>RAG 測試台<small>不限次數</small></li><li>後端設定</li></ul></div>
+      <div class="fn-mod admin"><div class="fn-head"><i>09</i><b>管理後台</b></div><ul><li>系統總覽</li><li>實證文獻庫<small>新增・編輯・刪除</small></li><li>RAG 測試台<small>不限次數</small></li><li>回饋審核<small>待入帳駁回</small></li><li>後端設定</li></ul></div>
     </div>
     <div class="fn-legend">
       <span><i style="background:linear-gradient(135deg,#3B82F6,#1D4ED8)"></i>家人端（會員）</span>
@@ -573,7 +574,7 @@
   <div class="fa-login">
     <div class="fa-node fa-decide"><b>登入</b><small>帳號密碼 · Google · Facebook</small></div>
     <div class="fa-side"><div class="fa-h"><span>管理員</span></div>
-      <div class="fa-node fa-admin"><b>管理後台</b><small>系統總覽 · 文獻庫 · RAG 測試台</small></div></div>
+      <div class="fa-node fa-admin"><b>管理後台</b><small>系統總覽 · 文獻庫 · RAG 測試台 · 回饋審核</small></div></div>
   </div>
   <div class="fa-v" style="height:44px"><span>一般會員</span></div>
   <div class="fa-node fa-home"><b>今日守護首頁</b><small>每日打卡 · 中央氣象署天氣 · 依病況產生關懷叮嚀</small></div>
@@ -758,23 +759,23 @@ flowchart TD
   <p class="sub">全部採用免費方案與開源套件。</p>
   <div class="grid g2">
     <div>
-      <h3>前端（Flutter 3.44 · Dart）</h3>
+      <h3>前端（Flutter 3.47.7 · Dart）</h3>
       <table>
         <tr><th>技術</th><th>用途</th></tr>
-        <tr><td>Flutter Web / Android</td><td>一套程式碼產出網頁版與 APK；RWD 版面（桌面滿版、手機底部導覽列）</td></tr>
+        <tr><td>Flutter Web / Android / iOS</td><td>一套程式碼產出網頁版、APK 與 iOS App（Mac 上以 Xcode 編譯，免費 Apple ID 簽署安裝到 iPhone）；RWD 版面（桌面滿版、手機底部導覽列）</td></tr>
         <tr><td>Material 3 自訂主題</td><td>藍色主調、漸層、進場／浮起／呼吸光暈／數字跳動等動畫</td></tr>
         <tr><td>google_sign_in · flutter_facebook_auth · sign_in_with_apple</td><td>第三方登入</td></tr>
         <tr><td>image_picker</td><td>換頭貼（相簿／拍照），上傳前縮成 512px</td></tr>
         <tr><td>url_launcher · AppLifecycleListener</td><td>開啟藥局網站、偵測回到 App 以完成購物回饋</td></tr>
         <tr><td>shared_preferences · http · audioplayers</td><td>登入狀態與 Cookie 同意、API 呼叫、LINE 語音播放</td></tr>
-        <tr><td>PWA</td><td>iPhone「加入主畫面」：GiftSense 圖示、全螢幕、啟動畫面</td></tr>
+        <tr><td>PWA</td><td>沒有安裝 App 的 iPhone 也能用 Safari「加入主畫面」：GiftSense 圖示、全螢幕、啟動畫面</td></tr>
       </table>
     </div>
     <div>
       <h3>後端（Python · FastAPI）</h3>
       <table>
         <tr><th>技術</th><th>用途</th></tr>
-        <tr><td>FastAPI · Uvicorn · Pydantic</td><td>54 支 REST API、資料驗證</td></tr>
+        <tr><td>FastAPI · Uvicorn · Pydantic</td><td>55 支 REST API、資料驗證</td></tr>
         <tr><td>libsql（Turso）／sqlite3</td><td>雲端資料庫；自寫轉接層讓 SQLite 語法直接運作</td></tr>
         <tr><td>TF-IDF ＋ 餘弦相似度</td><td>實證文獻向量檢索（中文單字＋雙字詞）</td></tr>
         <tr><td>規則引擎</td><td>18 條藥物／食物／保健品交互作用規則、22 類病況快速提問、商品禁忌排除、否定詞判斷</td></tr>
@@ -1103,18 +1104,18 @@ flowchart TD
 
   <div class="panel" data-group="demo" id="d-ios">
     <ol class="steps">
-      <li><span class="time">1 分</span><span class="step-title">加入主畫面</span>
-        <div>iPhone Safari 開啟網站 → 下方出現「把 GiftSense 加入主畫面」提示 → 分享 → 加入主畫面。</div>
-        <div class="say">免費方案下，iPhone 以 PWA 方式使用，不需上架 App Store。</div>
-        <div class="expect">主畫面出現 GiftSense 圖示。</div></li>
-      <li><span class="time">0.5 分</span><span class="step-title">全螢幕啟動</span>
-        <div>從主畫面開啟：GiftSense 啟動畫面 → 全螢幕執行，沒有 Safari 網址列。</div></li>
+      <li><span class="time">0.5 分</span><span class="step-title">開啟 iOS App</span>
+        <div>iPhone 主畫面點 GiftSense 圖示（Mac 以 Xcode 編譯、免費 Apple ID 簽署安裝的 Release 版）→ 啟動畫面 → 以帳號密碼登入。</div>
+        <div class="say">網頁、Android 與 iOS 共用同一套 Flutter 程式碼與後端；免費 Apple ID 安裝的 App 每 7 天要在 Mac 重新安裝一次。</div>
+        <div class="expect">全螢幕的 GiftSense App，畫面與 Android 版一致。</div></li>
       <li><span class="time">1 分</span><span class="step-title">首頁與小熊</span>
-        <div>登入 → 首頁、天氣、小熊（點兩下）。</div></li>
+        <div>首頁、天氣、用藥安全雷達、小熊（點兩下）。</div></li>
       <li><span class="time">1 分</span><span class="step-title">換頭貼</span>
         <div>個人資料設定 → 點頭貼 → iOS 選擇「照片圖庫」或「拍照」。</div></li>
-      <li><span class="time">1 分</span><span class="step-title">說明原生 iOS 規劃</span>
-        <div>原生 iOS 專案已設定好（圖示、相簿權限、Facebook 設定），可在 Mac 以免費 Apple ID 安裝到自己的 iPhone；Apple 登入需加入 Apple Developer Program，因此目前顯示「尚未開放」。</div></li>
+      <li><span class="time">0.5 分</span><span class="step-title">沒有安裝 App 時</span>
+        <div>iPhone Safari 開啟網站 → 下方出現「把 GiftSense 加入主畫面」提示 → 分享 → 加入主畫面，以全螢幕使用網頁版。</div></li>
+      <li><span class="time">0.5 分</span><span class="step-title">說明上架規劃</span>
+        <div>上架 App Store 與 Apple 登入需加入 Apple Developer Program（每年 99 美元），因此 Apple 登入目前顯示「尚未開放」；iOS 上的 Google／Facebook 原生登入也待上架前設定。</div></li>
     </ol>
   </div>
 
@@ -1133,7 +1134,7 @@ flowchart TD
 
 </main>
 
-<footer>GiftSense 智慧關懷送禮 · 系統說明文件 · 2026/10/13</footer>
+<footer>GiftSense 智慧關懷送禮 · 系統說明文件 · 2026/10/15</footer>
 
 <script>
   // 導覽列：用 JS 捲動（在預覽視窗、iframe 中錨點連結會失效），並標示目前所在章節
