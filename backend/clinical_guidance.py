@@ -281,8 +281,8 @@ GUIDANCE_LITERATURES: List[Dict[str, Any]] = [
         "evidenceLevel": "臨床指引建議",
         "recommendedDose": "洗澡後 3 分鐘內擦保濕乳；用溫水、縮短洗澡時間；選擇無香料的清潔用品",
         "mechanism": "長輩皮脂分泌減少，冬天容易皮膚乾癢；規律使用保濕劑可以修復皮膚屏障、減少發炎與抓癢。",
-        "contraindications": "癢到影響睡眠、皮膚破皮流湯或大範圍紅疹要就醫；保健品對濕疹的實證有限，對特定食物過敏者要避開過敏原。",
-        "targetSymptoms": ["濕疹", "皮膚乾癢", "異位性皮膚炎", "皮膚保濕", "過敏體質", "冬季癢"],
+        "contraindications": "癢到影響睡眠、皮膚破皮流湯或大範圍紅疹要就醫；保健品對濕疹的實證有限，過敏體質者吃保健品前要先看成分標示，避開魚、蝦蟹、大豆、蜂膠等已知過敏原，新產品先少量試吃。",
+        "targetSymptoms": ["濕疹", "皮膚乾癢", "異位性皮膚炎", "皮膚保濕", "過敏體質", "過敏體質吃保健品", "冬季癢"],
         "citation": "Sidbury R, et al. Guidelines of care for the management of atopic dermatitis in adults with topical therapies. J Am Acad Dermatol. 2023;89(1):e1-e20."
     },
 ]
