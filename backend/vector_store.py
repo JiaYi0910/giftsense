@@ -175,9 +175,9 @@ FULL_CLINICAL_LITERATURES: List[Dict[str, Any]] = [
         "ingredient": "Active Vitamin B Complex (活性 B1 / 活化 B6 / 甲鈷胺 Methyl-B12)",
         "evidenceLevel": "Level 1 (隨機對照試驗與神經傳導檢查實證)",
         "recommendedDose": "B1 50mg + B6 50mg + 活性 B12 (甲鈷胺) 500-1,000μg / 每日",
-        "mechanism": "甲鈷胺 (Methylcobalamin) 作為輔酶參與髓鞘磷脂合成，促進受損周圍神經纖維再生與軸突傳導，改善糖尿病或退化引起的四肢發麻。",
-        "contraindications": "高劑量 B6 長期超過 200mg/日可能引發感覺神經病變；請依包裝建議劑量服用，尿液變深黃屬正常核黃素代謝現象。",
-        "targetSymptoms": ["手麻腳麻", "四肢末梢刺痛感", "慢性疲勞", "神經痛", "貧血頭暈"],
+        "mechanism": "甲鈷胺 (Methylcobalamin) 作為輔酶參與髓鞘磷脂合成，促進受損周圍神經纖維再生與軸突傳導，改善糖尿病或退化引起的四肢發麻。B 群也是醣類與胺基酸轉換成能量的輔酶，外食、飲食不均或作息不規律而攝取不足時，補充 B 群有助維持正常的能量代謝。",
+        "contraindications": "高劑量 B6 長期超過 200mg/日可能引發感覺神經病變；請依包裝建議劑量服用，尿液變深黃屬正常核黃素代謝現象。熬夜造成的疲勞仍要靠充足睡眠改善，B 群只能補足攝取不足，無法取代休息。",
+        "targetSymptoms": ["手麻腳麻", "四肢末梢刺痛感", "慢性疲勞", "熬夜容易疲勞", "補充 B 群", "神經痛", "貧血頭暈"],
         "citation": "Head KA. Peripheral neuropathy: pathogenic mechanisms and alternative therapies. Altern Med Rev. 2006;11(4):294-329."
     },
     {

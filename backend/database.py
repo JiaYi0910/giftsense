@@ -270,6 +270,8 @@ def init_db():
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
+    # 須在下方一次性補入指引文獻之前判斷，否則全新資料庫會只剩指引文獻、略過原本的國家級臨床文獻
+    knowledge_was_empty = cursor.execute("SELECT COUNT(*) FROM clinical_knowledge").fetchone()[0] == 0
 
     # 6. system_config 表格
     cursor.execute("""
@@ -419,6 +421,34 @@ def init_db():
             (json.dumps({"done_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}),)
         )
 
+    # 一次性：內建文獻的內容以程式碼為準重新同步（2026/10/15）
+    # 資料庫裡的內建文獻是早期匯入的版本（例如標題寫「長輩」），啟動時又以資料庫重建檢索索引，
+    # 造成線上檢索結果和程式碼不同。只更新內建文獻 id 的既有資料列，管理員新增的文獻與已刪除的內建文獻都不動
+    if not cursor.execute("SELECT 1 FROM system_config WHERE key = 'knowledge_sync_20261015'").fetchone():
+        try:
+            from vector_store import FULL_CLINICAL_LITERATURES as _builtin_lits
+        except Exception as e:
+            _builtin_lits = None
+            print("Notice: clinical knowledge sync deferred:", e)
+        if _builtin_lits:
+            for lit in _builtin_lits:
+                cursor.execute("""
+                UPDATE clinical_knowledge SET
+                    title = ?, authority = ?, category = ?, ingredient = ?,
+                    evidence_level = ?, recommended_dose = ?, mechanism = ?,
+                    contraindications = ?, target_symptoms_json = ?, citation = ?
+                WHERE id = ?
+                """, (
+                    lit["title"], lit.get("authority", ""), lit.get("category", ""), lit.get("ingredient", ""),
+                    lit.get("evidenceLevel", ""), lit.get("recommendedDose", ""), lit.get("mechanism", ""),
+                    lit.get("contraindications", ""), json.dumps(lit.get("targetSymptoms", []), ensure_ascii=False),
+                    lit.get("citation", ""), lit["id"]
+                ))
+            cursor.execute(
+                "INSERT OR REPLACE INTO system_config (key, value_json) VALUES ('knowledge_sync_20261015', ?)",
+                (json.dumps({"done_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")}),)
+            )
+
     # 一次性：快速提問改為依病況分類的新題庫，重新產生每位親友的提問
     if not cursor.execute("SELECT 1 FROM system_config WHERE key = 'quick_chips_v2_20261015'").fetchone():
         try:
@@ -476,8 +506,7 @@ def init_db():
             )
 
     # 全新資料庫時預先寫入國家級臨床文獻
-    cursor.execute("SELECT COUNT(*) FROM clinical_knowledge")
-    if cursor.fetchone()[0] == 0:
+    if knowledge_was_empty:
         try:
             from vector_store import FULL_CLINICAL_LITERATURES
             for lit in FULL_CLINICAL_LITERATURES:
