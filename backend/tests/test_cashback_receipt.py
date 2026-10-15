@@ -101,6 +101,12 @@ def gemini(monkeypatch):
     return fake
 
 
+@pytest.fixture(autouse=True)
+def no_daily_scan_limit(monkeypatch):
+    # 這裡的測試帳號一天會辨識很多張收據；每日上限在 test_cashback_admin.py 另外測試
+    monkeypatch.setattr(database, "RECEIPT_SCAN_DAILY_LIMIT", 10_000)
+
+
 def gemini_receipt(**overrides):
     """Gemini 會回傳的 JSON：預設是一張剛剛在大樹藥局買的電子發票"""
     n = next(_unique)

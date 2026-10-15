@@ -512,7 +512,7 @@
         <tr><td>密碼</td><td>以 bcrypt 雜湊儲存，資料庫不保存明文；舊資料於啟動時自動轉換。</td></tr>
         <tr><td>第三方登入</td><td>後端驗證 Google／Facebook／Apple 的憑證，不信任前端傳來的身分。</td></tr>
         <tr><td>會員身分</td><td>任何方式登入成功後核發 HMAC 簽章的會員通行證（30 天），App 以 <code>Authorization: Bearer</code> 送出；後端只依通行證判斷帳號，冒用別人的帳號一律拒絕，過期就回到登入頁。簽章金鑰來自環境變數 <code>AUTH_TOKEN_SECRET</code>。</td></tr>
-        <tr><td>管理員</td><td>密碼由 <code>ADMIN_PASSWORD</code> 設定；登入後另核發管理員通行證（7 天），管理後台（文獻庫、RAG 設定、資料庫匯出）必須持有，RAG 測試台憑證不限次數。</td></tr>
+        <tr><td>管理員</td><td>密碼由 <code>ADMIN_PASSWORD</code> 設定；登入後另核發管理員通行證（7 天），管理後台（文獻庫、RAG 設定、資料庫匯出、購物回饋審核）必須持有，RAG 測試台憑證不限次數。</td></tr>
         <tr><td>LINE</td><td>Webhook 以 <code>LINE_CHANNEL_SECRET</code> 驗證 <code>X-Line-Signature</code>，未設定金鑰時一律拒絕；一個 LINE 帳號只綁定一位親友。</td></tr>
         <tr><td>隱私</td><td>網頁版 Cookie 同意（必要／第三方登入）、公開隱私權政策 <code>/privacy</code>；聊天只看得到自己與親友的對話。</td></tr>
       </table>
@@ -1007,7 +1007,7 @@ flowchart TD
   <div class="st-node"><b>追蹤中</b><small><code>tracked</code> 已開啟藥局網站</small></div>
   <div class="st-arrow"><span>上傳收據，Gemini 辨識金額並通過檢查</span></div>
   <div class="st-node"><b>待入帳</b><small><code>pending</code> 7 天待入帳期</small></div>
-  <div class="st-split"><i><span>7 天期滿<br>自動寫入點數明細</span></i><i><span>上傳收據前<br>取消追蹤</span></i></div>
+  <div class="st-split"><i><span>7 天期滿<br>自動寫入點數明細</span></i><i><span>取消追蹤，或待入帳<br>期間管理員駁回</span></i></div>
   <div class="st-row">
     <div class="st-node ok"><b>已入帳</b><small><code>confirmed</code> 存入暖幣存摺</small></div>
     <div class="st-node no"><b>已取消</b><small><code>rejected</code> 不給點</small></div>
@@ -1015,6 +1015,7 @@ flowchart TD
 </div>
 <!-- state:end -->
   <div class="ok" style="margin-top:10px">防重複入帳：自動入帳時以「狀態仍為待入帳」作為更新條件，同一筆只會入帳一次；同一張收據圖片（SHA-256）與同一個訂單／發票號碼只能登錄一次。金額由伺服器辨識收據取得，使用者無法輸入或自行確認；伺服器不保存收據圖片。辨識需要環境變數 <code>GEMINI_API_KEY</code>。</div>
+  <div class="note" style="margin-top:10px">Gemini 免費額度保護：每位會員每天最多辨識 10 張收據（次數存在資料庫 <code>receipt_scan_usage</code>，重啟後仍有效）；重複的圖片、格式錯誤等送出前就擋下的上傳不算次數，辨識服務本身故障也會退回次數。<br>管理員審核：待入帳期間，管理後台「回饋審核」列出所有會員的待入帳回饋，發現退貨或收據可疑時填寫原因駁回（不給點數），會員會看到「未通過審核」與原因；同一張收據之後不能再登錄。期滿已自動入帳的回饋不能駁回。</div>
 
   <h3>使用點數</h3>
   <table>

@@ -324,6 +324,8 @@ ADMIN_ENDPOINTS = [
     ("POST", "/api/points", {"account": BOB, "amount": 999, "title": "自己加點"}),
     ("POST", "/api/points/add", {"account": BOB, "amount": 999, "title": "自己加點"}),
     ("POST", "/api/pharmacy/auto-order", {"product_name": "魚油", "price": 500}),
+    ("GET", "/api/admin/cashback/pending", None),
+    ("POST", "/api/admin/cashback/CB_X/reject", {"reason": "收據可疑"}),
 ]
 
 

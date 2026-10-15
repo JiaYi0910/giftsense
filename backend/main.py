@@ -41,6 +41,7 @@ from database import (
     unbind_recipient_line, find_recipient_line_id, get_line_binding_info, claim_reward,
     create_cashback_click, list_cashback_orders, check_cashback_receipt_upload, record_cashback_receipt,
     settle_due_cashback, cancel_tracked_cashback, CASHBACK_RATES, CASHBACK_PENDING_DAYS,
+    reserve_receipt_scan, release_receipt_scan, list_pending_cashback, reject_pending_cashback,
     add_family_message, list_family_messages, latest_family_card,
     set_user_avatar, AVATAR_MAX_LENGTH, check_in_user
 )
@@ -226,6 +227,9 @@ class CashbackActionRequest(BaseModel):
 class CashbackReceiptRequest(BaseModel):
     # 只收圖片；購物金額一律由伺服器辨識收據取得，用戶端送來的 amount 等欄位會被忽略
     image: str = ""  # data:image/...;base64,...
+
+class CashbackRejectRequest(BaseModel):
+    reason: str = ""
 
 class TFDACheckRequest(BaseModel):
     elder_name: str = "親友"
@@ -586,19 +590,29 @@ def api_upload_cashback_receipt(order_id: str, req: CashbackReceiptRequest, memb
     order, error = check_cashback_receipt_upload(order_id, member, receipt_hash)
     if error:
         return {"success": False, "retake": False, "message": error, "order": order}
+    # 每次辨識都會用到 Gemini 免費額度：每位會員每天限辨識 RECEIPT_SCAN_DAILY_LIMIT 張（上面擋下的不算）
+    allowed, scan_quota = reserve_receipt_scan(member)
+    if not allowed:
+        return {
+            "success": False, "retake": False, "limit_reached": True, "scan_quota": scan_quota, "order": order,
+            "message": (f"今天的收據辨識次數已用完（每天 {scan_quota['limit']} 次），請明天再上傳。"
+                        "這筆購物追蹤會保留，不影響回饋點數"),
+        }
     try:
         scan = scan_receipt(image_bytes, mime_type)
     except ReceiptScanError as e:
         print("收據辨識失敗:", e)
+        release_receipt_scan(member, scan_quota["date"])
         return {"success": False, "retake": False, "message": "收據辨識服務暫時無法使用，請稍後再試", "order": order}
     order, error, retake = record_cashback_receipt(order_id, member, scan, receipt_hash)
     if error:
-        return {"success": False, "retake": retake, "message": error, "order": order}
+        return {"success": False, "retake": retake, "message": error, "order": order, "scan_quota": scan_quota}
     return {
         "success": True,
         "message": (f"已登錄 {order['pharmacy']} 收據 ${order['order_amount']:,}，"
                     f"{order['points']} 點回饋將在 {CASHBACK_PENDING_DAYS} 天後自動入帳"),
         "order": order,
+        "scan_quota": scan_quota,
     }
 
 @app.post("/api/cashback/{order_id}/cancel")
@@ -608,6 +622,18 @@ def api_cancel_cashback(order_id: str, req: CashbackActionRequest, member: str =
     if error:
         return {"success": False, "message": error, "order": order}
     return {"success": True, "message": "已取消這筆購物追蹤", "order": order}
+
+# 管理後台：待入帳期間（7 天）可檢視所有會員的回饋，發現退貨或收據可疑時駁回（不給點數）
+@app.get("/api/admin/cashback/pending")
+def api_admin_pending_cashback(admin: str = Depends(current_admin)):
+    return {"success": True, "pending_days": CASHBACK_PENDING_DAYS, **list_pending_cashback()}
+
+@app.post("/api/admin/cashback/{order_id}/reject")
+def api_admin_reject_cashback(order_id: str, req: CashbackRejectRequest, admin: str = Depends(current_admin)):
+    order, error = reject_pending_cashback(order_id, admin, req.reason)
+    if error:
+        return {"success": False, "message": error, "order": order}
+    return {"success": True, "message": f"已駁回 {order['account']} 的 {order['pharmacy']} 回饋，不會入帳", "order": order}
 
 @app.get("/api/weather")
 def weather_forecast(city: str = "台北市", key: Optional[str] = None):
