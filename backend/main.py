@@ -294,7 +294,8 @@ def health_check():
         # 只回報是否已設定，不回傳金鑰本身
         "auth_token_secret": "configured" if _token_secret_base("member") else "missing",
         "line_channel_secret": "configured" if LINE_CHANNEL_SECRET else "missing",
-        "line_channel_access_token": "configured" if LINE_CHANNEL_ACCESS_TOKEN else "missing"
+        "line_channel_access_token": "configured" if LINE_CHANNEL_ACCESS_TOKEN else "missing",
+        "gemini_api_key": "configured" if os.environ.get("GEMINI_API_KEY", "").strip() else "missing"  # 收據辨識
     }
 
 # =========================================================================

@@ -440,5 +440,13 @@ def test_privacy_policy_mentions_gemini():
     assert "Gemini" in html and "收據" in html
 
 
+def test_health_reports_gemini_key_without_revealing_it(monkeypatch):
+    assert client.get("/api/health").json()["gemini_api_key"] == "missing"
+    monkeypatch.setenv("GEMINI_API_KEY", "test-only-gemini-key")
+    res = client.get("/api/health")
+    assert res.json()["gemini_api_key"] == "configured"
+    assert "test-only-gemini-key" not in res.text
+
+
 if __name__ == "__main__":
     sys.exit(pytest.main([__file__, "-q"]))
