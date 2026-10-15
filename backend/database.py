@@ -14,7 +14,8 @@ os.environ["TZ"] = "CST-8"
 if hasattr(time, "tzset"):
     time.tzset()
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "caregift.db")
+# 測試可用 GIFTSENSE_DB_PATH 指向暫存複本，避免改到 repo 內的 caregift.db
+DB_PATH = os.getenv("GIFTSENSE_DB_PATH") or os.path.join(os.path.dirname(os.path.abspath(__file__)), "caregift.db")
 
 # 💡 暖心選物商品資料（藥局官網實際查價）統一放在 product_catalog.py，init_db 啟動時同步寫入
 from product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
@@ -988,11 +989,16 @@ def create_order(order_id: str, items: list, total: str, recipient: str, pharmac
     conn.close()
     return {"id": order_id, "status": status}
 
-def cancel_order(order_id: str):
+def cancel_order(order_id: str, user_account: str) -> bool:
+    """只能取消自己帳號的訂單；找不到（或不是自己的）回傳 False"""
     conn = get_db()
-    conn.execute("UPDATE orders SET status = '系統已連線藥局辦理撤單 (全額退款成功)' WHERE id = ?", (order_id,))
+    cur = conn.execute(
+        "UPDATE orders SET status = '系統已連線藥局辦理撤單 (全額退款成功)' WHERE id = ? AND user_account = ?",
+        (order_id, user_account)
+    )
     conn.commit()
     conn.close()
+    return (cur.rowcount or 0) > 0
 
 TAIWAN_TZ = timezone(timedelta(hours=8))
 

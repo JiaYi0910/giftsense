@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -148,7 +148,7 @@ class GuardQueryRequest(BaseModel):
     account: Optional[str] = None
 
 class GuardRedeemRequest(BaseModel):
-    account: str
+    account: Optional[str] = None
 
 class AutoOrderRequest(BaseModel):
     product_name: str
@@ -202,7 +202,7 @@ class GreetingGenerateRequest(BaseModel):
     variant: Optional[int] = 0
 
 class FamilyMessageRequest(BaseModel):
-    sender: str = "我"
+    sender: Optional[str] = None  # 寄件者帳號（僅用來核對，身分以會員通行證為準）
     elder: str = "親友"
     content: str
     type: Optional[str] = "card"
@@ -217,7 +217,7 @@ class ReferralClickRequest(BaseModel):
     account: Optional[str] = None
 
 class CashbackActionRequest(BaseModel):
-    account: str
+    account: Optional[str] = None
     amount: Optional[int] = None
 
 class TFDACheckRequest(BaseModel):
@@ -283,44 +283,123 @@ def health_check():
         "python": platform.python_version(),
         "literatures_count": db_stats["counts"].get("clinical_knowledge", len(CLINICAL_LITERATURES)),
         "vector_engine": "MedicalVectorStore (High-Dimensional Cosine)",
-        "tfda_engine": "TFDAService (Official Black Box Registry)"
+        "tfda_engine": "TFDAService (Official Black Box Registry)",
+        # 只回報是否已設定，不回傳金鑰本身
+        "auth_token_secret": "configured" if _token_secret_base("member") else "missing"
     }
 
 # =========================================================================
-# 管理員通行證：只有用帳號密碼登入的管理員才拿得到（簽章驗證，7 天有效）
-# 用途：RAG 測試台不限次數。只送 account=admin 不會被當成管理員。
+# 登入通行證（HMAC 簽章 + 到期時間）
+# - 會員通行證：任何方式登入成功都會核發（30 天有效）。會員 API 一律以它判斷身分，
+#   前端送來的 account 只用來核對，不再採信；改 localStorage 的帳號也冒充不了別人。
+# - 管理員通行證：只有用帳號密碼登入的管理員才拿得到（7 天有效），用於管理後台與
+#   RAG 測試台不限次數。只送 account=admin 不會被當成管理員。
+# 簽章金鑰來自環境變數 AUTH_TOKEN_SECRET（Render → Environment），不寫在程式碼裡；
+# 兩種通行證用不同的衍生金鑰，會員通行證不能拿來當管理員通行證。
 # =========================================================================
+MEMBER_TOKEN_TTL = 30 * 24 * 3600
 ADMIN_TOKEN_TTL = 7 * 24 * 3600
-_ADMIN_PROCESS_SECRET = os.urandom(32)
+_TOKEN_PROCESS_SECRET = os.urandom(32)
 
 
-def _admin_token_key() -> bytes:
-    base = os.getenv("ADMIN_TOKEN_SECRET") or os.getenv("ADMIN_PASSWORD") or ""
+def _token_secret_base(kind: str) -> str:
+    base = os.getenv("AUTH_TOKEN_SECRET") or os.getenv("ADMIN_TOKEN_SECRET") or ""
+    if not base and kind == "admin":
+        base = os.getenv("ADMIN_PASSWORD") or ""  # 相容舊設定：管理員通行證原本以管理員密碼衍生
+    return base
+
+
+def _token_key(kind: str) -> bytes:
+    base = _token_secret_base(kind)
     if not base:
-        return _ADMIN_PROCESS_SECRET  # 未設定時每次重啟都會失效，需重新登入
-    return hashlib.sha256(f"giftsense-admin-token|{base}".encode()).digest()
+        # 未設定時每次重啟都會失效，需重新登入
+        return hashlib.sha256(_TOKEN_PROCESS_SECRET + kind.encode()).digest()
+    return hashlib.sha256(f"giftsense-{kind}-token|{base}".encode()).digest()
 
 
-def issue_admin_token(account: str) -> str:
-    payload = f"{account}|{int(time.time()) + ADMIN_TOKEN_TTL}"
-    sig = hmac.new(_admin_token_key(), payload.encode(), hashlib.sha256).hexdigest()
+def _sign_token(kind: str, account: str, ttl: int) -> str:
+    payload = f"{account}|{int(time.time()) + ttl}"
+    sig = hmac.new(_token_key(kind), payload.encode(), hashlib.sha256).hexdigest()
     return base64.urlsafe_b64encode(payload.encode()).decode().rstrip("=") + "." + sig
 
 
-def verify_admin_token(token: Optional[str], account: Optional[str]) -> bool:
+def _token_account(kind: str, token: Optional[str]) -> Optional[str]:
+    """簽章正確且未過期時回傳通行證上的帳號，否則回傳 None"""
     try:
         encoded, sig = (token or "").split(".", 1)
         payload = base64.urlsafe_b64decode(encoded + "=" * (-len(encoded) % 4)).decode()
-        expected = hmac.new(_admin_token_key(), payload.encode(), hashlib.sha256).hexdigest()
+        expected = hmac.new(_token_key(kind), payload.encode(), hashlib.sha256).hexdigest()
         if not hmac.compare_digest(sig, expected):
-            return False
-        token_account, exp = payload.rsplit("|", 1)
-        if int(exp) < time.time() or token_account != (account or ""):
-            return False
-        profile = get_user_profile(token_account)
-        return bool(profile) and profile.get("role") == "admin"
+            return None
+        account, exp = payload.rsplit("|", 1)
+        if not account or int(exp) < time.time():
+            return None
+        return account
     except Exception:
+        return None
+
+
+def issue_member_token(account: str) -> str:
+    return _sign_token("member", account, MEMBER_TOKEN_TTL)
+
+
+def issue_admin_token(account: str) -> str:
+    return _sign_token("admin", account, ADMIN_TOKEN_TTL)
+
+
+def verify_admin_token(token: Optional[str], account: Optional[str]) -> bool:
+    token_account = _token_account("admin", token)
+    if not token_account or token_account != (account or ""):
         return False
+    profile = get_user_profile(token_account)
+    return bool(profile) and profile.get("role") == "admin"
+
+
+if not _token_secret_base("member"):
+    print("【警告】未設定 AUTH_TOKEN_SECRET：會員登入通行證在伺服器重啟後會失效，所有人都要重新登入")
+
+
+def _request_member_token(request: Request) -> str:
+    auth = request.headers.get("authorization", "")
+    if auth[:7].lower() == "bearer ":
+        return auth[7:].strip()
+    return request.headers.get("x-user-token", "").strip()
+
+
+def current_member(request: Request) -> str:
+    """會員 API 的身分來源：Authorization: Bearer <會員通行證>（或 X-User-Token）"""
+    account = _token_account("member", _request_member_token(request))
+    if not account:
+        raise HTTPException(status_code=401, detail="請先登入（登入已過期或無效）")
+    return account
+
+
+def current_admin(request: Request) -> str:
+    """管理後台 API：需要有效的管理員通行證（X-Admin-Token）"""
+    account = _token_account("admin", request.headers.get("x-admin-token"))
+    profile = get_user_profile(account) if account else None
+    if not profile or profile.get("role") != "admin":
+        raise HTTPException(status_code=401, detail="需要管理員登入")
+    return account
+
+
+def _ensure_same_account(member: str, claimed: Any):
+    # 舊版前端仍會送 account；若和通行證上的帳號不同，代表想讀寫別人的資料
+    claimed = str(claimed or "").strip()
+    if claimed and claimed != member:
+        raise HTTPException(status_code=403, detail="無權存取其他會員的資料")
+
+
+def _owned_recipient(rec_id: str, member: str) -> dict:
+    # 不是自己的親友一律回 404，不透露這筆資料是否存在
+    rec = get_recipient_by_id(rec_id)
+    if not rec or rec.get("user_account") != member:
+        raise HTTPException(status_code=404, detail="Recipient not found")
+    return rec
+
+
+def _login_result(user: dict, message: str) -> dict:
+    return {"success": True, "message": message, "user": user, "user_token": issue_member_token(user["account"])}
 
 
 @app.post("/api/auth/login")
@@ -328,7 +407,7 @@ def api_login(req: LoginRequest):
     user = authenticate_user(req.account, req.password)
     if not user:
         return {"success": False, "message": "帳號或密碼錯誤，請重新確認！"}
-    result = {"success": True, "message": f"歡迎回來，{user['name']}！", "user": user}
+    result = _login_result(user, f"歡迎回來，{user['name']}！")
     if user.get("role") == "admin":
         result["admin_token"] = issue_admin_token(user["account"])
     return result
@@ -338,33 +417,27 @@ def api_register(req: RegisterRequest):
     user = register_user(req.account, req.password, req.name, req.role or "user")
     if not user:
         return {"success": False, "message": "此帳號已存在，請直接登入！"}
-    return {"success": True, "message": f"註冊成功！已發放新會員 {format_points(SIGNUP_BONUS_POINTS)} 點獎勵！", "user": user}
+    return _login_result(user, f"註冊成功！已發放新會員 {format_points(SIGNUP_BONUS_POINTS)} 點獎勵！")
 
 @app.get("/api/auth/profile")
-def api_user_profile(account: str = "test"):
-    profile = get_user_profile(account)
+def api_user_profile(account: Optional[str] = None, member: str = Depends(current_member)):
+    _ensure_same_account(member, account)
+    profile = get_user_profile(member)
     if not profile:
         raise HTTPException(status_code=404, detail="User not found")
     return {"success": True, "profile": profile}
 
-def _guard_quota_key(account: Optional[str], request: Request) -> str:
-    # 💡 有登入帳號時依帳號計算；未登入才退回以來源 IP 計算
-    if account and account.strip():
-        return account.strip()
-    forwarded = request.headers.get("x-forwarded-for", "")
-    client_ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "unknown")
-    return f"ip:{client_ip}"
-
 @app.post("/api/guard/query")
-def guard_query(req: GuardQueryRequest, request: Request):
+def guard_query(req: GuardQueryRequest, request: Request, member: str = Depends(current_member)):
+    _ensure_same_account(member, req.account)
     if not req.query.strip():
         raise HTTPException(status_code=400, detail="Query cannot be empty")
 
     # 管理員（持有效通行證）在 RAG 測試台不限次數
-    if verify_admin_token(request.headers.get("x-admin-token"), req.account):
+    if verify_admin_token(request.headers.get("x-admin-token"), member):
         allowed, quota = True, {"unlimited": True, "remaining": None, "limit": None}
     else:
-        allowed, quota = consume_ai_guard_quota(_guard_quota_key(req.account, request), AI_GUARD_DAILY_LIMIT)
+        allowed, quota = consume_ai_guard_quota(member, AI_GUARD_DAILY_LIMIT)
     if not allowed:
         raise HTTPException(
             status_code=429,
@@ -380,11 +453,12 @@ def guard_query(req: GuardQueryRequest, request: Request):
     return result
 
 @app.get("/api/guard/quota")
-def guard_quota(request: Request, account: Optional[str] = None):
-    if verify_admin_token(request.headers.get("x-admin-token"), account):
+def guard_quota(request: Request, account: Optional[str] = None, member: str = Depends(current_member)):
+    _ensure_same_account(member, account)
+    if verify_admin_token(request.headers.get("x-admin-token"), member):
         quota = {"unlimited": True, "remaining": None, "limit": None}
     else:
-        quota = get_ai_guard_quota(_guard_quota_key(account, request), AI_GUARD_DAILY_LIMIT)
+        quota = get_ai_guard_quota(member, AI_GUARD_DAILY_LIMIT)
     return {
         "success": True,
         "quota": quota,
@@ -393,15 +467,16 @@ def guard_quota(request: Request, account: Optional[str] = None):
     }
 
 @app.post("/api/guard/redeem")
-def guard_redeem(req: GuardRedeemRequest):
-    profile = get_user_profile(req.account)
+def guard_redeem(req: GuardRedeemRequest, member: str = Depends(current_member)):
+    _ensure_same_account(member, req.account)
+    profile = get_user_profile(member)
     if not profile:
         raise HTTPException(status_code=404, detail="User not found")
     if (profile.get("points") or 0) < AI_GUARD_REDEEM_COST:
         return {"success": False, "message": f"點數不足，兌換需要 {AI_GUARD_REDEEM_COST} 點"}
 
-    add_points_transaction(account=req.account, amount=-AI_GUARD_REDEEM_COST, title=f"兌換 AI 守護助理詢問 {AI_GUARD_REDEEM_EXTRA} 次")
-    quota = add_ai_guard_bonus(req.account, AI_GUARD_REDEEM_EXTRA, AI_GUARD_DAILY_LIMIT)
+    add_points_transaction(account=member, amount=-AI_GUARD_REDEEM_COST, title=f"兌換 AI 守護助理詢問 {AI_GUARD_REDEEM_EXTRA} 次")
+    quota = add_ai_guard_bonus(member, AI_GUARD_REDEEM_EXTRA, AI_GUARD_DAILY_LIMIT)
     return {
         "success": True,
         "message": f"已使用 {AI_GUARD_REDEEM_COST} 點兌換 {AI_GUARD_REDEEM_EXTRA} 次詢問！",
@@ -429,20 +504,22 @@ def pharmacy_search(q: str = ""):
 def pharmacy_recommended(elder_name: str = "親友", condition: str = "日常養生"):
     return get_recommended_products_by_condition(elder_name=elder_name, condition=condition)
 
+# 舊版代購示範（App 已不使用）：會寫入訂單並發點數，限管理員
 @app.post("/api/pharmacy/auto-order")
-def pharmacy_auto_order(req: AutoOrderRequest):
+def pharmacy_auto_order(req: AutoOrderRequest, admin: str = Depends(current_admin)):
     return execute_auto_order(
         product_name=req.product_name, price=req.price,
         pharmacy=req.pharmacy, recipient=req.recipient
     )
 
 @app.post("/api/pharmacy/referral-click")
-def pharmacy_referral_click(req: ReferralClickRequest):
+def pharmacy_referral_click(req: ReferralClickRequest, member: str = Depends(current_member)):
     # 💡 ShopBack 模式：點擊只建立「購物追蹤」，確認有購物後才回饋點數（不再點擊就送點）
-    if not req.account or not get_user_profile(req.account):
+    _ensure_same_account(member, req.account)
+    if not get_user_profile(member):
         return {"success": False, "message": "請先登入，才能追蹤購物回饋", "official_url": req.official_url}
     order = create_cashback_click(
-        account=req.account, pharmacy=req.pharmacy, product_name=req.product_name,
+        account=member, pharmacy=req.pharmacy, product_name=req.product_name,
         est_price=req.price, recipient=req.recipient, official_url=req.official_url
     )
     return {
@@ -454,24 +531,25 @@ def pharmacy_referral_click(req: ReferralClickRequest):
 
 # 購物回饋（ShopBack 模式，目前以模擬方式示範藥局回傳與確認）
 @app.get("/api/cashback")
-def api_list_cashback(account: str = ""):
-    if not account:
-        return {"success": True, "orders": [], "summary": {"tracked": 0, "pending_points": 0, "confirmed_points": 0}}
-    return {"success": True, "rates": CASHBACK_RATES, **list_cashback_orders(account)}
+def api_list_cashback(account: Optional[str] = None, member: str = Depends(current_member)):
+    _ensure_same_account(member, account)
+    return {"success": True, "rates": CASHBACK_RATES, **list_cashback_orders(member)}
 
 @app.post("/api/cashback/{order_id}/simulate-purchase")
-def api_simulate_cashback_purchase(order_id: str, req: CashbackActionRequest):
-    order, error = simulate_cashback_purchase(order_id, req.account, req.amount or 0)
+def api_simulate_cashback_purchase(order_id: str, req: CashbackActionRequest, member: str = Depends(current_member)):
+    _ensure_same_account(member, req.account)
+    order, error = simulate_cashback_purchase(order_id, member, req.amount or 0)
     if error:
         return {"success": False, "message": error, "order": order}
     return {"success": True, "message": f"已模擬藥局回傳訂單 ${order['order_amount']:,}，預計回饋 {order['points']} 點（待藥局確認）", "order": order}
 
 @app.post("/api/cashback/{order_id}/simulate-confirm")
-def api_simulate_cashback_confirm(order_id: str, req: CashbackActionRequest):
-    order, error = settle_cashback(order_id, req.account, approve=True)
+def api_simulate_cashback_confirm(order_id: str, req: CashbackActionRequest, member: str = Depends(current_member)):
+    _ensure_same_account(member, req.account)
+    order, error = settle_cashback(order_id, member, approve=True)
     if error:
         return {"success": False, "message": error, "order": order}
-    profile = get_user_profile(req.account)
+    profile = get_user_profile(member)
     return {
         "success": True,
         "message": f"藥局已確認訂單，{order['points']} 點回饋已入帳！",
@@ -480,8 +558,9 @@ def api_simulate_cashback_confirm(order_id: str, req: CashbackActionRequest):
     }
 
 @app.post("/api/cashback/{order_id}/simulate-cancel")
-def api_simulate_cashback_cancel(order_id: str, req: CashbackActionRequest):
-    order, error = settle_cashback(order_id, req.account, approve=False)
+def api_simulate_cashback_cancel(order_id: str, req: CashbackActionRequest, member: str = Depends(current_member)):
+    _ensure_same_account(member, req.account)
+    order, error = settle_cashback(order_id, member, approve=False)
     if error:
         return {"success": False, "message": error, "order": order}
     return {"success": True, "message": "已模擬訂單取消／退貨，這筆不會回饋點數", "order": order}
@@ -492,18 +571,19 @@ def weather_forecast(city: str = "台北市", key: Optional[str] = None):
     return {"success": True, "weather": weather}
 
 @app.get("/api/recipients")
-def list_recipients(account: str = "test"):
-    return {"success": True, "recipients": get_all_recipients(user_account=account)}
+def list_recipients(account: Optional[str] = None, member: str = Depends(current_member)):
+    _ensure_same_account(member, account)
+    return {"success": True, "recipients": get_all_recipients(user_account=member)}
 
 @app.post("/api/recipients")
-def create_new_recipient(request: Request, data: dict):
+def create_new_recipient(data: dict, member: str = Depends(current_member)):
+    _ensure_same_account(member, data.get("user_account"))
     try:
-        # 💡 明確從前端 payload 提取對應欄位，並帶入當前登入的使用者帳號
+        # 💡 明確從前端 payload 提取對應欄位，親友一律掛在通行證上的帳號底下
         name = data.get("name")
         condition = data.get("condition")
         phone = data.get("phone", "")
         birthday = data.get("birthday", "")
-        user_account = data.get("user_account", "test")
         quick_tags = data.get("quick_tags")
 
         rec = add_recipient(
@@ -511,7 +591,7 @@ def create_new_recipient(request: Request, data: dict):
             condition=condition,
             phone=phone,
             birthday=birthday,
-            user_account=user_account,
+            user_account=member,
             quick_tags=quick_tags
         )
         return {"success": True, "recipient": rec}
@@ -519,10 +599,8 @@ def create_new_recipient(request: Request, data: dict):
         return {"success": False, "message": str(e)}
 
 @app.put("/api/recipients/{rec_id}")
-def edit_recipient(rec_id: str, req: RecipientUpdateRequest):
-    row = get_recipient_by_id(rec_id)
-    if not row:
-        raise HTTPException(status_code=404, detail="Recipient not found")
+def edit_recipient(rec_id: str, req: RecipientUpdateRequest, member: str = Depends(current_member)):
+    row = _owned_recipient(rec_id, member)
 
     new_name = req.name if req.name is not None else row["name"]
     new_condition = req.condition if req.condition is not None else row["condition"]
@@ -537,16 +615,15 @@ def edit_recipient(rec_id: str, req: RecipientUpdateRequest):
     return {"success": True, "recipient": rec}
 
 @app.delete("/api/recipients/{rec_id}")
-def remove_recipient(rec_id: str):
+def remove_recipient(rec_id: str, member: str = Depends(current_member)):
+    _owned_recipient(rec_id, member)
     delete_recipient(rec_id=rec_id)
     return {"success": True, "deleted_id": rec_id}
 
 # 親友專屬快速提問晶片（臨床規則 + AI 雙軌）
 @app.get("/api/recipients/{rec_id}/chips")
-def get_recipient_chips_endpoint(rec_id: str):
-    rec = get_recipient_by_id(rec_id)
-    if not rec:
-        raise HTTPException(status_code=404, detail="Recipient not found")
+def get_recipient_chips_endpoint(rec_id: str, member: str = Depends(current_member)):
+    rec = _owned_recipient(rec_id, member)
     chips = rec.get("quick_tags")
     if not chips:
         chips = get_clinical_rule_chips(rec["condition"], rec["name"])
@@ -561,8 +638,10 @@ def get_recipient_chips_endpoint(rec_id: str):
     }
 
 @app.post("/api/recipients/{rec_id}/generate-chips")
-def generate_recipient_chips_endpoint(rec_id: str, req: GenerateChipsRequest):
+def generate_recipient_chips_endpoint(rec_id: str, req: GenerateChipsRequest, member: str = Depends(current_member)):
     rec = get_recipient_by_id(rec_id)
+    if rec and rec.get("user_account") != member:
+        raise HTTPException(status_code=404, detail="Recipient not found")
     elder_name = req.elder_name or (rec["name"] if rec else "親友")
     elder_condition = req.elder_condition or (rec["condition"] if rec else "日常養生")
 
@@ -594,28 +673,31 @@ def get_suggested_chips_query(condition: str = "日常養生", name: str = "親�
     }
 
 @app.get("/api/orders")
-def list_orders():
-    return {"success": True, "orders": get_all_orders()}
+def list_orders(member: str = Depends(current_member)):
+    return {"success": True, "orders": get_all_orders(user_account=member)}
 
 @app.post("/api/orders")
-def save_new_order(req: OrderCreateRequest):
+def save_new_order(req: OrderCreateRequest, member: str = Depends(current_member)):
     ord_res = create_order(
         order_id=req.order_id, items=req.items, total=req.total,
-        recipient=req.recipient, pharmacy=req.pharmacy or "連鎖藥局"
+        recipient=req.recipient, pharmacy=req.pharmacy or "連鎖藥局", user_account=member
     )
     return {"success": True, "order": ord_res}
 
 @app.post("/api/orders/{order_id}/cancel")
-def cancel_existing_order(order_id: str):
-    cancel_order(order_id=order_id)
+def cancel_existing_order(order_id: str, member: str = Depends(current_member)):
+    if not cancel_order(order_id=order_id, user_account=member):
+        raise HTTPException(status_code=404, detail="Order not found")
     return {"success": True, "canceled_id": order_id}
 
 @app.get("/api/points")
-def list_points(account: str = "test"):
-    return {"success": True, "ledger": get_points_ledger(account=account)}
+def list_points(account: Optional[str] = None, member: str = Depends(current_member)):
+    _ensure_same_account(member, account)
+    return {"success": True, "ledger": get_points_ledger(account=member)}
 
+# 手動加減點數（App 不使用；一般會員的點數只能由後端規則發放），限管理員
 @app.post("/api/points")
-def add_points_tx(req: PointsTxRequest):
+def add_points_tx(req: PointsTxRequest, admin: str = Depends(current_admin)):
     add_points_transaction(account=req.account, amount=req.amount, title=req.title)
     return {"success": True, "account": req.account, "amount": req.amount}
 
@@ -637,32 +719,33 @@ def list_clinical_knowledge():
         items = CLINICAL_LITERATURES
     return {"success": True, "total": len(items), "source": "SQLite (caregift.db)", "literatures": items}
 
+# 以下為管理後台（實證文獻庫、RAG 設定、資料庫主控台）的寫入與匯出，需管理員通行證
 @app.post("/api/knowledge")
-def add_or_update_clinical_knowledge(req: KnowledgeItemRequest):
+def add_or_update_clinical_knowledge(req: KnowledgeItemRequest, admin: str = Depends(current_admin)):
     item = save_clinical_knowledge(req.dict())
     _refresh_rag_index()
     return {"success": True, "item": item}
 
 @app.post("/api/knowledge/sync")
-def sync_clinical_knowledge(req: KnowledgeSyncRequest):
+def sync_clinical_knowledge(req: KnowledgeSyncRequest, admin: str = Depends(current_admin)):
     saved_count = batch_save_clinical_knowledge(req.literatures)
     _refresh_rag_index()
     return {"success": True, "saved_count": saved_count}
 
 @app.post("/api/knowledge/reset")
-def reset_clinical_knowledge():
+def reset_clinical_knowledge(admin: str = Depends(current_admin)):
     res = reset_clinical_knowledge_to_defaults()
     _refresh_rag_index()
     return {"success": True, "total": len(res), "literatures": res}
 
 @app.delete("/api/knowledge/{item_id}")
-def remove_clinical_knowledge(item_id: str):
+def remove_clinical_knowledge(item_id: str, admin: str = Depends(current_admin)):
     delete_clinical_knowledge(item_id)
     _refresh_rag_index()
     return {"success": True, "deleted_id": item_id}
 
 @app.get("/api/config/rag")
-def get_rag_configuration():
+def get_rag_configuration(admin: str = Depends(current_admin)):
     cfg = get_system_config("rag_config", default={
         "topK": 3, "simThreshold": 0.25, "temperature": 0.3, "model": "builtin", "apiKey": "",
         "systemPrompt": "你是一位嚴謹客觀的臨床醫療與保健營養專家。請根據檢索到的國家級文獻 [1][2] 提供建議，嚴禁編造事實。若親友有服用處方藥，必須嚴格審核抗凝血與撞藥禁忌，並附上醫療免責聲明。"
@@ -670,16 +753,16 @@ def get_rag_configuration():
     return {"success": True, "config": cfg}
 
 @app.post("/api/config/rag")
-def save_rag_configuration(req: RAGConfigRequest):
+def save_rag_configuration(req: RAGConfigRequest, admin: str = Depends(current_admin)):
     set_system_config("rag_config", req.dict())
     return {"success": True, "config": req.dict()}
 
 @app.get("/api/db/stats")
-def database_statistics():
+def database_statistics(admin: str = Depends(current_admin)):
     return {"success": True, "stats": get_database_stats()}
 
 @app.get("/api/db/export")
-def database_export():
+def database_export(admin: str = Depends(current_admin)):
     return export_full_database()
 
 @app.post("/api/greeting/generate")
@@ -694,22 +777,23 @@ def greeting_generate(req: GreetingGenerateRequest):
     )
 
 @app.get("/api/messages")
-def get_family_messages(elder: str = "", account: str = ""):
+def get_family_messages(elder: str = "", account: Optional[str] = None, member: str = Depends(current_member)):
     # 💡 只回傳「這個帳號 × 這位親友」的一對一對話，避免不同使用者或不同親友的訊息混在一起
-    if not account.strip():
-        return {"success": True, "messages": []}
-    return {"success": True, "messages": list_family_messages(account.strip(), elder.strip())}
+    _ensure_same_account(member, account)
+    return {"success": True, "messages": list_family_messages(member, elder.strip())}
 
 @app.post("/api/messages")
-def post_family_message(req: FamilyMessageRequest):
+def post_family_message(req: FamilyMessageRequest, member: str = Depends(current_member)):
+    # sender 是寄件者帳號：一律以通行證上的帳號為準
+    _ensure_same_account(member, req.sender)
     timestamp_str = time.strftime("%Y-%m-%d %H:%M:%S")  # 一律以伺服器的台灣時間為準
     content_text = req.content
-    
-    sender_display = req.sender if req.sender and req.sender.strip() else "家人"
+
+    sender_display = member
     conn = get_db()
-    user_row = conn.execute("SELECT name FROM users WHERE account = ?", (req.sender,)).fetchone()
+    user_row = conn.execute("SELECT name FROM users WHERE account = ?", (member,)).fetchone()
     conn.close()
-    
+
     if user_row and user_row["name"]:
         sender_display = user_row["name"]
 
@@ -728,14 +812,14 @@ def post_family_message(req: FamilyMessageRequest):
         "content": content_text,
         "type": req.type or "card",
         "timestamp": timestamp_str,
-        "owner_account": req.sender,
+        "owner_account": member,
         "from_role": "family",
     }
     add_family_message(new_msg)
-    
-    if req.sender != req.elder:
+
+    if member != req.elder:
         # 💡 只推播給寄件者帳號底下的這位親友，避免不同使用者的同名親友收到別人的訊息
-        target_line_id = find_recipient_line_id(req.elder, req.sender)
+        target_line_id = find_recipient_line_id(req.elder, member)
         if target_line_id:
             url = "https://api.line.me/v2/bot/message/push"
             headers = {
@@ -1062,7 +1146,7 @@ def _line_reply(reply_token: Optional[str], user_id: str, messages: List[Dict[st
         print("LINE 推播失敗:", e)
 
 @app.post("/api/points/add")
-def api_add_points_alias(req: PointsTxRequest):
+def api_add_points_alias(req: PointsTxRequest, admin: str = Depends(current_admin)):
     target_account = req.account if req.account else "test"
     add_points_transaction(account=target_account, amount=req.amount, title=req.title)
     profile = get_user_profile(target_account)
@@ -1070,56 +1154,56 @@ def api_add_points_alias(req: PointsTxRequest):
     return {"success": True, "message": f"成功新增 {format_points(req.amount)} 點！", "new_points": updated_points}
 
 @app.get("/api/user/profile")
-def api_get_user_profile(account: str = None):
-    if not account or not account.strip():
-        raise HTTPException(status_code=400, detail="必須提供有效的會員帳號 (account)")
-        
-    profile = get_user_profile_by_account(account)
+def api_get_user_profile(account: Optional[str] = None, member: str = Depends(current_member)):
+    _ensure_same_account(member, account)
+    profile = get_user_profile_by_account(member)
     if not profile:
         raise HTTPException(status_code=404, detail="User not found")
     return {"success": True, "profile": profile}
 
 @app.put("/api/user/profile")
-def api_update_user_profile(req: dict):
-    account = req.get("account")
+def api_update_user_profile(req: dict, member: str = Depends(current_member)):
+    _ensure_same_account(member, req.get("account"))
     name = req.get("name")
     phone = req.get("phone", "")
     birthday = req.get("birthday", "")
     bio = req.get("bio", "")
     avatar = req.get("avatar")  # 沒帶就維持原本的頭貼（上傳頭貼改用 /api/user/avatar）
-    
-    if not account or not name:
+
+    if not name:
         return {"success": False, "message": "帳號與顯示名稱不能為空"}
-        
-    success = update_user_profile_in_db(account, name, phone, birthday, bio, avatar)
+
+    success = update_user_profile_in_db(member, name, phone, birthday, bio, avatar)
     if success:
         return {"success": True, "message": "個人資料與 SQLite 資料庫更新成功"}
     return {"success": False, "message": "更新失敗"}
 
 class CheckInRequest(BaseModel):
-    account: str
+    account: Optional[str] = None
 
 @app.post("/api/user/checkin")
-def api_user_checkin(req: CheckInRequest):
+def api_user_checkin(req: CheckInRequest, member: str = Depends(current_member)):
     """連續登入天數：每天第一次開啟時打卡，中斷就從第 1 天重新計算"""
-    result = check_in_user(req.account)
+    _ensure_same_account(member, req.account)
+    result = check_in_user(member)
     if result is None:
         return {"success": False, "streak": 1}
     return {"success": True, **result}
 
 class AvatarUploadRequest(BaseModel):
-    account: str
+    account: Optional[str] = None
     image: str = ""  # data:image/...;base64,...；空字串 = 移除自訂頭貼
 
 @app.post("/api/user/avatar")
-def api_upload_avatar(req: AvatarUploadRequest):
+def api_upload_avatar(req: AvatarUploadRequest, member: str = Depends(current_member)):
+    _ensure_same_account(member, req.account)
     image = (req.image or "").strip()
     if image:
         if not re.match(r"^data:image/(png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$", image):
             return {"success": False, "message": "頭貼格式不支援，請上傳 JPG、PNG 或 WebP 圖片"}
         if len(image) > AVATAR_MAX_LENGTH:
             return {"success": False, "message": "圖片太大，請選擇較小的照片"}
-    avatar_url = set_user_avatar(req.account, image)
+    avatar_url = set_user_avatar(member, image)
     if avatar_url is None:
         return {"success": False, "message": "找不到這個會員帳號"}
     return {"success": True, "avatar_url": avatar_url}
@@ -1135,7 +1219,7 @@ class SocialLoginRequest(BaseModel):
     social_id: Optional[str] = None
 
 class RewardClaimRequest(BaseModel):
-    account: str
+    account: Optional[str] = None
     action: str
     recipient: Optional[str] = ""
 
@@ -1169,11 +1253,7 @@ def api_social_login(req: SocialLoginRequest):
         name=identity.get("name") or (req.name or ""),
         picture=identity.get("picture", "")
     )
-    return {
-        "success": True,
-        "message": f"透過 {identity['provider'].capitalize()} 登入成功！",
-        "user": user
-    }
+    return _login_result(user, f"透過 {identity['provider'].capitalize()} 登入成功！")
 
 @app.post("/api/auth/apple/callback")
 async def api_apple_android_callback(request: Request):
@@ -1186,10 +1266,8 @@ async def api_apple_android_callback(request: Request):
 
 # LINE 個人帳號綁定：App 產生綁定碼，親友在 LINE 官方帳號傳「綁定 123456」
 @app.post("/api/recipients/{rec_id}/line-bind")
-def create_recipient_line_bind(rec_id: str):
-    rec = get_recipient_by_id(rec_id)
-    if not rec:
-        raise HTTPException(status_code=404, detail="Recipient not found")
+def create_recipient_line_bind(rec_id: str, member: str = Depends(current_member)):
+    rec = _owned_recipient(rec_id, member)
     bind = create_line_bind_code(rec_id)
     basic_id = _get_line_bot_basic_id()
     add_friend_url = f"https://line.me/R/ti/p/{basic_id}" if basic_id else ""
@@ -1210,19 +1288,19 @@ def create_recipient_line_bind(rec_id: str):
     }
 
 @app.delete("/api/recipients/{rec_id}/line-bind")
-def remove_recipient_line_bind(rec_id: str):
-    if not get_recipient_by_id(rec_id):
-        raise HTTPException(status_code=404, detail="Recipient not found")
+def remove_recipient_line_bind(rec_id: str, member: str = Depends(current_member)):
+    _owned_recipient(rec_id, member)
     unbind_recipient_line(rec_id)
     return {"success": True, "recipient_id": rec_id, "line_bound": False}
 
 # 回饋點數：由後端判斷每日／每週上限後才發點
 @app.post("/api/rewards/claim")
-def api_claim_reward(req: RewardClaimRequest):
-    if not get_user_profile(req.account):
+def api_claim_reward(req: RewardClaimRequest, member: str = Depends(current_member)):
+    _ensure_same_account(member, req.account)
+    if not get_user_profile(member):
         raise HTTPException(status_code=404, detail="User not found")
-    result = claim_reward(req.account, req.action, req.recipient or "")
-    profile = get_user_profile(req.account)
+    result = claim_reward(member, req.action, req.recipient or "")
+    profile = get_user_profile(member)
     result["new_points"] = profile["points"] if profile else None
     return result
 

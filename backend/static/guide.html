@@ -440,7 +440,7 @@
     <div class="tier">
       <div class="tier-label"><span>LAYER 2</span><b>應用服務層</b><small>Render 免費方案</small></div>
       <div class="core-body">
-        <div class="gateway"><b>FastAPI 後端</b><span>54 支 REST API</span><span>提供 Flutter 網頁</span><span>管理員 HMAC 通行證</span><span>台灣時間</span></div>
+        <div class="gateway"><b>FastAPI 後端</b><span>54 支 REST API</span><span>提供 Flutter 網頁</span><span>會員／管理員 HMAC 通行證</span><span>台灣時間</span></div>
         <div class="mods">
           <div class="mod teal"><b>會員／第三方登入</b><code>social_auth</code><em class="ext">連 Google · Facebook · Apple</em></div>
           <div class="mod"><b>AI 守護 RAG</b><code>vector_store · rag_engine</code><em>TF-IDF 檢索實證文獻</em></div>
@@ -511,7 +511,8 @@
         <tr><th>項目</th><th>做法</th></tr>
         <tr><td>密碼</td><td>以 bcrypt 雜湊儲存，資料庫不保存明文；舊資料於啟動時自動轉換。</td></tr>
         <tr><td>第三方登入</td><td>後端驗證 Google／Facebook／Apple 的憑證，不信任前端傳來的身分。</td></tr>
-        <tr><td>管理員</td><td>密碼由 <code>ADMIN_PASSWORD</code> 設定；登入後核發 HMAC 簽章通行證（7 天），RAG 測試台憑證不限次數。</td></tr>
+        <tr><td>會員身分</td><td>任何方式登入成功後核發 HMAC 簽章的會員通行證（30 天），App 以 <code>Authorization: Bearer</code> 送出；後端只依通行證判斷帳號，冒用別人的帳號一律拒絕，過期就回到登入頁。簽章金鑰來自環境變數 <code>AUTH_TOKEN_SECRET</code>。</td></tr>
+        <tr><td>管理員</td><td>密碼由 <code>ADMIN_PASSWORD</code> 設定；登入後另核發管理員通行證（7 天），管理後台（文獻庫、RAG 設定、資料庫匯出）必須持有，RAG 測試台憑證不限次數。</td></tr>
         <tr><td>LINE</td><td>Webhook 驗證 <code>X-Line-Signature</code>；一個 LINE 帳號只綁定一位親友。</td></tr>
         <tr><td>隱私</td><td>網頁版 Cookie 同意（必要／第三方登入）、公開隱私權政策 <code>/privacy</code>；聊天只看得到自己與親友的對話。</td></tr>
       </table>
@@ -619,10 +620,12 @@ flowchart TD
   SDK --> V["POST /api/auth/social&lt;br/&gt;後端向 Google / Facebook 驗證"]
   V --> U["找到或建立會員&lt;br/&gt;新會員 +5 點、帶入大頭照"]
   L -- Apple --> AP["顯示「Apple 登入尚未開放」"]
-  P --> R{"角色"}
-  U --> H
+  P --> MT["核發會員通行證（30 天）&lt;br/&gt;之後每次呼叫 API 都帶上"]
+  U --> MT
+  MT --> R{"角色"}
   R -- 一般會員 --> H["今日守護首頁&lt;br/&gt;每日打卡（連續天數）"]
-  R -- 管理員 --> AD["核發管理員通行證&lt;br/&gt;進入管理後台"]
+  R -- 管理員 --> AD["再核發管理員通行證&lt;br/&gt;進入管理後台"]
+  H -. 通行證過期或無效（401） .-> L
     </pre>
   </div>
 
@@ -776,7 +779,7 @@ flowchart TD
         <tr><td>TF-IDF ＋ 餘弦相似度</td><td>實證文獻向量檢索（中文單字＋雙字詞）</td></tr>
         <tr><td>規則引擎</td><td>18 條藥物／食物／保健品交互作用規則、22 類病況快速提問、商品禁忌排除、否定詞判斷</td></tr>
         <tr><td>line-bot-sdk · Flex Message</td><td>LINE 關懷卡、圖文選單、Webhook</td></tr>
-        <tr><td>PyJWT[crypto] · HMAC</td><td>Apple 憑證驗證、管理員通行證簽章</td></tr>
+        <tr><td>PyJWT[crypto] · HMAC</td><td>Apple 憑證驗證、會員與管理員通行證簽章</td></tr>
         <tr><td>requests · 自訂 TLS Adapter</td><td>串接中央氣象署（相容 TWCA 憑證）</td></tr>
         <tr><td>google-generativeai（選用）</td><td>Gemini 整理 AI 回覆、產生快速提問</td></tr>
       </table>
@@ -1122,7 +1125,7 @@ flowchart TD
       <tr><td>價格從哪裡來？</td><td>2026/10/13 逐一到四家連鎖藥局官網查價；包裝不同或缺貨的報價會顯示但不參與比價。</td></tr>
       <tr><td>點數怎麼算？</td><td>參考蝦皮與 ShopBack：註冊 +5、關懷卡 +0.1、小熊每週 +0.5，點數主要來自購物回饋（依藥局 3–5% 換算，回饋 $1 = 1 點，經確認才入帳）；折抵 1 點 = $1。</td></tr>
       <tr><td>親友一定要裝 App 嗎？</td><td>不用，親友用 LINE 官方帳號輸入綁定碼即可接收關懷卡與回覆。</td></tr>
-      <tr><td>隱私怎麼保護？</td><td>聊天只看得到自己與親友的對話；網頁版 Cookie 可自行選擇；管理後台需管理員密碼與簽章通行證。</td></tr>
+      <tr><td>隱私怎麼保護？</td><td>每次呼叫 API 都以登入通行證確認身分，只看得到自己的親友、聊天與點數；網頁版 Cookie 可自行選擇；管理後台需管理員密碼與簽章通行證。</td></tr>
     </table>
   </div>
 </section>
