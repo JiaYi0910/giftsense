@@ -82,6 +82,30 @@ def test_copy_refuses_non_empty_target(old_source, tmp_path):
         db_transfer.copy_database(old_source, target, log=lambda *_: None)
 
 
+def test_table_columns_survives_incomplete_reflection(old_source, tmp_path, monkeypatch):
+    """Turso 遠端連線曾回傳缺少欄位的清單（system_config 少了 key）：實際查詢到的欄位仍要算進去，複製時也不能漏"""
+    real_inspect = db_transfer.inspect
+
+    class PartialInspector:
+        def __init__(self, engine):
+            self._insp = real_inspect(engine)
+
+        def __getattr__(self, name):
+            return getattr(self._insp, name)
+
+        def get_columns(self, name):
+            return [c for c in self._insp.get_columns(name) if c["name"] != "account"]
+
+    monkeypatch.setattr(db_transfer, "inspect", PartialInspector)
+    assert "account" in db_transfer.table_columns(old_source, User.__table__)
+
+    target = _engine(tmp_path / "new.db")
+    db_transfer.copy_database(old_source, target, log=lambda *_: None)
+    with target.connect() as conn:
+        accounts = {r.account for r in conn.execute(select(User.__table__)).all()}
+    assert accounts == {"alice@example.test", "legacy@example.test"}
+
+
 @pytest.mark.parametrize("msg_id,timestamp,expected", [
     ("msg_1792000000000_abcdef", "", 1792000000000 * 1000),
     ("msg_line_1792000000500_abcdef", "", 1792000000500 * 1000),

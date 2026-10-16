@@ -11,7 +11,7 @@ import re
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, MetaData, Table, func, insert, inspect, select
+from sqlalchemy import Column, MetaData, Table, func, insert, inspect, select, text
 
 from models import ALL_MODELS, Base, ChatMessage, TIME_FMT
 
@@ -28,6 +28,15 @@ def chat_seq_from(msg_id: str, timestamp: str = "") -> int:
         return int(datetime.strptime(timestamp or "", TIME_FMT).timestamp() * 1_000_000)
     except ValueError:
         return 0
+
+
+def table_columns(engine, table) -> set:
+    """資料表目前的欄位名稱（小寫）。合併資料庫的欄位清單（reflection）與實際查詢結果的欄位：
+    Turso 遠端連線曾回傳缺少欄位的清單（system_config 少了 key），只靠一種來源會漏掉欄位"""
+    names = {c["name"].lower() for c in inspect(engine).get_columns(table.name)}
+    with engine.connect() as conn:
+        names |= {k.lower() for k in conn.execute(select(text("*")).select_from(table).limit(1)).keys()}
+    return names
 
 
 def target_is_empty(engine) -> bool:
@@ -53,14 +62,14 @@ def copy_database(source_engine, target_engine, log=print) -> dict:
             name = table.name
             if not src_insp.has_table(name):
                 continue
-            src_cols = {c["name"] for c in src_insp.get_columns(name)}
-            cols = [c for c in table.columns if c.name in src_cols]
+            src_cols = table_columns(source_engine, table)
+            cols = [c for c in table.columns if c.name.lower() in src_cols]
             if dst.execute(select(func.count()).select_from(table)).scalar():
                 raise RuntimeError(f"目標資料庫的 {name} 已有資料，為避免覆蓋，停止複製")
             src_table = Table(name, MetaData(), *[Column(c.name, c.type) for c in cols])
             rows = src.execute(select(*src_table.columns)).mappings().all()
             pk_text_cols = [c.name for c in table.primary_key.columns
-                            if c.name in src_cols and getattr(c.type, "length", None) is not None]
+                            if c.name.lower() in src_cols and getattr(c.type, "length", None) is not None]
             batch = []
             for r in rows:
                 row = {c.name: r[c.name] for c in cols}

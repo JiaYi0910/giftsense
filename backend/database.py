@@ -27,7 +27,7 @@ if hasattr(time, "tzset"):
     time.tzset()
 
 import db_engine
-from db_transfer import chat_seq_from, copy_database, target_is_empty
+from db_transfer import chat_seq_from, copy_database, table_columns, target_is_empty
 from models import (
     TIME_FMT, AiGuardUsage, Base, CashbackOrder, ChatMessage, ClinicalKnowledge, Order, PharmacyCache,
     PointsLedger, RecommendationProduct, Recipient, RewardClaim, SystemConfig, User, now_str,
@@ -238,31 +238,44 @@ def _bootstrap_empty_database():
         source.dispose()
 
 
+def _is_duplicate_column_error(e: Exception) -> bool:
+    msg = str(e).lower()
+    return "duplicate column" in msg or "column names in each table must be unique" in msg  # SQLite／SQL Server
+
+
 def _ensure_columns():
     """舊版資料庫（例如早期的 caregift.db、Turso）缺少的欄位自動補上，既有資料不變"""
     insp = inspect(engine)
     dialect = engine.dialect
     preparer = dialect.identifier_preparer
-    with engine.begin() as conn:
-        for table in Base.metadata.sorted_tables:
-            if not insp.has_table(table.name):
+    tables = {name.lower() for name in insp.get_table_names()}
+    for table in Base.metadata.sorted_tables:
+        if table.name.lower() not in tables:
+            continue
+        existing = table_columns(engine, table)
+        for col in table.columns:
+            if col.name.lower() in existing:
                 continue
-            existing = {c["name"] for c in insp.get_columns(table.name)}
-            for col in table.columns:
-                if col.name in existing:
-                    continue
-                ddl = f"ALTER TABLE {preparer.quote(table.name)} ADD "
-                if dialect.name == "sqlite":
-                    ddl += "COLUMN "
-                ddl += f"{preparer.quote(col.name)} {col.type.compile(dialect=dialect)}"
-                default = col.default.arg if col.default is not None and not callable(col.default.arg) else None
-                if isinstance(default, str):
-                    ddl += " DEFAULT '" + default.replace("'", "''") + "'"
-                elif isinstance(default, (int, float)):
-                    ddl += f" DEFAULT {default}"
-                if default is not None and dialect.name == "mssql":
-                    ddl += " WITH VALUES"
-                conn.execute(text(ddl))
+            ddl = f"ALTER TABLE {preparer.quote(table.name)} ADD "
+            if dialect.name == "sqlite":
+                ddl += "COLUMN "
+            ddl += f"{preparer.quote(col.name)} {col.type.compile(dialect=dialect)}"
+            default = col.default.arg if col.default is not None and not callable(col.default.arg) else None
+            if isinstance(default, str):
+                ddl += " DEFAULT '" + default.replace("'", "''") + "'"
+            elif isinstance(default, (int, float)):
+                ddl += f" DEFAULT {default}"
+            if default is not None and dialect.name == "mssql":
+                ddl += " WITH VALUES"
+            try:
+                # 每個欄位各自一個交易：某一欄失敗時不影響其他欄位
+                with engine.begin() as conn:
+                    conn.execute(text(ddl))
+                print(f"【資料庫】補上欄位 {table.name}.{col.name}")
+            except Exception as e:
+                if not _is_duplicate_column_error(e):
+                    raise
+                # 欄位其實已經存在（欄位清單漏列），不需要補
 
 
 def _migration_done(session, key: str) -> bool:
