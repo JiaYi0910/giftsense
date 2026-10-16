@@ -7,7 +7,7 @@ SQL Server 以資料列為單位鎖定、支援連線池，適合多人同時存
 
 後端改用 **SQLAlchemy ORM** 存取資料庫：12 張資料表以 Python 類別定義（`backend/models.py`），
 程式透過物件新增、查詢與更新資料，不寫只適用某一種資料庫的 SQL。同一套程式可以連線
-SQL Server、Turso 或本機 SQLite，144 項後端測試在三種資料庫上都通過。
+SQL Server、Turso 或本機 SQLite，145 項後端測試在三種資料庫上都通過。
 
 ## 後端使用哪個資料庫
 

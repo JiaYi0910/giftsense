@@ -65,7 +65,7 @@
 - [x] 最新 APK 已安裝到 Android 模擬器，購物回饋流程實際走過一次
 
 ### 測試與文件
-- [x] 後端 pytest 144 項（`backend/tests`：會員通行證 101、購物回饋 32、LINE Webhook 5、資料庫搬移 6）在 SQLite、SQL Server、Turso 三種資料庫都全數通過，104 題快速提問在 SQL Server 上也是 104/104；`flutter analyze` 沒有錯誤
+- [x] 後端 pytest 145 項（`backend/tests`：會員通行證 101、購物回饋 32、LINE Webhook 5、資料庫搬移 7）在 SQLite、SQL Server、Turso 三種資料庫都全數通過，104 題快速提問在 SQL Server 上也是 104/104；`flutter analyze` 沒有錯誤
 - [x] 系統說明網頁 `/guide`，共 9 節：架構、功能架構、流程、技術、ER、DFD、點數、Demo 腳本（原始檔 [giftsense_system_guide.html](giftsense_system_guide.html)）
 - [x] 7 張圖檔（[diagrams/](diagrams/)）
 - [x] Turso、SQL Server、iOS、第三方登入四份設定說明
