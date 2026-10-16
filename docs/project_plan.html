@@ -24,7 +24,7 @@
              box-shadow: 0 10px 30px rgba(37,99,235,.08); display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 18px; align-items: center; }
   .progress b { font-size: 15px; color: var(--blue-deep); }
   .bar { margin-top: 10px; height: 12px; border-radius: 999px; background: var(--blue-soft); border: 1px solid var(--blue-border); overflow: hidden; }
-  .bar i { display: block; height: 100%; width: 84%; background: linear-gradient(90deg, #34D399, #059669); border-radius: 999px; }
+  .bar i { display: block; height: 100%; width: 83%; background: linear-gradient(90deg, #34D399, #059669); border-radius: 999px; }
   .progress small { display: block; margin-top: 6px; color: var(--muted); font-size: 12.5px; }
   .stat { border-left: 1px solid var(--line); padding-left: 18px; }
   .stat b { display: block; font-size: 30px; line-height: 1.1; }
@@ -63,27 +63,29 @@
 <header>
   <div class="wrap">
     <h1>GiftSense 專案規劃</h1>
-    <p>更新日期：2026/10/15 · 網站：<a href="https://giftsense-vjbu.onrender.com">https://giftsense-vjbu.onrender.com</a> · 系統說明：<a href="https://giftsense-vjbu.onrender.com/guide">https://giftsense-vjbu.onrender.com/guide</a></p>
+    <p>更新日期：2026/10/16 · 網站：<a href="https://giftsense-vjbu.onrender.com">https://giftsense-vjbu.onrender.com</a> · 系統說明：<a href="https://giftsense-vjbu.onrender.com/guide">https://giftsense-vjbu.onrender.com/guide</a></p>
   </div>
 </header>
 <div class="wrap">
   <div class="summary">
-    <div class="progress"><b>整體進度 84%</b><div class="bar"><i></i></div><small>已完成 47 項 / 共 56 項（不含範圍外）</small></div>
-    <div class="stat done"><b>47</b><span>已完成</span></div>
-    <div class="stat todo"><b>4</b><span>待辦</span></div>
+    <div class="progress"><b>整體進度 83%</b><div class="bar"><i></i></div><small>已完成 49 項 / 共 59 項（不含範圍外）</small></div>
+    <div class="stat done"><b>49</b><span>已完成</span></div>
+    <div class="stat todo"><b>5</b><span>待辦</span></div>
     <div class="stat check"><b>5</b><span>展示前確認</span></div>
   </div>
 </div>
 <main class="wrap">
   <section class="card done">
-    <h2><span class="dot"></span>已完成<em>47 項</em></h2>
+    <h2><span class="dot"></span>已完成<em>49 項</em></h2>
     <div class="grid">
       <div class="group">
-        <h3>基礎架構與部署<span>5</span></h3>
+        <h3>基礎架構與部署<span>7</span></h3>
         <ul>
           <li class="done">Flutter 前端（3.47.7），同一套程式碼產出網頁版、Android 和 iOS App</li>
           <li class="done">FastAPI 後端部署在 Render，推送 GitHub main 後自動部署</li>
           <li class="done">Turso 雲端資料庫，Render 重啟也不會掉資料（設定見 <a href="TURSO_SETUP.md">TURSO_SETUP.md</a>）</li>
+          <li class="done">後端改用 SQLAlchemy ORM：同一套程式可連線 SQL Server、Turso 或 SQLite，由 <code>DATABASE_URL</code> 決定；本機開發與展示使用 SQL Server（資料庫 GiftSense），正式站維持 Turso（設定見 <a href="SQLSERVER_SETUP.md">SQLSERVER_SETUP.md</a>）</li>
+          <li class="done">切換到空的資料庫時，第一次啟動會自動從 Turso（或 <code>caregift.db</code>）匯入全部資料；也可用 <code>backend/tools/copy_database.py</code> 手動複製</li>
           <li class="done">伺服器使用台灣時間</li>
           <li class="done">舊點數紀錄已清除並依新規則換算，聊天時間已校正</li>
         </ul>
@@ -163,21 +165,22 @@
       <div class="group">
         <h3>測試與文件<span>5</span></h3>
         <ul>
-          <li class="done">後端 pytest 138 項（<code>backend/tests</code>：會員通行證 101、購物回饋 32、LINE Webhook 5）與 104 題快速提問全數通過；<code>flutter analyze</code> 沒有錯誤</li>
+          <li class="done">後端 pytest 144 項（<code>backend/tests</code>：會員通行證 101、購物回饋 32、LINE Webhook 5、資料庫搬移 6）在 SQLite、SQL Server、Turso 三種資料庫都全數通過，104 題快速提問在 SQL Server 上也是 104/104；<code>flutter analyze</code> 沒有錯誤</li>
           <li class="done">系統說明網頁 <code>/guide</code>，共 9 節：架構、功能架構、流程、技術、ER、DFD、點數、Demo 腳本（原始檔 <a href="giftsense_system_guide.html">giftsense_system_guide.html</a>）</li>
           <li class="done">7 張圖檔（<a href="diagrams/">diagrams/</a>）</li>
-          <li class="done">Turso、iOS、第三方登入三份設定說明</li>
-          <li class="done">競賽文件（企劃書、專題簡介、解題構想書）已同步到 2026/10/15 的系統內容，存放在本機 <code>docs/</code>，不放進 git</li>
+          <li class="done">Turso、SQL Server、iOS、第三方登入四份設定說明</li>
+          <li class="done">競賽文件存放在本機 <code>docs/</code>，不放進 git：企劃書、專題簡介已同步到 2026/10/16（含 SQL Server 與 ORM），解題構想書維持 2026/10/15 的內容</li>
         </ul>
       </div>
     </div>
   </section>
   <section class="card todo">
-    <h2><span class="dot"></span>未完成／待確認<em>9 項</em></h2>
+    <h2><span class="dot"></span>未完成／待確認<em>10 項</em></h2>
     <div class="grid two">
       <div class="group">
-        <h3>待辦<span>4</span></h3>
+        <h3>待辦<span>5</span></h3>
         <ul>
+          <li class="todo"><b>正式站是否改用雲端 SQL Server</b>：目前 SQL Server 只在本機使用；要切換需另外準備雲端 SQL Server（例如 Azure SQL）並確認費用，切換時會自動從 Turso 匯入，步驟見 <a href="SQLSERVER_SETUP.md">SQLSERVER_SETUP.md</a></li>
           <li class="todo"><b>iPhone 上的 App 要更新</b>：目前裝的是會員通行證上線前的版本，親友、聊天、點數等會員功能會讀取失敗；到 Mac 重跑 <code>flutter run --release</code> 才會換成新版（含新的購物回饋流程）</li>
           <li class="todo"><b>iOS 的 Google／Facebook 原生登入</b>：要在 Google Cloud 建立 iOS OAuth 用戶端、在 Meta 新增 iOS 平台（Bundle ID <code>com.jiayi.giftsense</code>），目前 iOS App 先用帳號密碼登入</li>
           <li class="todo"><b>Apple 登入</b>：需要 Apple Developer Program（每年 US$99）；目前採免費方式，只顯示「尚未開放」，要不要做待決定</li>

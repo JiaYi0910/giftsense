@@ -6,7 +6,7 @@ Render 免費方案的硬碟不會保存資料：服務閒置約 15 分鐘會休
 `backend/caregift.db` 會回到 git 裡的版本，使用者新增的帳號、親友、LINE 綁定都會消失。
 
 改用 [Turso](https://turso.tech)（免費方案、不需信用卡）後，資料存在雲端，Render 怎麼重啟都不會遺失。
-Turso 使用 libSQL，語法和 SQLite 相同，後端程式不需要改 SQL。
+Turso 使用 libSQL，語法和 SQLite 相同；後端以 SQLAlchemy ORM 存取資料庫，同一套程式也能連線 SQL Server（見 [SQLSERVER_SETUP.md](SQLSERVER_SETUP.md)）。
 
 ## 設定步驟
 
@@ -25,15 +25,15 @@ Turso 使用 libSQL，語法和 SQLite 相同，後端程式不需要改 SQL。
 
    儲存後 Render 會自動重新部署。
 6. **確認**：打開 <https://giftsense-vjbu.onrender.com/api/health>，`database` 顯示
-   `Turso (libSQL) Connected`、`sqlite_stats.persistent` 為 `true` 就完成了。
+   `Turso 雲端資料庫 Connected`、`sqlite_stats.persistent` 為 `true` 就完成了。
 
 ## 運作方式
 
-- 沒有設定 `TURSO_DATABASE_URL` 時，後端照舊使用本機 `backend/caregift.db`（本機開發不受影響）。
+- 沒有設定 `TURSO_DATABASE_URL` 時，後端使用本機 `backend/caregift.db`；有設定 `DATABASE_URL` 時則優先使用該資料庫（本機的 SQL Server）。
 - 第一次連上**空的** Turso 資料庫時，會把 repo 內附的 `caregift.db`（示範帳號、實證文獻、商品快取）整份匯入；
   之後 Turso 已有資料就不會再匯入，不會覆蓋使用者新增的資料。
 - 啟動時的資料表遷移（新增欄位）、暖心選物商品同步都會直接作用在 Turso 上。
-- 程式位置：`backend/db_backend.py`（連線與轉接層）、`backend/database.py` 的 `get_db()`。
+- 程式位置：`backend/db_backend.py`（libSQL 轉接層）、`backend/db_engine.py`（建立連線）、`backend/database.py`（資料存取）。
 
 ## 備份（選用）
 

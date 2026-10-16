@@ -35,7 +35,7 @@ from database import (
     get_all_clinical_knowledge, save_clinical_knowledge, batch_save_clinical_knowledge,
     delete_clinical_knowledge, reset_clinical_knowledge_to_defaults,
     get_system_config, set_system_config, get_database_stats, export_full_database,
-    get_db, update_user_profile_in_db, get_user_profile_by_account,
+    get_db, update_user_profile_in_db, get_user_profile_by_account, get_user_display_name, find_user_by_account_or_email,
     get_ai_guard_quota, consume_ai_guard_quota, add_ai_guard_bonus,
     find_or_create_social_user, create_line_bind_code, bind_line_by_code,
     unbind_recipient_line, find_recipient_line_id, get_line_binding_info, claim_reward,
@@ -65,7 +65,7 @@ AI_GUARD_REDEEM_EXTRA = 3
 # 1. 💡 必須最先建立 FastAPI 實例 (app)
 app = FastAPI(
     title="GiftSense Real Python Backend",
-    description="Python 後端服務（國家級 RAG + 4 大連鎖藥局即時爬蟲 + SQLite 資料庫 + 即時天氣連線 + LINE 雙向真人互動）",
+    description="Python 後端服務（國家級 RAG + 4 大連鎖藥局即時爬蟲 + SQLAlchemy ORM（SQL Server／Turso／SQLite）+ 即時天氣連線 + LINE 雙向真人互動）",
     version="2.0.0"
 )
 
@@ -286,7 +286,8 @@ def health_check():
         "status": "ok",
         "service": "GiftSense 2.0 Real Python Backend",
         "version": "2.0.0",
-        "database": "Turso (libSQL) Connected" if db_stats.get("persistent") else "SQLite (caregift.db) Connected",
+        "database": f"{db_stats['db_name']} Connected",
+        "orm": db_stats.get("orm"),
         "sqlite_stats": db_stats,
         "python": platform.python_version(),
         "literatures_count": db_stats["counts"].get("clinical_knowledge", len(CLINICAL_LITERATURES)),
@@ -762,7 +763,7 @@ def list_clinical_knowledge():
     items = get_all_clinical_knowledge()
     if not items:
         items = CLINICAL_LITERATURES
-    return {"success": True, "total": len(items), "source": "SQLite (caregift.db)", "literatures": items}
+    return {"success": True, "total": len(items), "source": get_database_stats()["db_name"], "literatures": items}
 
 # 以下為管理後台（實證文獻庫、RAG 設定、資料庫主控台）的寫入與匯出，需管理員通行證
 @app.post("/api/knowledge")
@@ -834,13 +835,7 @@ def post_family_message(req: FamilyMessageRequest, member: str = Depends(current
     timestamp_str = time.strftime("%Y-%m-%d %H:%M:%S")  # 一律以伺服器的台灣時間為準
     content_text = req.content
 
-    sender_display = member
-    conn = get_db()
-    user_row = conn.execute("SELECT name FROM users WHERE account = ?", (member,)).fetchone()
-    conn.close()
-
-    if user_row and user_row["name"]:
-        sender_display = user_row["name"]
+    sender_display = get_user_display_name(member) or member
 
     card_prefix = f"【來自 {sender_display} 的健康關懷】"
     
@@ -1229,7 +1224,7 @@ def api_update_user_profile(req: dict, member: str = Depends(current_member)):
 
     success = update_user_profile_in_db(member, name, phone, birthday, bio, avatar)
     if success:
-        return {"success": True, "message": "個人資料與 SQLite 資料庫更新成功"}
+        return {"success": True, "message": "個人資料更新成功"}
     return {"success": False, "message": "更新失敗"}
 
 class CheckInRequest(BaseModel):
@@ -1282,10 +1277,7 @@ class ForgotPasswordRequest(BaseModel):
 
 @app.post("/api/auth/forgot-password")
 def api_forgot_password(req: ForgotPasswordRequest):
-    conn = get_db()
-    user = conn.execute("SELECT * FROM users WHERE email = ? OR account = ?", (req.email, req.email)).fetchone()
-    conn.close()
-    
+    user = find_user_by_account_or_email(req.email)
     if not user:
         return {"success": False, "message": "找不到與此信箱相符的會員帳號"}
         

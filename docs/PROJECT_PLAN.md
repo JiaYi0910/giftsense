@@ -1,6 +1,6 @@
 # GiftSense 專案規劃
 
-> 更新日期：2026/10/15　·　網站：https://giftsense-vjbu.onrender.com　·　系統說明：https://giftsense-vjbu.onrender.com/guide
+> 更新日期：2026/10/16　·　網站：https://giftsense-vjbu.onrender.com　·　系統說明：https://giftsense-vjbu.onrender.com/guide
 
 ## 已完成
 
@@ -8,6 +8,8 @@
 - [x] Flutter 前端（3.47.7），同一套程式碼產出網頁版、Android 和 iOS App
 - [x] FastAPI 後端部署在 Render，推送 GitHub main 後自動部署
 - [x] Turso 雲端資料庫，Render 重啟也不會掉資料（設定見 [TURSO_SETUP.md](TURSO_SETUP.md)）
+- [x] 後端改用 SQLAlchemy ORM：同一套程式可連線 SQL Server、Turso 或 SQLite，由 `DATABASE_URL` 決定；本機開發與展示使用 SQL Server（資料庫 GiftSense），正式站維持 Turso（設定見 [SQLSERVER_SETUP.md](SQLSERVER_SETUP.md)）
+- [x] 切換到空的資料庫時，第一次啟動會自動從 Turso（或 `caregift.db`）匯入全部資料；也可用 `backend/tools/copy_database.py` 手動複製
 - [x] 伺服器使用台灣時間
 - [x] 舊點數紀錄已清除並依新規則換算，聊天時間已校正
 
@@ -63,15 +65,16 @@
 - [x] 最新 APK 已安裝到 Android 模擬器，購物回饋流程實際走過一次
 
 ### 測試與文件
-- [x] 後端 pytest 138 項（`backend/tests`：會員通行證 101、購物回饋 32、LINE Webhook 5）與 104 題快速提問全數通過；`flutter analyze` 沒有錯誤
+- [x] 後端 pytest 144 項（`backend/tests`：會員通行證 101、購物回饋 32、LINE Webhook 5、資料庫搬移 6）在 SQLite、SQL Server、Turso 三種資料庫都全數通過，104 題快速提問在 SQL Server 上也是 104/104；`flutter analyze` 沒有錯誤
 - [x] 系統說明網頁 `/guide`，共 9 節：架構、功能架構、流程、技術、ER、DFD、點數、Demo 腳本（原始檔 [giftsense_system_guide.html](giftsense_system_guide.html)）
 - [x] 7 張圖檔（[diagrams/](diagrams/)）
-- [x] Turso、iOS、第三方登入三份設定說明
-- [x] 競賽文件（企劃書、專題簡介、解題構想書）已同步到 2026/10/15 的系統內容，存放在本機 `docs/`，不放進 git
+- [x] Turso、SQL Server、iOS、第三方登入四份設定說明
+- [x] 競賽文件存放在本機 `docs/`，不放進 git：企劃書、專題簡介已同步到 2026/10/16（含 SQL Server 與 ORM），解題構想書維持 2026/10/15 的內容
 
 ## 未完成／待確認
 
 ### 待辦
+- [ ] **正式站是否改用雲端 SQL Server**：目前 SQL Server 只在本機使用；要切換需另外準備雲端 SQL Server（例如 Azure SQL）並確認費用，切換時會自動從 Turso 匯入，步驟見 [SQLSERVER_SETUP.md](SQLSERVER_SETUP.md)
 - [ ] **iPhone 上的 App 要更新**：目前裝的是會員通行證上線前的版本，親友、聊天、點數等會員功能會讀取失敗；到 Mac 重跑 `flutter run --release` 才會換成新版（含新的購物回饋流程）
 - [ ] **iOS 的 Google／Facebook 原生登入**：要在 Google Cloud 建立 iOS OAuth 用戶端、在 Meta 新增 iOS 平台（Bundle ID `com.jiayi.giftsense`），目前 iOS App 先用帳號密碼登入
 - [ ] **Apple 登入**：需要 Apple Developer Program（每年 US$99）；目前採免費方式，只顯示「尚未開放」，要不要做待決定

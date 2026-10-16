@@ -26,6 +26,10 @@ os.environ["CAREGIFT_DB_PATH"] = TEST_DB
 os.environ["AUTH_TOKEN_SECRET"] = "test-only-auth-secret"
 for _key in ("TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN"):
     os.environ.pop(_key, None)
+# 不碰開發用的資料庫（DATABASE_URL）；要在 SQL Server 上測試時另外設定 TEST_DATABASE_URL，指向空的測試資料庫
+os.environ.pop("DATABASE_URL", None)
+if os.getenv("TEST_DATABASE_URL"):
+    os.environ["DATABASE_URL"] = os.environ["TEST_DATABASE_URL"]
 
 os.chdir(BACKEND)  # main.py 以相對路徑掛載 static/uploads
 sys.path.insert(0, BACKEND)
@@ -277,7 +281,7 @@ def test_legacy_tracked_orders_get_catalog_price_or_are_cancelled():
                     VALUES (?, ?, '大樹藥局', ?, 1, 0.05, 'tracked', ?)""", (f"LEGACY_A_{_RUN}", account, LUTEIN, now))
     conn.execute("""INSERT INTO cashback_orders (id, account, pharmacy, product_name, est_price, rate, status, created_at)
                     VALUES (?, ?, '大樹藥局', '魚油', 999, 0.05, 'tracked', ?)""", (f"LEGACY_B_{_RUN}", account, now))
-    conn.execute("DELETE FROM system_config WHERE key = 'cashback_locked_price_20261015'")
+    conn.execute("DELETE FROM system_config WHERE \"key\" = 'cashback_locked_price_20261015'")
     conn.commit()
     conn.close()
 

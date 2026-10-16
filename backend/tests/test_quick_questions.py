@@ -22,6 +22,10 @@ atexit.register(shutil.rmtree, TEST_DIR, ignore_errors=True)
 shutil.copy(os.path.join(BACKEND, "caregift.db"), os.path.join(TEST_DIR, "caregift.db"))
 os.environ["CAREGIFT_DB_PATH"] = os.path.join(TEST_DIR, "caregift.db")
 os.environ.pop("TURSO_DATABASE_URL", None)  # 測試一律用本機的暫存資料庫，不碰雲端資料庫
+# 不碰開發用的資料庫（DATABASE_URL）；要在 SQL Server 上測試時另外設定 TEST_DATABASE_URL，指向空的測試資料庫
+os.environ.pop("DATABASE_URL", None)
+if os.getenv("TEST_DATABASE_URL"):
+    os.environ["DATABASE_URL"] = os.environ["TEST_DATABASE_URL"]
 
 import database  # noqa: E402  （import 時執行 init_db）
 import chips_generator as cg  # noqa: E402

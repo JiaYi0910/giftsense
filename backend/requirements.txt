@@ -10,3 +10,4 @@ line-bot-sdk>=3.0.0
 PyJWT[crypto]>=2.8.0
 bcrypt>=4.1.0
 libsql>=0.1.11
+SQLAlchemy>=2.0.43,<2.2

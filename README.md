@@ -1,7 +1,7 @@
 # 🎁 GiftSense
 
 > **系統版本**：`v55.0 (MUJI & Mascot Native Edition)`  
-> **系統架構**：Decoupled SPA Frontend + High-Performance Python FastAPI Backend + Pure SQLite Persistence (caregift.db)  
+> **系統架構**：Decoupled SPA Frontend + High-Performance Python FastAPI Backend + SQLAlchemy ORM Persistence (SQL Server / Turso / SQLite)  
 > **核心定位**：基於臨床實證醫學 (RAG) 與國家級藥品法規 (TFDA) 的親友健康關懷、用藥防錯雷達與四大連鎖藥局即時比價系統。
 
 ---
@@ -16,7 +16,7 @@
                     ┌────────────────────────────────────────────────────────┐
                     │               GiftSense Client (SPA)                   │
                     │   - Vanilla JS + CSS3 (MUJI Design Tokens)             │
-                    │   - Local State Engine & Real-time SQLite Console      │
+                    │   - Local State Engine & Real-time Database Console    │
                     └───────────────────────────┬────────────────────────────┘
                                                 │ HTTP / JSON API
                                                 ▼
@@ -28,7 +28,7 @@
 │ ├─ Chain Pharmacy Scraper (Big 4 Pharmacies)                               │
 │ ├─ Auto-Order Automation Pipeline                                          │
 │ ├─ CWA Weather Integration                                                 │
-│ └─ Pure SQLite Persistence Layer (caregift.db)                             │
+│ └─ SQLAlchemy ORM Layer (SQL Server / Turso)                               │
 │     ├─ clinical_knowledge (15 Authoritative Guidelines)                    │
 │     ├─ recipients (Health Records & Conditions)                            │
 │     ├─ orders & points_ledger (Deliveries & 3-Year Expiry Ledger)           │
@@ -51,7 +51,7 @@
 
 ### 2. 後端微服務 (Backend - Python 3.11+)
 - **API 框架**：FastAPI (ASGI，基於 Starlette 與 Pydantic 資料驗證)，支援全自動 OpenAPI / Swagger 文檔生成。
-- **資料庫**：SQLite 3 (`caregift.db`) 搭配原生連線池管理，提供高可靠之 ACID 事務支援。
+- **資料庫**：以 SQLAlchemy 2.0 ORM 存取，同一套程式可連線 Microsoft SQL Server（本機開發與展示）、Turso（雲端正式站）或 SQLite 檔案（`caregift.db`），由環境變數 `DATABASE_URL` 決定，設定見 [docs/SQLSERVER_SETUP.md](docs/SQLSERVER_SETUP.md)。
 - **並行處理**：Python `asyncio` 與 `ThreadPoolExecutor`，處理外部爬蟲與高延遲氣象 API 請求。
 - **外部依賴**：`uvicorn`、`requests`、`beautifulsoup4`、`curl_cffi`、`selenium`。
 
@@ -84,7 +84,7 @@
   - 具備防爬蟲偽裝 Header 與 Session 復用，確保抓取成功率。
 
 ### 5. 自動化代理下單管道 (`auto_order.py`)
-- 模擬連鎖藥局官方購物車結帳流程，自動填入親友配送地址，回傳真實訂單追蹤號碼並寫入 SQLite 訂單履歷表。
+- 模擬連鎖藥局官方購物車結帳流程，自動填入親友配送地址，回傳真實訂單追蹤號碼並寫入資料庫訂單履歷表。
 
 ---
 
@@ -121,8 +121,11 @@ care_gifting_app/
 ├── README.md                # 系統架構與技術說明文件 (本檔案)
 └── backend/                 # Python 後端服務目錄
     ├── main.py              # FastAPI 應用程式核心與路由註冊 (24 條端點)
-    ├── database.py          # SQLite 實體資料庫連線與 CRUD 操作
-    ├── caregift.db          # 預載親友資料、訂單與點數之 SQLite 資料庫
+    ├── database.py          # 資料存取函式（SQLAlchemy ORM）與啟動時的資料遷移
+    ├── models.py            # ORM 模型：12 張資料表的欄位、型別與主鍵
+    ├── db_engine.py         # 依環境變數連線 SQL Server／Turso／SQLite
+    ├── db_transfer.py       # 資料庫整份複製（切換到空的資料庫時自動匯入）
+    ├── caregift.db          # 預載示範資料之 SQLite 資料庫（匯入新資料庫的來源）
     ├── rag_engine.py        # 國家級臨床指引與 RAG 雙模檢索核心
     ├── vector_store.py      # 高維度向量語意檢索庫 (Cosine Similarity)
     ├── tfda_service.py      # TFDA 藥物交互作用與禁忌規範審核服務
@@ -150,6 +153,8 @@ pip install -r requirements.txt
 ```
 
 ### 步驟 2：啟動 Python 後端服務
+> 預設使用 `backend/caregift.db`；若要連線本機 SQL Server，先設定環境變數 `DATABASE_URL`，步驟見 [docs/SQLSERVER_SETUP.md](docs/SQLSERVER_SETUP.md)。
+
 您可以使用專案根目錄的快捷批次檔：
 - 雙擊執行 `run_backend.bat`
 

@@ -29,6 +29,10 @@ os.environ["AUTH_TOKEN_SECRET"] = "test-only-auth-secret"
 os.environ["ADMIN_PASSWORD"] = ADMIN_PASSWORD
 for _key in ("TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "GEMINI_API_KEY", "ADMIN_TOKEN_SECRET"):
     os.environ.pop(_key, None)
+# 不碰開發用的資料庫（DATABASE_URL）；要在 SQL Server 上測試時另外設定 TEST_DATABASE_URL，指向空的測試資料庫
+os.environ.pop("DATABASE_URL", None)
+if os.getenv("TEST_DATABASE_URL"):
+    os.environ["DATABASE_URL"] = os.environ["TEST_DATABASE_URL"]
 
 os.chdir(BACKEND)  # main.py 以相對路徑掛載 static/uploads
 sys.path.insert(0, BACKEND)

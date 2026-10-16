@@ -367,7 +367,7 @@
     <h1>GiftSense 智慧關懷送禮</h1>
     <p>心意，醫觸即達 · 系統架構、流程、技術、資料模型、點數回饋與 Demo 腳本</p>
     <div class="meta">
-      <span class="pill">版本：2026/10/15</span>
+      <span class="pill">版本：2026/10/16</span>
       <span class="pill">網站：giftsense-vjbu.onrender.com</span>
       <span class="pill">網頁 · Android · iPhone · LINE</span>
     </div>
@@ -457,7 +457,7 @@
     <div class="links">
       <div></div>
       <div class="bottom-links">
-        <div class="pipe both"><i class="cap"></i><span>SQL（libSQL）</span></div>
+        <div class="pipe both"><i class="cap"></i><span>SQLAlchemy ORM</span></div>
         <div class="pipe both"><i class="cap"></i><span>HTTPS 呼叫外部 API</span></div>
       </div>
     </div>
@@ -469,8 +469,8 @@
           <div class="subhead">資料層</div>
           <div class="db">
             <svg class="cyl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><ellipse cx="12" cy="5.5" rx="7" ry="2.5"/><path d="M5 5.5v13c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5v-13M5 12c0 1.4 3.1 2.5 7 2.5s7-1.1 7-2.5"/></svg>
-            <b>Turso 雲端資料庫</b>
-            <small>libSQL（SQLite 相容）<br>帳號 · 親友 · 聊天 · 點數 · 文獻<br>未設定時退回本機 SQLite</small>
+            <b>SQL Server／Turso</b>
+            <small>SQLAlchemy ORM · 同一套資料模型<br>開發展示：SQL Server　正式站：Turso<br>帳號 · 親友 · 聊天 · 點數 · 文獻</small>
           </div>
         </div>
         <div class="subbox">
@@ -501,8 +501,8 @@
         <tr><th>元件</th><th>說明</th></tr>
         <tr><td>GitHub</td><td>推送 main 分支後 Render 自動部署（約 4 分鐘）。</td></tr>
         <tr><td>Render 免費方案</td><td>執行 FastAPI 並提供 Flutter 網頁；閒置約 15 分鐘會休眠，首次喚醒約 30–60 秒。</td></tr>
-        <tr><td>Turso 免費方案</td><td>雲端 libSQL 資料庫，資料不會因 Render 重啟而消失；未設定時退回本機 SQLite。</td></tr>
-        <tr><td>環境變數</td><td><code>TURSO_DATABASE_URL</code> <code>TURSO_AUTH_TOKEN</code> <code>CWA_API_KEY</code> <code>ADMIN_PASSWORD</code> <code>FACEBOOK_APP_*</code>；必填 <code>LINE_CHANNEL_SECRET</code> <code>LINE_CHANNEL_ACCESS_TOKEN</code>（金鑰不寫在程式碼）</td></tr>
+        <tr><td>資料庫</td><td>以 SQLAlchemy ORM 存取，由環境變數決定連線：<code>DATABASE_URL</code> 指向 Microsoft SQL Server（本機開發與展示），<code>TURSO_DATABASE_URL</code> 為目前雲端正式站的 Turso（libSQL，免費方案，Render 重啟不會遺失資料），都沒設定時用本機 SQLite 檔。正式站改用 SQL Server 時，第一次連上空的資料庫會自動從 Turso 匯入全部資料。</td></tr>
+        <tr><td>環境變數</td><td><code>DATABASE_URL</code> <code>TURSO_DATABASE_URL</code> <code>TURSO_AUTH_TOKEN</code> <code>CWA_API_KEY</code> <code>ADMIN_PASSWORD</code> <code>FACEBOOK_APP_*</code>；必填 <code>LINE_CHANNEL_SECRET</code> <code>LINE_CHANNEL_ACCESS_TOKEN</code>（金鑰不寫在程式碼）</td></tr>
       </table>
     </div>
     <div>
@@ -637,7 +637,7 @@ sequenceDiagram
   participant F as 家人（GiftSense）
   participant S as FastAPI 後端
   participant W as 中央氣象署
-  participant D as Turso 資料庫
+  participant D as 資料庫（ORM）
   participant L as LINE 平台
   participant E as 親友（LINE）
   F->>S: 取得天氣 GET /api/weather
@@ -664,7 +664,7 @@ sequenceDiagram
   autonumber
   participant F as 家人（GiftSense）
   participant S as FastAPI 後端
-  participant D as Turso 資料庫
+  participant D as 資料庫（ORM）
   participant E as 親友（LINE）
   F->>S: 產生綁定碼 POST /api/recipients/{id}/line-bind
   S->>D: 儲存 6 位數綁定碼（24 小時有效）
@@ -776,7 +776,8 @@ flowchart TD
       <table>
         <tr><th>技術</th><th>用途</th></tr>
         <tr><td>FastAPI · Uvicorn · Pydantic</td><td>55 支 REST API、資料驗證</td></tr>
-        <tr><td>libsql（Turso）／sqlite3</td><td>雲端資料庫；自寫轉接層讓 SQLite 語法直接運作</td></tr>
+        <tr><td>SQLAlchemy 2.0 ORM</td><td>12 張資料表的模型、交易與條件更新；同一套程式支援 SQL Server、Turso 與 SQLite</td></tr>
+        <tr><td>pyodbc（SQL Server）· libsql（Turso）</td><td>資料庫驅動；Turso 透過自寫轉接層使用 SQLAlchemy 的 SQLite 方言</td></tr>
         <tr><td>TF-IDF ＋ 餘弦相似度</td><td>實證文獻向量檢索（中文單字＋雙字詞）</td></tr>
         <tr><td>規則引擎</td><td>18 條藥物／食物／保健品交互作用規則、22 類病況快速提問、商品禁忌排除、否定詞判斷</td></tr>
         <tr><td>line-bot-sdk · Flex Message</td><td>LINE 關懷卡、圖文選單、Webhook</td></tr>
@@ -791,7 +792,8 @@ flowchart TD
     <tr><th>服務</th><th>用途</th><th>方案</th></tr>
     <tr><td>中央氣象署開放資料</td><td>F-C0032-001 36 小時預報、O-A0003-001 即時觀測（各縣市代表測站），快取 10 分鐘</td><td>免費</td></tr>
     <tr><td>LINE Messaging API</td><td>推播關懷卡、接收親友回覆與語音</td><td>免費額度</td></tr>
-    <tr><td>Turso</td><td>雲端資料庫（帳號、親友、聊天、點數…）</td><td>免費</td></tr>
+    <tr><td>Microsoft SQL Server</td><td>開發與展示資料庫（Developer Edition，以 SQLAlchemy ORM 存取）</td><td>免費</td></tr>
+    <tr><td>Turso</td><td>目前雲端正式站的資料庫（帳號、親友、聊天、點數…）</td><td>免費</td></tr>
     <tr><td>Render</td><td>後端與網頁代管、GitHub 自動部署</td><td>免費</td></tr>
     <tr><td>四大連鎖藥局官網</td><td>大樹、杏一、啄木鳥、丁丁的商品實際售價（2026/10/13 查價）</td><td>公開資料</td></tr>
   </table>
@@ -812,14 +814,14 @@ flowchart TD
       <i style="font-style:normal;font-size:10px;font-weight:900;background:#EFF6FF;color:#1D4ED8;border-radius:5px;padding:0 5px">FK</i> 外鍵
       <i style="font-style:normal;font-size:10px;font-weight:900;background:#F1F5F9;color:#334155;border-radius:5px;padding:0 5px">UK</i> 唯一
     </div>
-    <div class="er-note" data-id="DB"><b>Turso 雲端資料庫（libSQL）</b>9 張主要資料表，以會員帳號 account 串連<br>關聯為邏輯外鍵，由應用程式層維護</div>
-    <div class="ent" data-id="USERS"><div class="ent-h"><b>USERS</b><span>會員</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="uk">UK</i></td></tr><tr><td class="ty">string</td><td class="nm">password_hash</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">name</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">role</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">points</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">auth_provider</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">social_id</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">avatar</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">social_avatar_url</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">last_active_date</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">login_streak</td><td class="k"></td></tr></table></div>
+    <div class="er-note" data-id="DB"><b>SQL Server／Turso（SQLAlchemy ORM）</b>9 張主要資料表，以會員帳號 account 串連<br>關聯為邏輯外鍵，由應用程式層維護</div>
+    <div class="ent" data-id="USERS"><div class="ent-h"><b>USERS</b><span>會員</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="uk">UK</i></td></tr><tr><td class="ty">string</td><td class="nm">password_hash</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">name</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">role</td><td class="k"></td></tr><tr><td class="ty">float</td><td class="nm">points</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">auth_provider</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">social_id</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">avatar</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">social_avatar_url</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">last_active_date</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">login_streak</td><td class="k"></td></tr></table></div>
     <div class="ent" data-id="RECIPIENTS"><div class="ent-h"><b>RECIPIENTS</b><span>親友</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">user_account</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">string</td><td class="nm">name</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">condition</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">line_user_id</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">line_bind_code</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">line_bind_expires</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">quick_tags_json</td><td class="k"></td></tr></table></div>
     <div class="ent" data-id="CHAT_MESSAGES"><div class="ent-h"><b>CHAT_MESSAGES</b><span>傳情訊息</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">owner_account</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">string</td><td class="nm">elder</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">string</td><td class="nm">sender</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">content</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">type</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">timestamp</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">from_role</td><td class="k"></td></tr></table></div>
-    <div class="ent" data-id="POINTS_LEDGER"><div class="ent-h"><b>POINTS_LEDGER</b><span>暖幣明細</span></div><table><tr><td class="ty">int</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">int</td><td class="nm">amount</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">title</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">date_str</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">expire_str</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">type</td><td class="k"></td></tr></table></div>
-    <div class="ent" data-id="REWARD_CLAIMS"><div class="ent-h"><b>REWARD_CLAIMS</b><span>回饋領取</span></div><table><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">claim_key</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">int</td><td class="nm">amount</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="POINTS_LEDGER"><div class="ent-h"><b>POINTS_LEDGER</b><span>暖幣明細</span></div><table><tr><td class="ty">int</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">float</td><td class="nm">amount</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">title</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">date_str</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">expire_str</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">type</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="REWARD_CLAIMS"><div class="ent-h"><b>REWARD_CLAIMS</b><span>回饋領取</span></div><table><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">claim_key</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">float</td><td class="nm">amount</td><td class="k"></td></tr></table></div>
     <div class="ent" data-id="AI_GUARD_USAGE"><div class="ent-h"><b>AI_GUARD_USAGE</b><span>AI 詢問額度</span></div><table><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">date_str</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">int</td><td class="nm">used</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">bonus</td><td class="k"></td></tr></table></div>
-    <div class="ent" data-id="CASHBACK_ORDERS"><div class="ent-h"><b>CASHBACK_ORDERS</b><span>購物回饋訂單</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">string</td><td class="nm">pharmacy</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">product_name</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">est_price</td><td class="k"></td></tr><tr><td class="ty">real</td><td class="nm">rate</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">status</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">order_amount</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">points</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">created_at</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">settled_at</td><td class="k"></td></tr></table></div>
+    <div class="ent" data-id="CASHBACK_ORDERS"><div class="ent-h"><b>CASHBACK_ORDERS</b><span>購物回饋訂單</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">account</td><td class="k"><i class="fk">FK</i></td></tr><tr><td class="ty">string</td><td class="nm">pharmacy</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">product_name</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">est_price</td><td class="k"></td></tr><tr><td class="ty">float</td><td class="nm">rate</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">status</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">order_amount</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">points</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">created_at</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">settled_at</td><td class="k"></td></tr></table></div>
     <div class="ent" data-id="RECOMMENDATION_PRODUCTS"><div class="ent-h"><b>RECOMMENDATION_PRODUCTS</b><span>暖心選物商品</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">product_name</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">match_conditions_json</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">primary_conditions_json</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">exclude_conditions_json</td><td class="k"></td></tr><tr><td class="ty">int</td><td class="nm">best_price</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">pharmacy_comparison_json</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">price_checked_at</td><td class="k"></td></tr></table></div>
     <div class="ent" data-id="CLINICAL_KNOWLEDGE"><div class="ent-h"><b>CLINICAL_KNOWLEDGE</b><span>實證文獻</span></div><table><tr><td class="ty">string</td><td class="nm">id</td><td class="k"><i class="pk">PK</i></td></tr><tr><td class="ty">string</td><td class="nm">title</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">ingredient</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">evidence_level</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">contraindications</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">target_symptoms_json</td><td class="k"></td></tr><tr><td class="ty">string</td><td class="nm">citation</td><td class="k"></td></tr></table></div>
   </div>
@@ -1122,7 +1124,8 @@ flowchart TD
   <div class="panel" data-group="demo" id="d-qa">
     <table>
       <tr><th>可能被問到</th><th>建議回答</th></tr>
-      <tr><td>資料會不會因為伺服器重啟消失？</td><td>資料存在 Turso 雲端資料庫，Render 休眠或重新部署都不影響。</td></tr>
+      <tr><td>資料會不會因為伺服器重啟消失？</td><td>資料存在雲端資料庫（目前是 Turso），Render 休眠或重新部署都不影響。</td></tr>
+      <tr><td>為什麼使用 ORM？</td><td>資料表以 SQLAlchemy 模型定義，程式不寫死特定資料庫的 SQL 語法，同一套程式可在 SQL Server、Turso 與 SQLite 上執行；三種資料庫各跑一次完整的自動化測試（144 項）都通過。改用 SQL Server 只要設定連線網址，舊資料會自動匯入。</td></tr>
       <tr><td>AI 的建議可靠嗎？</td><td>以實證文獻（NIH、AHA、TFDA 等）做 RAG 檢索，再套用 TFDA 交互作用規則；有疑慮一律建議諮詢醫師，不提供未查價或有禁忌的商品。</td></tr>
       <tr><td>價格從哪裡來？</td><td>2026/10/13 逐一到四家連鎖藥局官網查價；包裝不同或缺貨的報價會顯示但不參與比價。</td></tr>
       <tr><td>點數怎麼算？</td><td>參考蝦皮與 ShopBack：註冊 +5、關懷卡 +0.1、小熊每週 +0.5，點數主要來自購物回饋（依藥局 3–5% 換算，回饋 $1 = 1 點，經確認才入帳）；折抵 1 點 = $1。</td></tr>
@@ -1134,7 +1137,7 @@ flowchart TD
 
 </main>
 
-<footer>GiftSense 智慧關懷送禮 · 系統說明文件 · 2026/10/15</footer>
+<footer>GiftSense 智慧關懷送禮 · 系統說明文件 · 2026/10/16</footer>
 
 <script>
   // 導覽列：用 JS 捲動（在預覽視窗、iframe 中錨點連結會失效），並標示目前所在章節

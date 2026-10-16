@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-資料庫連線層
+Turso（libSQL）連線轉接層
 
-- 預設：本機 SQLite（backend/caregift.db）。
-- 設定環境變數 TURSO_DATABASE_URL（與 TURSO_AUTH_TOKEN）後：改連 Turso 雲端資料庫（libSQL，語法與 SQLite 相同）。
-  Render 免費方案的硬碟在休眠／重新部署時會被重置，資料放在 Turso 才不會消失。
-
-libsql 的查詢結果是 tuple、錯誤類型是 ValueError，這裡包一層轉接，
-讓 database.py 現有的 row["欄位"]、dict(row)、except sqlite3.XxxError 寫法維持不變。
+libsql 的查詢結果是 tuple、錯誤類型是 ValueError，這裡包一層轉接，讓它的介面與 Python 內建的 sqlite3 相同，
+SQLAlchemy 就能用 SQLite 方言透過它存取 Turso（見 db_engine.TursoDialect）。
+設定環境變數 TURSO_DATABASE_URL（與 TURSO_AUTH_TOKEN）後啟用。
 """
 import datetime
 import os
@@ -194,27 +191,3 @@ def connect_turso():
             last_error = e
             time.sleep(0.3 * (attempt + 1))
     raise sqlite3.OperationalError(f"無法連線 Turso 資料庫：{last_error}")
-
-
-def turso_is_empty(conn) -> bool:
-    row = conn.execute(
-        "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'users'"
-    ).fetchone()
-    return row[0] == 0
-
-
-def bootstrap_turso_from_sqlite(conn, sqlite_path: str) -> bool:
-    """第一次連上空的 Turso 資料庫時，把 repo 內附的 caregift.db（示範帳號、文獻等）整份匯入。
-    之後 Turso 已有資料就不會再匯入，避免覆蓋使用者新增的資料。"""
-    if not os.path.exists(sqlite_path) or not turso_is_empty(conn):
-        return False
-    src = sqlite3.connect(sqlite_path)
-    try:
-        statements = [
-            s for s in src.iterdump()
-            if "sqlite_sequence" not in s and s not in ("BEGIN TRANSACTION;", "COMMIT;")
-        ]
-    finally:
-        src.close()
-    conn.executescript("BEGIN;\n" + "\n".join(statements) + "\nCOMMIT;")
-    return True
