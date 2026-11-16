@@ -1,11 +1,12 @@
 import os
 import random
-import requests
-import json
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 
+import gemini_client
+
 WEEKDAY_NAMES = ["一", "二", "三", "四", "五", "六", "日"]
+_AI_GREETING_CACHE = {}   # Gemini 改寫過的問候內文（當天有效，最多 300 筆）
 
 def _season_of(month: int) -> str:
     if month in (3, 4, 5):
@@ -189,7 +190,7 @@ def generate_ai_greeting(
     elder_status: str,
     tone: str,
     api_key: Optional[str] = None,
-    model: str = "gemini-1.5-flash",
+    model: Optional[str] = None,
     variant: int = 0
 ) -> Dict[str, Any]:
     """
@@ -224,12 +225,22 @@ def generate_ai_greeting(
     }
     tone_desc = tone_map.get(tone, "撒嬌溫馨")
 
-    # 2. Try Gemini API if key is present
+    # 2. 內建問候（衛教叮嚀一律用內建、有出處的內容，不讓 Gemini 自行寫指引名稱）
+    local = generate_local_dynamic_greeting(
+        elder_name=elder_name, elder_condition=elder_condition, weather_city=weather_city,
+        weather_temp=weather_temp, weather_temp_diff=weather_temp_diff, weather_condition=weather_condition,
+        weather_humidity=weather_humidity, elder_status=elder_status, tone=tone, variant=variant
+    )
+
+    # 3. 有金鑰時由 Gemini 改寫問候內文；同一天、同一位親友、同一語氣與 variant 結果固定（也節省額度）
     gemini_key = api_key or os.environ.get("GEMINI_API_KEY")
+    cache_key = (datetime.now().strftime('%Y-%m-%d'), elder_name, elder_condition, elder_status, tone, variant,
+                 weather_city, weather_condition)
+    if gemini_key and cache_key in _AI_GREETING_CACHE:
+        return {**local, "message": _AI_GREETING_CACHE[cache_key], "source": "gemini"}
     if gemini_key:
-        try:
-            prompt = f"""你是一位專門為年輕子女代筆發送「親友專屬每日健康問候」的 AI 暖心助理。
-請依據以下即時數據，為子女撰寫一段傳送給親友的問候短文，並提供 1 句專業醫學指南。
+        prompt = f"""你是一位專門為年輕子女代筆發送「親友專屬每日健康問候」的 AI 暖心助理。
+請依據以下即時數據，為子女撰寫一段傳送給親友的問候短文。
 
 【今天】
 - {datetime.now().strftime('%Y-%m-%d')} 星期{WEEKDAY_NAMES[datetime.now().weekday()]}（請自然融入季節或星期的話題，每天內容都要不一樣，避免制式重複的句子）
@@ -250,52 +261,21 @@ def generate_ai_greeting(
 【醫學與照護安全限制】
 {chr(10).join(['- ' + r for r in clinical_rules])}
 
-請務必嚴格輸出合法的 JSON 物件，格式如下（勿輸出其他文字）：
-{{
-  "message": "「問候內容，約60~90字，自然結合天氣與親友當前狀況，語氣道地，句首以親友稱呼開頭，以『「』開頭並以『」』結尾」",
-  "clinical_insight": "【權威醫學指引出處】1句簡明扼要的臨床衛教叮嚀（例如 AHA 心血管指引或 ESCEO 關節指引）"
-}}
+問候內文不要提到任何醫學指引、期刊、機構名稱或藥品劑量，並使用台灣繁體中文用語。
+請只輸出 JSON 物件：{{"message": "問候內容"}}
+message 約 60～90 字，自然結合天氣與親友當前狀況，以親友稱呼開頭，整段以「 開頭、以 」結尾。
 """
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={gemini_key}"
-            payload = {
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {
-                    "temperature": 0.7,
-                    "maxOutputTokens": 350
-                }
-            }
-            res = requests.post(url, json=payload, timeout=8)
-            if res.status_code == 200:
-                res_data = res.json()
-                raw_text = res_data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
-                # Clean markdown backticks if any
-                clean_json_str = raw_text.replace("```json", "").replace("```", "").strip()
-                parsed = json.loads(clean_json_str)
-                if "message" in parsed and "clinical_insight" in parsed:
-                    return {
-                        "success": True,
-                        "message": parsed["message"],
-                        "clinical_insight": parsed["clinical_insight"],
-                        "source": "gemini-1.5-flash",
-                        "model": model
-                    }
-        except Exception as e:
-            print("Gemini API generation fallback:", e)
+        parsed = gemini_client.parse_json(
+            gemini_client.generate(prompt, gemini_key, model=model, temperature=0.7, max_tokens=500, json_mode=True))
+        message = str(parsed.get("message", "")).strip() if isinstance(parsed, dict) else ""
+        if message:
+            if len(_AI_GREETING_CACHE) >= 300:
+                _AI_GREETING_CACHE.pop(next(iter(_AI_GREETING_CACHE)))
+            _AI_GREETING_CACHE[cache_key] = message
+            return {**local, "message": message, "source": "gemini"}
 
-    # 3. Dynamic Local Generative Synthesis (Rich Multi-Permutation Engine)
-    # Even without API key, it generates varied, non-repetitive greetings based on live variables!
-    return generate_local_dynamic_greeting(
-        elder_name=elder_name,
-        elder_condition=elder_condition,
-        weather_city=weather_city,
-        weather_temp=weather_temp,
-        weather_temp_diff=weather_temp_diff,
-        weather_condition=weather_condition,
-        weather_humidity=weather_humidity,
-        elder_status=elder_status,
-        tone=tone,
-        variant=variant
-    )
+    # 4. 沒有金鑰或 Gemini 失敗：使用內建問候（依日期、天氣、病況與語氣組合，每天不同）
+    return local
 
 def generate_local_dynamic_greeting(
     elder_name: str,

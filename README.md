@@ -62,7 +62,7 @@
 ### 1. 醫療級 RAG 檢索增強生成引擎 (`rag_engine.py`)
 - **雙軌檢索機制**：
   - **軌道一 (本機臨床實證庫)**：收錄 15 篇權威臨床指引，涵蓋視力、心血管、腸胃、骨質、睡眠、關節與燙傷創面等主題。
-  - **軌道二 (Google Gemini 1.5 Flash API)**：當配置 API Key 時，系統自動組合 System Prompt、親友病歷上下文與檢索文獻，執行精準的臨床等級衛教小語生成。
+  - **軌道二 (Google Gemini 3.1 Flash-Lite API)**：當配置 API Key 時，系統自動組合 System Prompt、親友病歷上下文與檢索文獻，執行精準的臨床等級衛教小語生成。
 - **降級機制 (Graceful Degradation)**：在無 API Key 或無網路連線狀態下，全自動回退至在地專家規則引擎，保證系統 100% 可用。
 
 ### 2. 高維向量語意特徵檢索庫 (`vector_store.py`)

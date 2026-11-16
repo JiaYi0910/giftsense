@@ -1,10 +1,11 @@
 import os
-import json
 import re
-import requests
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Callable
+
+import gemini_client
 
 _LEADING_EMOJI = re.compile(r"^[\s☀-➿⬀-⯿️\U0001F000-\U0001FAFF]+")
+_ANY_EMOJI = re.compile(r"[☀-➿⬀-⯿️\U0001F000-\U0001FAFF]")
 
 def normalize_chip(chip: Dict[str, Any]) -> Dict[str, Any]:
     """標籤不使用 emoji：去掉開頭的 emoji，原本以 ⚠️ 標示的撞藥警示改用 warning 欄位"""
@@ -24,6 +25,7 @@ def normalize_chips(chips) -> List[Dict[str, Any]]:
 # 由 tests/test_quick_questions.py 逐題驗證，確保點下去的回答和病況真的有關。
 # =========================================================================
 DRUG, ALERT, DIET, CARE, EVID = "撞藥防錯", "就醫警訊", "飲食指引", "照護指引", "實證保健"
+BADGES = (DRUG, ALERT, DIET, CARE, EVID)
 
 
 def _c(label, query, badge, expect):
@@ -248,63 +250,52 @@ def generate_ai_recipient_chips(
     elder_name: str,
     elder_condition: str,
     api_key: Optional[str] = None,
-    model: str = "gemini-1.5-flash"
+    model: Optional[str] = None,
+    answerable: Optional[Callable[[str], bool]] = None,
 ) -> List[Dict[str, Any]]:
     """
-    Track 2: AI-Powered Deep Profiling.
-    Uses Gemini LLM to generate 6-8 tailored medical question & supplement check chips.
-    Falls back gracefully to rich Track 1 clinical engine if API fails or key is missing.
+    Track 2：由 Gemini 依親友病況產生 6～8 題快速提問（使用者按「重新產生」時）。
+    每題都要能被 AI 守護助理檢索到資料（answerable）才保留；標籤不得超過 14 字、不用 emoji，
+    分類只能用規則題的五種。合格題數不到 4 題、沒有金鑰或呼叫失敗時，改用規則式提問（Track 1）。
     """
     gemini_key = api_key or os.environ.get("GEMINI_API_KEY")
-    if gemini_key:
-        try:
-            prompt = f"""你是一位臨床藥師與銀髮醫療營養照護專家。
-請針對守護對象的稱呼與健康病況，為年輕子女生成 6 到 8 個「高實用度、具備臨床撞藥防錯與對症調理」的快速諮詢提問標籤。
+    prompt = f"""你是一位臨床藥師與銀髮照護專家。
+請針對親友的稱呼與健康狀況，為年輕子女產生 8 個實用的快速諮詢提問。
 
-【守護對象資訊】
+【親友資訊】
 - 稱呼：{elder_name}
-- 健康狀況 / 慢性病史 / 傷病：{elder_condition}
+- 健康狀況、慢性病史、用藥：{elder_condition}
 
 【要求】
-1. 嚴格輸出合法 JSON Array，格式為：
-[
-  {{
-    "label": "短標籤名稱（不超過14字，如：⚠️ 抗凝血+納豆禁忌 或 💡 血糖偏高喝什麼？）",
-    "query": "點擊後發送給 AI 諮詢的完整詳細問題（約20~40字）",
-    "badge": "類別小標籤（例如：TFDA警示 / 臨床指引 / 對症舒緩 / 藥局首選 / 撞藥防錯）"
-  }}
-]
-2. 必須精準針對【{elder_condition}】的禁忌、常見併發症、以及臺灣連鎖藥局常見合格補品進行提問。
-3. 若含有心血管、降血壓、抗凝血、糖尿病、痛風等，必須包含至少 2 題 TFDA 藥物交互作用撞藥防錯題！
-4. 嚴格僅輸出 JSON Array，勿輸出任何其他 Markdown 或解釋文字。
+1. 只輸出 JSON 陣列，每個元素格式為 {{"label": "短標籤", "query": "完整問題", "badge": "分類"}}
+2. label 不超過 14 個字，不使用任何 emoji 或符號圖示。
+3. query 是點下去後送給 AI 守護助理的完整問題（20～40 字），問題中稱呼親友為「{elder_name}」。
+4. badge 只能是：{"、".join(BADGES)} 其中之一。
+5. 問題要針對「{elder_condition}」的用藥與保健品交互作用、需要就醫的警訊、飲食與照護、保健品實證。
+   若有心血管、高血壓、抗凝血、糖尿病、痛風、腎臟病等，至少 2 題是「{DRUG}」。
+6. 只問保健品、藥物、飲食、照護方面的問題，不要寫出任何法規字號、文獻或機構名稱。
+7. 使用台灣繁體中文用語與台灣常見的藥名寫法（例如寫「Warfarin」或「可邁丁」，不寫「華法林」）。
 """
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={gemini_key}"
-            payload = {
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {
-                    "temperature": 0.4,
-                    "maxOutputTokens": 600
-                }
-            }
-            res = requests.post(url, json=payload, timeout=8)
-            if res.status_code == 200:
-                res_data = res.json()
-                raw_text = res_data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
-                clean_json_str = raw_text.replace("```json", "").replace("```", "").strip()
-                parsed = json.loads(clean_json_str)
-                if isinstance(parsed, list) and len(parsed) >= 4:
-                    formatted = []
-                    for item in parsed:
-                        if "label" in item and "query" in item:
-                            formatted.append({
-                                "label": str(item["label"]).strip(),
-                                "query": str(item["query"]).strip(),
-                                "badge": str(item.get("badge", "AI推薦")).strip()
-                            })
-                    if len(formatted) >= 4:
-                        return normalize_chips(formatted[:8])
-        except Exception as e:
-            print("Notice: AI chips generation fallback to clinical rules:", e)
-
-    # Fallback to Track 1 deterministic clinical engine
+    text = gemini_client.generate(prompt, gemini_key, model=model, temperature=0.4, max_tokens=1200, json_mode=True)
+    parsed = gemini_client.parse_json(text) if text else None
+    chips, seen = [], set()
+    for item in parsed if isinstance(parsed, list) else []:
+        if not isinstance(item, dict):
+            continue
+        label = _ANY_EMOJI.sub("", str(item.get("label", ""))).strip()
+        query = _ANY_EMOJI.sub("", str(item.get("query", ""))).strip()
+        badge = str(item.get("badge", "")).strip()
+        if not label or not query or len(label) > 14 or label in seen:
+            continue
+        if badge not in BADGES:
+            badge = EVID
+        if answerable is not None and not answerable(query):
+            continue
+        seen.add(label)
+        chips.append({"label": label, "query": query, "badge": badge, "warning": badge in (DRUG, ALERT)})
+        if len(chips) >= MAX_CHIPS:
+            break
+    if len(chips) >= 4:
+        return normalize_chips(chips)
+    # 改用規則式提問（每題都經 tests/test_quick_questions.py 驗證）
     return get_clinical_rule_chips(condition=elder_condition, name=elder_name)

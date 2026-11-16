@@ -49,7 +49,7 @@ from database import (
 )
 from social_auth import verify_social_token, SocialAuthError
 from line_messages import card as line_card, button as line_button
-from rag_engine import query_rag_engine, CLINICAL_LITERATURES
+from rag_engine import query_rag_engine, find_symptom_match, CLINICAL_LITERATURES
 import retrieval
 from semantic_index import semantic_index
 from vector_store import global_vector_store
@@ -152,7 +152,7 @@ class GuardQueryRequest(BaseModel):
     elder_name: str = "親友"
     elder_condition: str = "日常養生"
     api_key: Optional[str] = None
-    model: Optional[str] = "gemini-1.5-flash"
+    model: Optional[str] = None   # 不指定時用 gemini_client 的預設模型
     account: Optional[str] = None
 
 class GuardRedeemRequest(BaseModel):
@@ -181,7 +181,7 @@ class GenerateChipsRequest(BaseModel):
     elder_name: Optional[str] = None
     elder_condition: Optional[str] = None
     api_key: Optional[str] = None
-    model: Optional[str] = "gemini-1.5-flash"
+    model: Optional[str] = None   # 不指定時用 gemini_client 的預設模型
 
 class OrderCreateRequest(BaseModel):
     order_id: str
@@ -206,7 +206,7 @@ class GreetingGenerateRequest(BaseModel):
     elder_status: str = "normal"
     tone: str = "spoiled"
     api_key: Optional[str] = None
-    model: Optional[str] = "gemini-1.5-flash"
+    model: Optional[str] = None   # 不指定時用 gemini_client 的預設模型
     variant: Optional[int] = 0
 
 class FamilyMessageRequest(BaseModel):
@@ -466,7 +466,7 @@ def guard_query(req: GuardQueryRequest, request: Request, member: str = Depends(
 
     result = query_rag_engine(
         query=req.query, elder_name=req.elder_name,
-        elder_condition=req.elder_condition, api_key=req.api_key, model=req.model or "gemini-1.5-flash"
+        elder_condition=req.elder_condition, api_key=req.api_key, model=req.model
     )
     if isinstance(result, dict):
         result["quota"] = quota
@@ -698,11 +698,16 @@ def generate_recipient_chips_endpoint(rec_id: str, req: GenerateChipsRequest, me
     elder_name = req.elder_name or (rec["name"] if rec else "親友")
     elder_condition = req.elder_condition or (rec["condition"] if rec else "日常養生")
 
+    def answerable(query: str) -> bool:
+        """AI 產生的提問要能檢索到知識卡片或穴位舒緩資料才保留"""
+        return bool(find_symptom_match(query, elder_name, elder_condition)) or bool(retrieval.search_cards(query, top_k=1)[0])
+
     chips = generate_ai_recipient_chips(
         elder_name=elder_name,
         elder_condition=elder_condition,
         api_key=req.api_key,
-        model=req.model or "gemini-1.5-flash"
+        model=req.model,
+        answerable=answerable,
     )
     if rec:
         update_recipient_quick_tags(rec_id, chips)
@@ -852,7 +857,7 @@ def greeting_generate(req: GreetingGenerateRequest):
         weather_temp_diff=req.weather_temp_diff, weather_condition=req.weather_condition,
         weather_humidity=req.weather_humidity if req.weather_humidity is not None else 65,
         elder_status=req.elder_status, tone=req.tone, api_key=req.api_key,
-        model=req.model or "gemini-1.5-flash", variant=req.variant or 0
+        model=req.model, variant=req.variant or 0
     )
 
 @app.get("/api/messages")

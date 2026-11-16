@@ -1,5 +1,4 @@
 import json
-import requests
 
 # Handle local and package imports gracefully
 try:
@@ -7,12 +6,13 @@ try:
     from backend.tfda_service import global_tfda_service
     from backend.product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
     from backend.knowledge_base import source_refs
-    from backend import live_sources, retrieval
+    from backend import gemini_client, live_sources, retrieval
 except ImportError:
     from vector_store import global_vector_store, FULL_CLINICAL_LITERATURES
     from tfda_service import global_tfda_service
     from product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
     from knowledge_base import source_refs
+    import gemini_client
     import live_sources
     import retrieval
 
@@ -538,7 +538,7 @@ def find_symptom_match(query: str, elder_name: str, elder_condition: str):
 # =========================================================================
 # UNIFIED HYBRID QUERY PIPELINE (檢索 + 交互作用規則 + GEMINI)
 # =========================================================================
-def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key: str = None, model: str = "gemini-1.5-flash"):
+def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key: str = None, model: str = None):
     # -------------------------------------------------------------------------
     # 1. TRACK 1: SYMPTOM & PHYSICAL RELIEF TRACK (Acupressure + Tools + Safety)
     # -------------------------------------------------------------------------
@@ -565,15 +565,7 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
 3. 推薦連鎖藥局能買到的實用外用輔具或草本貼片（強調非口服、物理舒緩，【嚴禁推薦無關的口服營養品如桂格完膳】）。
 4. 明確提醒親友病史（{elder_name} - {elder_condition}）的特定安全禁忌（如：抗凝血不可用筋膜槍重擊頸部動脈、燙傷不可在傷口貼貼布、高血壓注意溫敷溫度）。"""
 
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-                payload = {
-                    "contents": [{"parts": [{"text": prompt}]}],
-                    "generationConfig": {"temperature": 0.3}
-                }
-                res = requests.post(url, json=payload, timeout=8)
-                if res.status_code == 200:
-                    data = res.json()
-                    gemini_text = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                gemini_text = gemini_client.generate(prompt, api_key, model=model, temperature=0.3, timeout=12)
             except Exception as e:
                 print("Gemini API call notice:", e)
 
@@ -777,15 +769,7 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
 2. 是否命中交互作用規則；命中時以規則的警示為準。若有即時查詢的仿單原文，簡述仿單提到的內容；仿單沒有提到不代表確定沒有交互作用。
 3. 每一項重點後面附上對應的來源名稱與網址（只能用上方提供的網址，不可自行編造）。避免冗長大段文字。"""
 
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
-            payload = {
-                "contents": [{"parts": [{"text": prompt}]}],
-                "generationConfig": {"temperature": 0.3}
-            }
-            res = requests.post(url, json=payload, timeout=8)
-            if res.status_code == 200:
-                data = res.json()
-                gemini_text = data.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+            gemini_text = gemini_client.generate(prompt, api_key, model=model, temperature=0.3, timeout=12)
         except Exception as e:
             print("Gemini API call notice:", e)
 
