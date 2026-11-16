@@ -1,0 +1,12 @@
+# title: 食品原料整合查詢平臺：納豆菌（Bacillus subtilis natto）
+# url: https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=17495
+# authority: 衛生福利部食品藥物管理署
+# fetched: 2026-11-16
+# license: 政府網站資料（註明出處）
+
+大分類：可供食品使用之原料
+次分類：微生物及其來源製取之原料
+中文名稱：納豆菌
+學名：Bacillus natto, Bacillus subtilis
+部位：菌體
+備註：可供為食品原料或食品加工使用。

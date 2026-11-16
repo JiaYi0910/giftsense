@@ -59,7 +59,10 @@ def test_manifest_ids_unique_and_complete():
     assert len(ids) == len(set(ids))
     for s in MANIFEST.values():
         assert s["title"] and s["authority"] and s["url"].startswith("https://"), s["id"]
-        assert s["content"] in ("fetch_html", "fetch_openfda_label", "link_only", "manual"), s["id"]
+        assert s["content"] in kb.CONTENT_MODES, s["id"]
+        if s["content"] == "fetch_tfda_material":
+            assert s["url"].startswith("https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id="), s["id"]
+            assert s.get("tfda_name"), f"{s['id']} 沒有記錄頁面上的原料名稱"
         assert s.get("verified"), f"{s['id']} 沒有查證紀錄"
         if s["type"] == "journal" and s.get("pmid"):
             assert s["url"] == f"https://pubmed.ncbi.nlm.nih.gov/{s['pmid']}/"
@@ -147,7 +150,8 @@ def test_build_rows_only_chunks_sources_with_files():
         if s["content"] == "link_only":
             assert sid not in by_source, f"{sid} 只能放連結，不能存全文"
     assert {"nccih_ginkgo", "nccih_glucosamine", "label_warfarin"} <= set(by_source)
-    assert all(MANIFEST[m]["content"] in ("manual", "fetch_html", "fetch_openfda_label") for m in missing)
+    assert all(MANIFEST[m]["content"] in kb.FETCHED_MODES + ("manual",) for m in missing)
+    assert not [m for m in missing if MANIFEST[m]["content"] in kb.FETCHED_MODES], "已下載的來源不應缺原文"
 
 
 # -------------------------------------------------------------------------
@@ -199,6 +203,52 @@ def test_warfarin_and_glucosamine_is_flagged_without_product():
     assert safety["action_card"]["type"] == "notice" and safety["action_card"]["price"] is None
     assert [s["id"] for s in res["tfda_verification"]["sources"]] == ["nccih_glucosamine"]
     assert "https://www.nccih.nih.gov/health/glucosamine" in res["gemini_synthesis"]
+
+
+def test_tfda_material_pages_are_stored_with_official_wording():
+    chunks = {c["source_id"]: c["chunk_text"] for c in kb.build_rows()[1] if c["source_id"].startswith("tfda_material_")}
+    assert set(chunks) == {i for i, s in MANIFEST.items() if s["content"] == "fetch_tfda_material"}
+    assert "每日食用限量為三十毫克" in chunks["tfda_material_coq10"]
+    assert "服用抗凝血藥品(warfarin)之病患，不宜食用" in chunks["tfda_material_coq10"]
+    assert "以γ-胺基丁酸計為一百毫克" in chunks["tfda_material_gaba"]
+    assert "未經確認其食用安全性前，不得供為食品原料使用" in chunks["tfda_material_nattokinase"]
+    assert "以藥品列管" in chunks["tfda_material_glucosamine_sulfate"]
+
+
+def test_tfda_material_parser_reads_detail_fields():
+    sys.path.insert(0, os.path.join(BACKEND, "tools"))
+    import fetch_sources
+    html = ("<html><body><h2>詳細資料</h2><table>"
+            "<tr><th>大分類</th><td>可供食品使用之原料</td></tr><tr><th>次分類</th><td>微生物及其來源製取之原料</td></tr>"
+            "<tr><th>中文名稱</th><td>輔酵素Ｑ10</td></tr><tr><th>外文名稱</th><td>Coenzyme Q10</td></tr>"
+            "<tr><th>學名</th><td></td></tr><tr><th>部位</th><td></td></tr>"
+            "<tr><th>備註</th><td>一、每日食用限量為三十毫克。<br>二、應標示警語。</td></tr></table>"
+            "<h3>檔案下載</h3></body></html>")
+    fields = fetch_sources.parse_tfda_material(html)
+    assert fields["中文名稱"] == "輔酵素Ｑ10" and fields["外文名稱"] == "Coenzyme Q10"
+    assert fields["備註"].splitlines() == ["一、每日食用限量為三十毫克。", "二、應標示警語。"]
+    assert fields["學名"] == ""
+
+
+def test_cards_follow_tfda_limits():
+    cards = {l["id"]: l for l in FULL_CLINICAL_LITERATURES}
+    gaba = cards["lit_gaba_sesamin_08"]
+    assert "100-250" not in gaba["recommendedDose"] and "100 毫克" in gaba["recommendedDose"]
+    assert "降血壓、鎮靜及癲癇" in gaba["contraindications"]
+    assert "30 毫克" in cards["lit_coq10_06"]["recommendedDose"]
+    assert "不提供建議劑量" in cards["lit_nattokinase_10"]["recommendedDose"]
+    assert "以藥品列管" in cards["lit_glucosamine_07"]["recommendedDose"]
+    assert "藥品" in cards["lit_ginkgo_11"]["recommendedDose"]
+
+
+def test_gaba_with_blood_pressure_or_sedative_drugs_is_flagged():
+    for cond in ("高血壓，服用降血壓藥", "癲癇", "長期服用安眠藥"):
+        res = query_rag_engine("睡不好，GABA 可以幫助入睡嗎？", "媽媽", cond)
+        tfda = res["tfda_verification"]
+        assert tfda["is_collision"] is True and tfda["rule_id"] == "rule_gaba_bp_sedative_epilepsy", cond
+        assert [s["id"] for s in tfda["sources"]] == ["tfda_material_gaba"]
+        assert res["safety"]["action_card"]["price"] is None
+        assert MANIFEST["tfda_material_gaba"]["url"] in res["gemini_synthesis"]
 
 
 def test_answers_cite_only_listed_urls():

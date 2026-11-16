@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-下載 knowledge_sources/sources.json 中可公開取得的原文（美國聯邦政府網頁與 FDA 藥品仿單），存成 knowledge_sources/ 底下的文字檔
+下載 knowledge_sources/sources.json 中可公開取得的原文（美國聯邦政府網頁、FDA 藥品仿單、食藥署食品原料資料），存成 knowledge_sources/ 底下的文字檔
 
 用法（在 backend 資料夾）：
-    python tools/fetch_sources.py            # 下載全部 fetch_html／fetch_openfda_label 來源
+    python tools/fetch_sources.py            # 下載全部 fetch_html／fetch_openfda_label／fetch_tfda_material 來源
     python tools/fetch_sources.py nccih_ginkgo label_warfarin   # 只下載指定來源
 
 - fetch_html：取網頁主要內容；頁面標題必須包含清單上的標題關鍵字，否則視為網址失效、不寫檔
 - fetch_openfda_label：以網址中的 setid 向 openFDA 查詢該份仿單，存「Drug Interactions」段落
+- fetch_tfda_material：食藥署「食品原料整合查詢平臺」詳細資料頁，存分類、名稱與備註（使用限制、每日限量、警語）；
+  頁面上的中文名稱必須和清單的 tfda_name 相同，否則不寫檔
 - manual／link_only 的來源不會下載（有著作權、網站擋程式或需要在查詢系統操作）
 """
 import datetime
@@ -15,6 +17,7 @@ import json
 import os
 import re
 import sys
+import unicodedata
 import urllib.parse
 import urllib.request
 
@@ -77,6 +80,47 @@ def fetch_openfda_label(source: dict) -> str:
     return _write(source, "\n\n".join(body), extra=f"openFDA set_id {setid}；effective {label.get('effective_time', '')}；{brand}")
 
 
+TFDA_FIELDS = ("大分類", "次分類", "中文名稱", "外文名稱", "學名", "部位", "備註")
+
+
+def parse_tfda_material(html: str) -> dict:
+    """食藥署「食品原料整合查詢平臺」詳細資料頁：取出分類、名稱與備註（使用限制、警語）"""
+    from bs4 import BeautifulSoup
+
+    text = BeautifulSoup(html, "html.parser").get_text("\n")
+    start = text.find("詳細資料")
+    end = text.find("檔案下載", start)
+    if start < 0 or end < 0:
+        raise RuntimeError("找不到詳細資料欄位（頁面可能改版）")
+    region = text[start:end]
+    labels = TFDA_FIELDS + ("檔案下載",)
+    fields = {}
+    for i, name in enumerate(TFDA_FIELDS):
+        a = region.find(name)
+        if a < 0:
+            continue
+        b = len(region)
+        for nxt in labels[i + 1:]:
+            j = region.find(nxt, a + len(name))
+            if j >= 0:
+                b = j
+                break
+        value = "\n".join(s.strip() for s in region[a + len(name):b].replace("\r", "\n").split("\n") if s.strip())
+        fields[name] = value
+    if not fields.get("中文名稱"):
+        raise RuntimeError("沒有擷取到原料名稱")
+    return fields
+
+
+def fetch_tfda_material(source: dict) -> str:
+    fields = parse_tfda_material(_get(source["url"]).decode("utf-8", errors="ignore"))
+    expected = unicodedata.normalize("NFKC", source.get("tfda_name", ""))
+    if not expected or unicodedata.normalize("NFKC", fields["中文名稱"]) != expected:
+        raise RuntimeError(f"原料名稱和清單不符（頁面是「{fields['中文名稱']}」），網址可能已改版，未寫檔")
+    body = "\n".join(f"{k}：{fields[k]}" if "\n" not in fields[k] else f"{k}：\n{fields[k]}" for k in TFDA_FIELDS if fields.get(k))
+    return _write(source, body)
+
+
 def main(only=None):
     ok, failed = 0, []
     for s in kb.load_manifest():
@@ -88,6 +132,8 @@ def main(only=None):
                 path = fetch_html(s)
             elif mode == "fetch_openfda_label":
                 path = fetch_openfda_label(s)
+            elif mode == "fetch_tfda_material":
+                path = fetch_tfda_material(s)
             else:
                 continue
             ok += 1

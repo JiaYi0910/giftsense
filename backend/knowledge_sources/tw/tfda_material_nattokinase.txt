@@ -1,0 +1,12 @@
+# title: 食品原料整合查詢平臺：納豆激酶（Nattokinase）
+# url: https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16424
+# authority: 衛生福利部食品藥物管理署
+# fetched: 2026-11-16
+# license: 政府網站資料（註明出處）
+
+大分類：未確認安全性尚不得使用之原料
+次分類：未確認安全性尚不得使用之原料
+中文名稱：納豆激酶
+外文名稱：Nattokinase
+部位：純化物
+備註：未經確認其食用安全性前，不得供為食品原料使用。

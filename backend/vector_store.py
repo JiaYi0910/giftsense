@@ -17,13 +17,13 @@ FULL_CLINICAL_LITERATURES: List[Dict[str, Any]] = [
         "category": "視力保健",
         "ingredient": "Lutein (葉黃素) & Zeaxanthin (玉米黃素)",
         "evidenceLevel": "Level 1 (大規模多中心隨機對照試驗 RCT)",
-        "recommendedDose": "AREDS2 試驗配方：葉黃素 10 mg＋玉米黃素 2 mg／每日（試驗對象為有惡化成晚期黃斑部病變風險的 50–85 歲成人）",
+        "recommendedDose": "AREDS2 試驗配方：葉黃素 10 mg＋玉米黃素 2 mg／每日（試驗對象為有惡化成晚期黃斑部病變風險的 50–85 歲成人）。食藥署規定：以金盞草或萬壽菊為原料的食品，每日食用限量以葉黃素總含量計為 30 毫克（113年7月11日衛授食字第1131301534號公告）",
         "mechanism": "葉黃素與玉米黃素是視網膜黃斑部的類胡蘿蔔素。AREDS2 在原本的 AREDS 配方中加入葉黃素＋玉米黃素，主要分析並沒有進一步降低惡化成晚期黃斑部病變的風險；但因 β-胡蘿蔔素與前吸菸者的肺癌增加有關，葉黃素＋玉米黃素可作為替代的類胡蘿蔔素。",
         "contraindications": "AREDS2 中含 β-胡蘿蔔素的組別肺癌較多，且多為前吸菸者；吸菸或曾吸菸者應避免含 β-胡蘿蔔素的配方。黃斑部病變的補充與追蹤請依眼科醫師建議。",
         "targetSymptoms": ["用眼過度", "眼睛乾澀", "夜間視力不佳", "黃斑部保健", "頻繁使用3C"],
-        "citation": "NIH NEI：Age-Related Eye Disease Studies (AREDS/AREDS2)；Age-Related Eye Disease Study 2 Research Group, et al. Lutein + zeaxanthin and omega-3 fatty acids for age-related macular degeneration: the Age-Related Eye Disease Study 2 (AREDS2) randomized clinical trial. JAMA. 2013;309:2005-15.（PMID 23644932）",
+        "citation": "NIH NEI：Age-Related Eye Disease Studies (AREDS/AREDS2)；Age-Related Eye Disease Study 2 Research Group, et al. Lutein + zeaxanthin and omega-3 fatty acids for age-related macular degeneration: the Age-Related Eye Disease Study 2 (AREDS2) randomized clinical trial. JAMA. 2013;309:2005-15.（PMID 23644932）；衛生福利部食品藥物管理署：食品原料整合查詢平臺－金盞草；萬壽菊（113年7月11日衛授食字第1131301534號公告）",
         "url": "https://www.nei.nih.gov/eye-health-information/clinical-trials/age-related-eye-disease-studies-aredsareds2",
-        "sourceIds": ["nei_areds", "pmid_23644932"]
+        "sourceIds": ["nei_areds", "pmid_23644932", "tfda_material_marigold"]
     },
     {
         "id": "lit_omega3_02",
@@ -77,28 +77,28 @@ FULL_CLINICAL_LITERATURES: List[Dict[str, Any]] = [
         "category": "關節與消炎",
         "ingredient": "Curcumin (薑黃素 / 95% 薑黃萃取物)",
         "evidenceLevel": "NCCIH 衛教（整理現有研究）",
-        "recommendedDose": "依產品標示劑量；NCCIH 提醒：加強吸收（高生物利用率）的薑黃素配方曾有肝損傷案例",
+        "recommendedDose": "依產品標示劑量；NCCIH 提醒：加強吸收（高生物利用率）的薑黃素配方曾有肝損傷案例。食藥署：薑黃（根莖）可供食品使用；化學合成薑黃素未經確認其食用安全性前，不得供為食品原料使用",
         "mechanism": "強力抑制 NF-κB 轉錄因子活化，下調促發炎細胞因子 (TNF-α, IL-6) 及 COX-2 酵素活性，舒緩關節發炎症狀。",
         "contraindications": "【肝損傷】NCCIH：高生物利用率的薑黃素產品曾有使用者發生肝損傷，出現疲倦、噁心、食慾差、茶色尿或黃疸時，應立即停用並就醫。有膽道疾病、服用抗凝血藥或即將手術者，使用前請先詢問醫師或藥師。",
         "targetSymptoms": ["關節疼痛", "退化性關節炎", "肌肉痠痛", "慢性發炎", "運動後修復"],
-        "citation": "NIH NCCIH：Turmeric",
+        "citation": "NIH NCCIH：Turmeric；衛生福利部食品藥物管理署：食品原料整合查詢平臺－薑黃、化學合成薑黃素",
         "url": "https://www.nccih.nih.gov/health/turmeric",
-        "sourceIds": ["nccih_turmeric"]
+        "sourceIds": ["nccih_turmeric", "tfda_material_turmeric", "tfda_material_curcumin_synthetic"]
     },
     {
         "id": "lit_coq10_06",
         "title": "輔酶 Q10 的能量代謝角色與用藥注意事項",
-        "authority": "美國國家輔助與整合衛生中心（NIH NCCIH）",
+        "authority": "美國國家輔助與整合衛生中心（NIH NCCIH）、衛生福利部食品藥物管理署",
         "category": "心肌代謝與活力",
         "ingredient": "Coenzyme Q10 (輔酶 Q10 / 泛醌)",
-        "evidenceLevel": "NCCIH 衛教（整理現有研究）",
-        "recommendedDose": "依產品標示劑量食用；服用抗凝血藥或胰島素者使用前先詢問醫師或藥師",
+        "evidenceLevel": "NCCIH 衛教（整理現有研究）；食藥署原料使用限制",
+        "recommendedDose": "食藥署規定：食品原料輔酶 Q10 每日食用限量為 30 毫克（108年10月18日衛授食字第1081302650號公告）；依產品標示劑量食用，服用抗凝血藥或胰島素者使用前先詢問醫師或藥師",
         "mechanism": "輔酶 Q10 參與細胞粒線體產生能量的過程，也具抗氧化作用。NCCIH 整理現有研究指出，整體證據不支持輔酶 Q10 能減輕 Statin 降血脂藥造成的肌肉痠痛。",
-        "contraindications": "NCCIH：輔酶 Q10 可能與抗凝血藥 Warfarin、糖尿病用藥胰島素產生交互作用，也可能與部分癌症治療不相容；懷孕、哺乳與兒童使用前請先詢問醫師。",
+        "contraindications": "食藥署規定：使用輔酶 Q10 作為原料的食品，應標示「十五歲以下小孩、懷孕或哺乳期間婦女及服用抗凝血藥品(warfarin)之病患，不宜食用」。NCCIH：輔酶 Q10 可能與抗凝血藥 Warfarin、糖尿病用藥胰島素產生交互作用，也可能與部分癌症治療不相容。",
         "targetSymptoms": ["容易疲倦", "體力衰退", "心臟機能保養", "服用降血脂藥肌無力", "精力不足"],
-        "citation": "NIH NCCIH：Coenzyme Q10",
+        "citation": "NIH NCCIH：Coenzyme Q10；衛生福利部食品藥物管理署：食品原料輔酵素Q10 (Coenzyme Q10)之使用限制及標示規定（108年10月18日衛授食字第1081302650號公告）",
         "url": "https://www.nccih.nih.gov/health/coenzyme-q10",
-        "sourceIds": ["nccih_coq10", "tfda_food_material"]
+        "sourceIds": ["nccih_coq10", "tfda_material_coq10"]
     },
     {
         "id": "lit_glucosamine_07",
@@ -107,28 +107,28 @@ FULL_CLINICAL_LITERATURES: List[Dict[str, Any]] = [
         "category": "骨骼關節",
         "ingredient": "Crystalline Glucosamine Sulfate (結晶型硫酸鹽葡萄糖胺)",
         "evidenceLevel": "Level 1 (國際臨床實證首選推薦 First-Line)",
-        "recommendedDose": "結晶型硫酸鹽葡萄糖胺 1,500mg/日 (單次服用生物利用率最高)",
+        "recommendedDose": "ESCEO 指引使用的是處方級結晶型硫酸鹽葡萄糖胺 1,500 mg、每日一次。在台灣，葡萄糖胺硫酸鹽以藥品列管、不得作為食品原料（前衛生署 94年1月11日衛署藥字第0940300833號公告），使用前需經醫師或藥師評估；可供食品使用的是由 Aspergillus niger 來源之幾丁質製成的葡萄糖胺鹽酸鹽",
         "mechanism": "刺激關節滑膜軟骨細胞合成蛋白聚糖 (Proteoglycans) 與玻尿酸，抑制發炎介質 IL-1β，維持關節軟骨基質完整性與潤滑。",
         "contraindications": "【出血風險】NCCIH：葡萄糖胺與軟骨素和服用抗凝血藥 Warfarin 者的出血風險增加有關，也可能使部分人的血糖上升；服用 Warfarin 或有糖尿病者使用前請先詢問醫師或藥師。對甲殼類過敏者應確認原料來源。",
         "targetSymptoms": ["膝蓋痛", "上下樓梯無力", "退化性關節炎", "關節卡卡異音", "活動受限"],
-        "citation": "NIH NCCIH：Glucosamine and Chondroitin for Osteoarthritis: What You Need To Know；Bruyère O, et al. An updated algorithm recommendation for the management of knee osteoarthritis from the European Society for Clinical and Economic Aspects of Osteoporosis, Osteoarthritis and Musculoskeletal Diseases (ESCEO). Semin Arthritis Rheum. 2019;49:337-350.（PMID 31126594）",
+        "citation": "NIH NCCIH：Glucosamine and Chondroitin for Osteoarthritis: What You Need To Know；Bruyère O, et al. An updated algorithm recommendation for the management of knee osteoarthritis from the European Society for Clinical and Economic Aspects of Osteoporosis, Osteoarthritis and Musculoskeletal Diseases (ESCEO). Semin Arthritis Rheum. 2019;49:337-350.（PMID 31126594）；衛生福利部食品藥物管理署：食品原料整合查詢平臺－葡萄糖胺硫酸鹽、葡萄糖胺鹽酸鹽",
         "url": "https://www.nccih.nih.gov/health/glucosamine-and-chondroitin-for-osteoarthritis-what-you-need-to-know",
-        "sourceIds": ["nccih_glucosamine", "pmid_31126594"]
+        "sourceIds": ["nccih_glucosamine", "pmid_31126594", "tfda_material_glucosamine_sulfate", "tfda_material_glucosamine_hcl"]
     },
     {
         "id": "lit_gaba_sesamin_08",
         "title": "GABA 協同芝麻素對銀髮族睡眠障礙與自律神經放鬆之臨床實證",
-        "authority": "Food Science and Biotechnology 期刊（人體試驗）",
+        "authority": "Food Science and Biotechnology 期刊（人體試驗）、衛生福利部食品藥物管理署",
         "category": "睡眠與神經放鬆",
         "ingredient": "GABA (γ-胺基丁酸) & Sesamin (芝麻素)",
         "evidenceLevel": "Level 2 (隨機雙盲安慰劑對照臨床試驗)",
-        "recommendedDose": "GABA 100-250mg + 芝麻素 10-15mg / 睡前 30-60 分鐘食用",
+        "recommendedDose": "食藥署規定：以微生物發酵製取的 GABA，每日食用限量以 GABA 計為 100 毫克（114年2月13日衛授食字第1131303496號公告）；芝麻素每日食用限量以芝麻素計為 15 毫克（113年7月11日衛授食字第1131301534號公告）。依產品標示食用，不要超過上限",
         "mechanism": "GABA 作為中樞神經系統主要抑制性神經傳導物質，能活化 GABA-A 受體，提升副交感神經活性，誘導深層慢波睡眠。",
-        "contraindications": "避免與抗焦慮處方鎮靜劑 (Benzodiazepines) 同時大量服用；嚴重低血壓患者應監測血壓變化。",
+        "contraindications": "食藥署規定：使用 GABA 作為原料的食品，應標示「使用本產品應避免同時飲酒或服用降血壓、鎮靜及癲癇等藥物；孕婦、授乳者、嬰幼兒，須諮詢醫師方可使用」。正在服用降血壓藥、鎮靜安眠藥或抗癲癇藥的親友，使用前請先詢問醫師或藥師。",
         "targetSymptoms": ["失眠睡不好", "入睡困難", "淺眠多夢", "自律神經失調", "焦慮緊繃"],
-        "citation": "Yamatsu A, et al. Effect of oral γ-aminobutyric acid (GABA) administration on sleep and its absorption in humans. Food Sci Biotechnol. 2016;25:547-551.（PMID 30263304）",
+        "citation": "Yamatsu A, et al. Effect of oral γ-aminobutyric acid (GABA) administration on sleep and its absorption in humans. Food Sci Biotechnol. 2016;25:547-551.（PMID 30263304）；衛生福利部食品藥物管理署：以微生物發酵製取之食品原料γ-胺基丁酸之使用限制及標示規定（114年2月13日衛授食字第1131303496號公告）；衛生福利部食品藥物管理署：食品原料芝麻素(Sesamin)之使用限制（113年7月11日衛授食字第1131301534號公告）",
         "url": "https://pubmed.ncbi.nlm.nih.gov/30263304/",
-        "sourceIds": ["pmid_30263304"]
+        "sourceIds": ["pmid_30263304", "tfda_material_gaba", "tfda_material_sesamin"]
     },
     # --- EXPANDED ELDER INGREDIENTS & CLINICAL GUIDELINES ---
     {
@@ -142,39 +142,39 @@ FULL_CLINICAL_LITERATURES: List[Dict[str, Any]] = [
         "mechanism": "紅麴所含的 Monacolin K 與降血脂藥 Lovastatin 結構相同，作用和 Statin 類藥物一樣是減少體內膽固醇的製造。",
         "contraindications": "【與 Statin 重複】NCCIH：含大量 Monacolin K 的紅麴產品可能有和 Statin 相同的副作用（肌肉、腎臟與肝臟損傷），也有相同的藥物交互作用；已在服用 Statin 降血脂藥者不可自行併用，肝腎功能不全者使用前請先詢問醫師。",
         "targetSymptoms": ["總膽固醇偏高", "低密度膽固醇 (LDL) 偏高", "心血管保健", "血脂代謝異常"],
-        "citation": "NIH NCCIH：Red Yeast Rice；EFSA Panel on Food Additives and Nutrient Sources added to Food. Scientific opinion on the safety of monacolins in red yeast rice. EFSA Journal. 2018;16(8):5368（doi:10.2903/j.efsa.2018.5368）",
+        "citation": "NIH NCCIH：Red Yeast Rice；EFSA Panel on Food Additives and Nutrient Sources added to Food. Scientific opinion on the safety of monacolins in red yeast rice. EFSA Journal. 2018;16(8):5368（doi:10.2903/j.efsa.2018.5368）；衛生福利部食品藥物管理署：食品原料整合查詢平臺－紅麴",
         "url": "https://www.nccih.nih.gov/health/red-yeast-rice",
-        "sourceIds": ["nccih_red_yeast_rice", "efsa_monacolins", "tfda_food_material"]
+        "sourceIds": ["nccih_red_yeast_rice", "efsa_monacolins", "tfda_material_red_yeast_rice"]
     },
     {
         "id": "lit_nattokinase_10",
-        "title": "納豆激酶 (Nattokinase) 纖維蛋白溶解與抗血栓作用之臨床實證",
-        "authority": "Scientific Reports 期刊（人體試驗）",
+        "title": "納豆激酶 (Nattokinase) 溶栓作用的人體試驗與台灣法規狀態",
+        "authority": "Scientific Reports 期刊（人體試驗）、衛生福利部食品藥物管理署",
         "category": "循環與血栓預防",
         "ingredient": "Nattokinase (納豆激酶 / 納豆菌發酵物)",
-        "evidenceLevel": "Level 2 (人體臨床血栓指標試驗)",
-        "recommendedDose": "每日 2,000 FU (Fibrin Units) / 晚餐後或睡前食用",
-        "mechanism": "具直接水解血栓纖維蛋白活性，並刺激血管內皮細胞釋放組織型纖維蛋白溶酶原活化劑 (t-PA)，預防夜間微血栓形成。",
-        "contraindications": "【重大禁忌】嚴禁與處方抗凝血藥 (Warfarin, NOAC) 或抗血小板藥 (Aspirin, Plavix) 併用，會引發嚴重自發性內出血、腦出血或消化道潰瘍出血！手術前兩週停用。",
+        "evidenceLevel": "小型人體試驗（12 位健康年輕男性，雙盲、安慰劑對照交叉試驗）",
+        "recommendedDose": "不提供建議劑量：食藥署將納豆激酶純化物列為「未經確認其食用安全性前，不得供為食品原料使用」；納豆菌（Bacillus subtilis natto）菌體則可供食品使用。引用的人體試驗是單次服用 2,000 FU",
+        "mechanism": "Kurosawa 2015 試驗中，單次口服 2,000 FU 納豆激酶後，D-dimer 與纖維蛋白降解產物上升、第八凝血因子活性下降、aPTT 延長，顯示會增強溶栓與抗凝血指標（變化仍在正常範圍內）。",
+        "contraindications": "【出血風險】納豆激酶會增強溶栓與抗凝血指標，Warfarin 仿單也提醒部分草藥產品本身可能引起出血或具抗凝血、溶栓作用；服用抗凝血藥（Warfarin、NOAC）或抗血小板藥（Aspirin、Clopidogrel）者避免併用，即將手術者先詢問醫師。",
         "targetSymptoms": ["血液循環不良", "手腳冰冷", "血栓預防", "高黏稠血症", "心腦血管保養"],
-        "citation": "Kurosawa Y, et al. A single-dose of oral nattokinase potentiates thrombolysis and anti-coagulation profiles. Sci Rep. 2015;5:11601.（PMID 26109079）",
+        "citation": "Kurosawa Y, et al. A single-dose of oral nattokinase potentiates thrombolysis and anti-coagulation profiles. Sci Rep. 2015;5:11601.（PMID 26109079）；DailyMed：Warfarin Sodium Tablets — FDA Drug Label (Drug Interactions)；衛生福利部食品藥物管理署：食品原料整合查詢平臺－納豆激酶、納豆菌",
         "url": "https://pubmed.ncbi.nlm.nih.gov/26109079/",
-        "sourceIds": ["pmid_26109079", "tfda_food_material"]
+        "sourceIds": ["pmid_26109079", "label_warfarin", "tfda_material_nattokinase", "tfda_material_natto"]
     },
     {
         "id": "lit_ginkgo_11",
         "title": "銀杏葉標準萃取物 (EGb 761) 對末梢循環障礙與認知機能之實證研究",
-        "authority": "NIH NCCIH、世界衛生組織（WHO）、歐洲藥品管理局（EMA）",
+        "authority": "NIH NCCIH、世界衛生組織（WHO）、歐洲藥品管理局（EMA）、衛生福利部食品藥物管理署",
         "category": "腦部與末梢循環",
         "ingredient": "Ginkgo Biloba Leaf Extract (銀杏葉萃取物 EGb 761)",
         "evidenceLevel": "Level 1 (系統性回顧與 Cochrane 臨床分析)",
-        "recommendedDose": "每日 120mg ~ 240mg 標準化萃取物 (含 24% 銀杏黃酮配醣體、6% 萜類內酯)",
+        "recommendedDose": "在台灣，銀杏葉未經確認其食用安全性前不得供為食品原料使用，含銀杏葉萃取物的產品是藥品（衛生福利部核有藥品許可證），劑量請依醫師或藥師指示。國外文獻使用的標準化萃取物為每日 120–240 mg（含 24% 銀杏黃酮配醣體、6% 萜類內酯）",
         "mechanism": "清除自由基並強力抑制血小板活化因子 (PAF)，改善血液流變學，增加腦部微血管及末梢動脈血流灌注。",
         "contraindications": "【出血風險】NCCIH：銀杏與 Warfarin 等抗凝血藥併用，重大出血事件的風險比單用 Warfarin 高；接近分娩時使用可能引起早產或生產時出血增加。服用抗凝血、抗血小板藥或即將手術者，使用前請先詢問醫師。",
         "targetSymptoms": ["末梢血液循環不良", "手腳冰冷麻木", "注意力記憶力減退", "間歇性跛行", "耳鳴眩暈"],
-        "citation": "NIH NCCIH：Ginkgo；NIH NCCIH：Herb-Drug Interactions (Clinical Digest for Health Professionals)；WHO：WHO Monographs on Selected Medicinal Plants – Volume 1；EMA：Ginkgo folium - herbal medicinal product",
+        "citation": "NIH NCCIH：Ginkgo；NIH NCCIH：Herb-Drug Interactions (Clinical Digest for Health Professionals)；WHO：WHO Monographs on Selected Medicinal Plants – Volume 1；EMA：Ginkgo folium - herbal medicinal product；衛生福利部食品藥物管理署：食品原料整合查詢平臺－銀杏葉",
         "url": "https://www.nccih.nih.gov/health/ginkgo",
-        "sourceIds": ["nccih_ginkgo", "nccih_herb_drug", "who_ginkgo_monograph", "ema_ginkgo"]
+        "sourceIds": ["nccih_ginkgo", "nccih_herb_drug", "who_ginkgo_monograph", "ema_ginkgo", "tfda_material_ginkgo_leaf"]
     },
     {
         "id": "lit_ucii_12",

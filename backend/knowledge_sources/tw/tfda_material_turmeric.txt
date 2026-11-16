@@ -1,0 +1,12 @@
+# title: 食品原料整合查詢平臺：薑黃（Turmeric）
+# url: https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16908
+# authority: 衛生福利部食品藥物管理署
+# fetched: 2026-11-16
+# license: 政府網站資料（註明出處）
+
+大分類：可供食品使用之原料
+次分類：草、木本植物類(2)可供直接食用
+中文名稱：薑黃
+外文名稱：Turmeric
+學名：Curcuma longa L.
+部位：根莖

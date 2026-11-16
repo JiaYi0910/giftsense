@@ -1,0 +1,11 @@
+# title: 食品原料整合查詢平臺：葡萄糖胺硫酸鹽（Glucosamine Sulfate）
+# url: https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16030
+# authority: 衛生福利部食品藥物管理署
+# fetched: 2026-11-16
+# license: 政府網站資料（註明出處）
+
+大分類：未確認安全性尚不得使用之原料
+次分類：未確認安全性尚不得使用之原料
+中文名稱：葡萄糖胺硫酸鹽
+外文名稱：Glucosamine Sulfate
+備註：依據前行政院衛生署(現為衛生福利部)94年1月11日衛署藥字第0940300833號公告，「Glucosamine Sulfate」成分以藥品列管，不得供作食品原料使用。

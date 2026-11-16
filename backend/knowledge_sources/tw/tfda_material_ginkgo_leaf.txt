@@ -1,0 +1,14 @@
+# title: 食品原料整合查詢平臺：銀杏葉（Ginkgo biloba L.）
+# url: https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16029
+# authority: 衛生福利部食品藥物管理署
+# fetched: 2026-11-16
+# license: 政府網站資料（註明出處）
+
+大分類：未確認安全性尚不得使用之原料
+次分類：未確認安全性尚不得使用之原料
+中文名稱：銀杏葉
+學名：Ginkgo biloba L.
+部位：葉
+備註：
+1.衛生福利部核有含本品項萃取物之藥品許可證。
+2.未經確認其食用安全性前，不得供為食品原料使用。

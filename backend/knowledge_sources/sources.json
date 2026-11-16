@@ -1,7 +1,7 @@
 {
  "version": 1,
  "updated": "2026-11-16",
- "note": "AI 守護助理的知識來源清單。content：fetch_html／fetch_openfda_label＝由 tools/fetch_sources.py 下載原文；manual＝你用瀏覽器存檔；link_only＝只放連結與書目（有著作權或網站擋程式）",
+ "note": "AI 守護助理的知識來源清單。content：fetch_html／fetch_openfda_label／fetch_tfda_material＝由 tools/fetch_sources.py 下載原文；manual＝你用瀏覽器存檔；link_only＝只放連結與書目（有著作權或網站擋程式）",
  "sources": [
   {
    "id": "nccih_turmeric",
@@ -990,22 +990,229 @@
    "file": "tw/"
   },
   {
-   "id": "tfda_food_material",
-   "title": "食品原料整合查詢平臺（請存輔酶 Q10、紅麴、納豆等原料頁）",
+   "id": "tfda_material_coq10",
+   "title": "食品原料整合查詢平臺：輔酵素Ｑ10（Coenzyme Q10）",
    "authority": "衛生福利部食品藥物管理署",
-   "url": "https://consumer.fda.gov.tw/Food/Material.aspx?nodeID=160",
+   "url": "https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=17546",
    "type": "government",
-   "content": "manual",
+   "content": "fetch_tfda_material",
    "language": "zh",
    "license": "政府網站資料（註明出處）",
    "ingredients": [
-    "coq10",
-    "red_yeast_rice",
+    "coq10"
+   ],
+   "topics": [
+    "interactions",
+    "anticoagulant",
+    "pregnancy"
+   ],
+   "tfda_name": "輔酵素Ｑ10",
+   "verified": "2026-11-16 食品原料整合查詢平臺詳細資料頁 HTTP 200，原料中文名稱相符",
+   "file": "tw/tfda_material_coq10.txt"
+  },
+  {
+   "id": "tfda_material_marigold",
+   "title": "食品原料整合查詢平臺：金盞草；萬壽菊（Calendula, Marigold；葉黃素來源）",
+   "authority": "衛生福利部食品藥物管理署",
+   "url": "https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16679",
+   "type": "government",
+   "content": "fetch_tfda_material",
+   "language": "zh",
+   "license": "政府網站資料（註明出處）",
+   "ingredients": [
+    "lutein"
+   ],
+   "topics": [],
+   "tfda_name": "金盞草；萬壽菊",
+   "verified": "2026-11-16 食品原料整合查詢平臺詳細資料頁 HTTP 200，原料中文名稱相符",
+   "file": "tw/tfda_material_marigold.txt"
+  },
+  {
+   "id": "tfda_material_gaba",
+   "title": "食品原料整合查詢平臺：γ-胺基丁酸（GABA）",
+   "authority": "衛生福利部食品藥物管理署",
+   "url": "https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=17739",
+   "type": "government",
+   "content": "fetch_tfda_material",
+   "language": "zh",
+   "license": "政府網站資料（註明出處）",
+   "ingredients": [
+    "gaba"
+   ],
+   "topics": [
+    "sleep",
+    "interactions",
+    "hypertension",
+    "pregnancy"
+   ],
+   "tfda_name": "γ-胺基丁酸",
+   "verified": "2026-11-16 食品原料整合查詢平臺詳細資料頁 HTTP 200，原料中文名稱相符",
+   "file": "tw/tfda_material_gaba.txt"
+  },
+  {
+   "id": "tfda_material_sesamin",
+   "title": "食品原料整合查詢平臺：芝麻素（Sesamin）",
+   "authority": "衛生福利部食品藥物管理署",
+   "url": "https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=17383",
+   "type": "government",
+   "content": "fetch_tfda_material",
+   "language": "zh",
+   "license": "政府網站資料（註明出處）",
+   "ingredients": [
+    "sesamin"
+   ],
+   "topics": [
+    "sleep"
+   ],
+   "tfda_name": "芝麻素",
+   "verified": "2026-11-16 食品原料整合查詢平臺詳細資料頁 HTTP 200，原料中文名稱相符",
+   "file": "tw/tfda_material_sesamin.txt"
+  },
+  {
+   "id": "tfda_material_nattokinase",
+   "title": "食品原料整合查詢平臺：納豆激酶（Nattokinase）",
+   "authority": "衛生福利部食品藥物管理署",
+   "url": "https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16424",
+   "type": "government",
+   "content": "fetch_tfda_material",
+   "language": "zh",
+   "license": "政府網站資料（註明出處）",
+   "ingredients": [
+    "nattokinase"
+   ],
+   "topics": [
+    "anticoagulant"
+   ],
+   "tfda_name": "納豆激酶",
+   "verified": "2026-11-16 食品原料整合查詢平臺詳細資料頁 HTTP 200，原料中文名稱相符",
+   "file": "tw/tfda_material_nattokinase.txt"
+  },
+  {
+   "id": "tfda_material_natto",
+   "title": "食品原料整合查詢平臺：納豆菌（Bacillus subtilis natto）",
+   "authority": "衛生福利部食品藥物管理署",
+   "url": "https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=17495",
+   "type": "government",
+   "content": "fetch_tfda_material",
+   "language": "zh",
+   "license": "政府網站資料（註明出處）",
+   "ingredients": [
     "nattokinase"
    ],
    "topics": [],
-   "verified": "2026-11-16 查詢首頁 HTTP 200；待你用瀏覽器存檔放入 knowledge_sources，並在此填入實際網址",
-   "file": "tw/"
+   "tfda_name": "納豆菌",
+   "verified": "2026-11-16 食品原料整合查詢平臺詳細資料頁 HTTP 200，原料中文名稱相符",
+   "file": "tw/tfda_material_natto.txt"
+  },
+  {
+   "id": "tfda_material_ginkgo_leaf",
+   "title": "食品原料整合查詢平臺：銀杏葉（Ginkgo biloba L.）",
+   "authority": "衛生福利部食品藥物管理署",
+   "url": "https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16029",
+   "type": "government",
+   "content": "fetch_tfda_material",
+   "language": "zh",
+   "license": "政府網站資料（註明出處）",
+   "ingredients": [
+    "ginkgo"
+   ],
+   "topics": [
+    "anticoagulant"
+   ],
+   "tfda_name": "銀杏葉",
+   "verified": "2026-11-16 食品原料整合查詢平臺詳細資料頁 HTTP 200，原料中文名稱相符",
+   "file": "tw/tfda_material_ginkgo_leaf.txt"
+  },
+  {
+   "id": "tfda_material_glucosamine_sulfate",
+   "title": "食品原料整合查詢平臺：葡萄糖胺硫酸鹽（Glucosamine Sulfate）",
+   "authority": "衛生福利部食品藥物管理署",
+   "url": "https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16030",
+   "type": "government",
+   "content": "fetch_tfda_material",
+   "language": "zh",
+   "license": "政府網站資料（註明出處）",
+   "ingredients": [
+    "glucosamine"
+   ],
+   "topics": [
+    "osteoarthritis"
+   ],
+   "tfda_name": "葡萄糖胺硫酸鹽",
+   "verified": "2026-11-16 食品原料整合查詢平臺詳細資料頁 HTTP 200，原料中文名稱相符",
+   "file": "tw/tfda_material_glucosamine_sulfate.txt"
+  },
+  {
+   "id": "tfda_material_glucosamine_hcl",
+   "title": "食品原料整合查詢平臺：葡萄糖胺鹽酸鹽（Glucosamine HCl）",
+   "authority": "衛生福利部食品藥物管理署",
+   "url": "https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=17547",
+   "type": "government",
+   "content": "fetch_tfda_material",
+   "language": "zh",
+   "license": "政府網站資料（註明出處）",
+   "ingredients": [
+    "glucosamine"
+   ],
+   "topics": [
+    "osteoarthritis"
+   ],
+   "tfda_name": "葡萄糖胺鹽酸鹽",
+   "verified": "2026-11-16 食品原料整合查詢平臺詳細資料頁 HTTP 200，原料中文名稱相符",
+   "file": "tw/tfda_material_glucosamine_hcl.txt"
+  },
+  {
+   "id": "tfda_material_turmeric",
+   "title": "食品原料整合查詢平臺：薑黃（Turmeric）",
+   "authority": "衛生福利部食品藥物管理署",
+   "url": "https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16908",
+   "type": "government",
+   "content": "fetch_tfda_material",
+   "language": "zh",
+   "license": "政府網站資料（註明出處）",
+   "ingredients": [
+    "turmeric"
+   ],
+   "topics": [],
+   "tfda_name": "薑黃",
+   "verified": "2026-11-16 食品原料整合查詢平臺詳細資料頁 HTTP 200，原料中文名稱相符",
+   "file": "tw/tfda_material_turmeric.txt"
+  },
+  {
+   "id": "tfda_material_curcumin_synthetic",
+   "title": "食品原料整合查詢平臺：化學合成薑黃素（Curcumin）",
+   "authority": "衛生福利部食品藥物管理署",
+   "url": "https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16421",
+   "type": "government",
+   "content": "fetch_tfda_material",
+   "language": "zh",
+   "license": "政府網站資料（註明出處）",
+   "ingredients": [
+    "turmeric"
+   ],
+   "topics": [],
+   "tfda_name": "化學合成薑黃素",
+   "verified": "2026-11-16 食品原料整合查詢平臺詳細資料頁 HTTP 200，原料中文名稱相符",
+   "file": "tw/tfda_material_curcumin_synthetic.txt"
+  },
+  {
+   "id": "tfda_material_red_yeast_rice",
+   "title": "食品原料整合查詢平臺：紅麴（Anka）",
+   "authority": "衛生福利部食品藥物管理署",
+   "url": "https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=17522",
+   "type": "government",
+   "content": "fetch_tfda_material",
+   "language": "zh",
+   "license": "政府網站資料（註明出處）",
+   "ingredients": [
+    "red_yeast_rice"
+   ],
+   "topics": [
+    "cholesterol"
+   ],
+   "tfda_name": "紅麴",
+   "verified": "2026-11-16 食品原料整合查詢平臺詳細資料頁 HTTP 200，原料中文名稱相符",
+   "file": "tw/tfda_material_red_yeast_rice.txt"
   },
   {
    "id": "tfda_drug_safety",

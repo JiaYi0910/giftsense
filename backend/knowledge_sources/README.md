@@ -15,6 +15,7 @@ AI 守護助理（RAG）回答時引用的原文都放在這個資料夾，清�
 `content` 欄位的意思：
 
 - `fetch_html`／`fetch_openfda_label`：由 `tools/fetch_sources.py` 下載原文
+- `fetch_tfda_material`：由 `tools/fetch_sources.py` 下載食藥署「食品原料整合查詢平臺」的詳細資料頁（分類、使用限制、每日限量、警語），存到 `tw/tfda_material_<成分>.txt`；頁面上的原料名稱必須和 `tfda_name` 相同才會寫檔
 - `manual`：需要你存檔；檔案放進來之前，這個來源**不會**出現在回答的出處裡
 - `link_only`：只放連結與書目，不存全文（期刊論文、WHO、學會指引等有著作權的內容，或網站擋程式下載）
 
@@ -24,7 +25,6 @@ AI 守護助理（RAG）回答時引用的原文都放在這個資料夾，清�
 
 | 來源 id | 要存的頁面 | 存到 |
 |---|---|---|
-| `tfda_food_material` | [食品原料整合查詢平臺](https://consumer.fda.gov.tw/Food/Material.aspx?nodeID=160)：分別查「輔酶 Q10」「紅麴」「納豆」並存結果頁 | `tw/tfda_food_material_q10.html`、`tw/tfda_food_material_red_yeast.html`、`tw/tfda_food_material_natto.html` |
 | `tfda_health_food` | [健康食品許可證查詢](https://consumer.fda.gov.tw/Food/InfoHealthFood.aspx?nodeID=162)：常見成分（魚油、葉黃素、益生菌、紅麴）的許可資料頁 | `tw/tfda_health_food_<成分>.html` |
 | `tfda_drug_safety` | [藥品安全資訊](https://www.fda.gov.tw/TC/siteList.aspx?sid=1571)：與保健品交互作用相關的公告頁 | `tw/tfda_drug_safety_<主題>.html` |
 | `hpa_dri` | [國人膳食營養素參考攝取量 第八版](https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=4248&pid=12285)：鈣、維生素 D、B 群、鋅的建議量與上限 | `tw/hpa_dri.pdf` |

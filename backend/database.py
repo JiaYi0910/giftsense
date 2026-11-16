@@ -387,21 +387,11 @@ def _run_data_migrations(session):
             _mark_migration(session, "knowledge_sync_20261015")
 
     # 一次性：內建文獻改為可查證的出處（2026/11/16）：更正引用、補上網址與依據來源，移除查無出處的公告文號與期刊
-    if not _migration_done(session, "knowledge_sources_20261116"):
-        try:
-            from vector_store import FULL_CLINICAL_LITERATURES as _builtin_lits
-        except Exception as e:
-            _builtin_lits = None
-            print("Notice: clinical knowledge source sync deferred:", e)
-        if _builtin_lits:
-            for lit in _builtin_lits:
-                row = session.get(ClinicalKnowledge, lit["id"])
-                if row is not None:
-                    fresh = _knowledge_from_literature(lit, default_level="")
-                    for col in ("title", "authority", "category", "ingredient", "evidence_level", "recommended_dose", "mechanism",
-                                "contraindications", "target_symptoms_json", "citation", "url", "source_ids_json"):
-                        setattr(row, col, getattr(fresh, col))
-            _mark_migration(session, "knowledge_sources_20261116")
+    # 之後再補上食藥署食品原料整合查詢平臺的使用限制與警語（knowledge_tfda_material_20261116）
+    for migration_id in ("knowledge_sources_20261116", "knowledge_tfda_material_20261116"):
+        if not _migration_done(session, migration_id):
+            if _resync_builtin_knowledge(session):
+                _mark_migration(session, migration_id)
 
     # 一次性：快速提問改為依病況分類的新題庫，重新產生每位親友的提問
     if not _migration_done(session, "quick_chips_v2_20261015"):
@@ -416,6 +406,23 @@ def _run_data_migrations(session):
     # 一次性：傳情小站訊息補上排序值（改用 ORM、支援 SQL Server 後取代 SQLite 專屬的 rowid）
     for msg in session.scalars(select(ChatMessage).where(ChatMessage.seq.is_(None))).all():
         msg.seq = chat_seq_from(msg.id, msg.timestamp)
+
+
+def _resync_builtin_knowledge(session) -> bool:
+    """內建文獻以程式碼為準更新（含網址與依據來源）；只更新內建 id 的既有資料列，管理員新增或已刪除的不動"""
+    try:
+        from vector_store import FULL_CLINICAL_LITERATURES as builtin_lits
+    except Exception as e:
+        print("Notice: clinical knowledge source sync deferred:", e)
+        return False
+    for lit in builtin_lits:
+        row = session.get(ClinicalKnowledge, lit["id"])
+        if row is not None:
+            fresh = _knowledge_from_literature(lit, default_level="")
+            for col in ("title", "authority", "category", "ingredient", "evidence_level", "recommended_dose", "mechanism",
+                        "contraindications", "target_symptoms_json", "citation", "url", "source_ids_json"):
+                setattr(row, col, getattr(fresh, col))
+    return True
 
 
 def _knowledge_from_literature(lit: dict, default_level: str = "Level 1") -> ClinicalKnowledge:

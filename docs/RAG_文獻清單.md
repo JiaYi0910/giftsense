@@ -1,8 +1,8 @@
 # RAG 知識庫使用的文獻與來源
 
 > 產生自 `backend/knowledge_sources/sources.json`（2026-11-16 查證）。
-> 回答時實際使用 53 個來源；另有 12 個待你存檔、目前不會出現在回答中。
-> 期刊以 PubMed（比對期刊、年份、卷號、頁碼）或 Crossref DOI 查證；網頁以實際開啟、標題相符查證。
+> 回答時實際使用 65 個來源；另有 11 個待你存檔、目前不會出現在回答中。
+> 期刊以 PubMed（比對期刊、年份、卷號、頁碼）或 Crossref DOI 查證；網頁以實際開啟、標題相符查證；食藥署原料頁以頁面上的原料名稱相符查證。
 
 ## 期刊論文與實證回顧（24）
 
@@ -59,28 +59,44 @@
 | # | 文獻／來源 | 機構 | 使用於 | 原文段落 |
 |---|---|---|---|---|
 | 41 | [Levothyroxine Sodium Tablets — FDA Drug Label (Drug Interactions)](https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=008de8fd-150f-4022-8ccb-c8bfa94875c7) | 美國 FDA 藥品仿單（DailyMed） | 1 張卡片、1 條規則 | 10 |
-| 42 | [Warfarin Sodium Tablets — FDA Drug Label (Drug Interactions)](https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=0cbce382-9c88-4f58-ae0f-532a841e8f95) | 美國 FDA 藥品仿單（DailyMed） | 4 條規則 | 4 |
+| 42 | [Warfarin Sodium Tablets — FDA Drug Label (Drug Interactions)](https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=0cbce382-9c88-4f58-ae0f-532a841e8f95) | 美國 FDA 藥品仿單（DailyMed） | 1 張卡片、4 條規則 | 4 |
+
+## 食藥署食品原料整合查詢平臺（使用限制與警語已存入知識庫）（12）
+
+| # | 文獻／來源 | 機構 | 使用於 | 原文段落 |
+|---|---|---|---|---|
+| 43 | [食品原料整合查詢平臺：γ-胺基丁酸（GABA）](https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=17739) | 衛生福利部食品藥物管理署 | 1 張卡片、2 條規則 | 1 |
+| 44 | [食品原料整合查詢平臺：化學合成薑黃素（Curcumin）](https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16421) | 衛生福利部食品藥物管理署 | 1 張卡片 | 1 |
+| 45 | [食品原料整合查詢平臺：紅麴（Anka）](https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=17522) | 衛生福利部食品藥物管理署 | 1 張卡片 | 1 |
+| 46 | [食品原料整合查詢平臺：納豆激酶（Nattokinase）](https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16424) | 衛生福利部食品藥物管理署 | 1 張卡片、1 條規則 | 1 |
+| 47 | [食品原料整合查詢平臺：納豆菌（Bacillus subtilis natto）](https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=17495) | 衛生福利部食品藥物管理署 | 1 張卡片 | 1 |
+| 48 | [食品原料整合查詢平臺：芝麻素（Sesamin）](https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=17383) | 衛生福利部食品藥物管理署 | 1 張卡片 | 1 |
+| 49 | [食品原料整合查詢平臺：葡萄糖胺硫酸鹽（Glucosamine Sulfate）](https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16030) | 衛生福利部食品藥物管理署 | 1 張卡片 | 1 |
+| 50 | [食品原料整合查詢平臺：葡萄糖胺鹽酸鹽（Glucosamine HCl）](https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=17547) | 衛生福利部食品藥物管理署 | 1 張卡片 | 1 |
+| 51 | [食品原料整合查詢平臺：薑黃（Turmeric）](https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16908) | 衛生福利部食品藥物管理署 | 1 張卡片 | 1 |
+| 52 | [食品原料整合查詢平臺：輔酵素Ｑ10（Coenzyme Q10）](https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=17546) | 衛生福利部食品藥物管理署 | 1 張卡片、2 條規則 | 1 |
+| 53 | [食品原料整合查詢平臺：金盞草；萬壽菊（Calendula, Marigold；葉黃素來源）](https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16679) | 衛生福利部食品藥物管理署 | 1 張卡片 | 1 |
+| 54 | [食品原料整合查詢平臺：銀杏葉（Ginkgo biloba L.）](https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16029) | 衛生福利部食品藥物管理署 | 1 張卡片、1 條規則 | 1 |
 
 ## 政府機關、國際組織與學會（只放連結）（11）
 
 | # | 文獻／來源 | 機構 | 使用於 | 原文段落 |
 |---|---|---|---|---|
-| 43 | [Ginkgo folium - herbal medicinal product](https://www.ema.europa.eu/en/medicines/herbal/ginkgo-folium) | 歐洲藥品管理局（EMA） | 1 張卡片 | 只放連結 |
-| 44 | [KDIGO 2012 Clinical Practice Guideline for the Evaluation and Management of CKD](https://kdigo.org/guidelines/ckd-evaluation-and-management/) | 腎臟病改善全球預後組織（KDIGO） | 1 張卡片、1 條規則 | 只放連結 |
-| 45 | [Nutrition and PD](https://www.parkinson.org/library/fact-sheets/nutrition) | 美國帕金森基金會（Parkinson's Foundation） | 1 張卡片 | 只放連結 |
-| 46 | [OTC Monograph M012: Cough, Cold, Allergy, Bronchodilator, and Antiasthmatic Drug Products for OTC Human Use](https://www.accessdata.fda.gov/drugsatfda_docs/omuf/monographs/OTC%20Monograph_M012-Cough%20Cold%20Allergy%20Bronchodilator%20and%20Antiasthmatic%20Drug%20Products%20for%20OTC%20Human%20Use%2010.14.2022.pdf) | 美國食品藥物管理局（US FDA） | 1 張卡片、1 條規則 | 只放連結 |
-| 47 | [Qualified Health Claims: Letters of Enforcement Discretion](https://www.fda.gov/food/nutrition-food-labeling-and-critical-foods/qualified-health-claims-letters-enforcement-discretion) | 美國食品藥物管理局（US FDA） | 1 張卡片 | 只放連結 |
-| 48 | [Risk reduction of cognitive decline and dementia: WHO guidelines](https://www.who.int/publications/i/item/9789241550543) | 世界衛生組織（WHO） | 1 張卡片 | 只放連結 |
-| 49 | [Signs and Symptoms of Stroke](https://www.cdc.gov/stroke/signs-symptoms/index.html) | 美國疾病管制與預防中心（CDC） | 1 張卡片 | 只放連結 |
-| 50 | [WGO Global Guidelines: Probiotics and Prebiotics](https://www.worldgastroenterology.org/guidelines/probiotics-and-prebiotics) | 世界胃腸病學組織（WGO） | 1 張卡片 | 只放連結 |
-| 51 | [WHO guidelines on physical activity and sedentary behaviour](https://www.who.int/publications/i/item/9789240015128) | 世界衛生組織（WHO） | 1 張卡片 | 只放連結 |
-| 52 | [WHO Monographs on Selected Medicinal Plants – Volume 1](https://www.who.int/publications/i/item/9241545178) | 世界衛生組織（WHO） | 1 張卡片、1 條規則 | 只放連結 |
-| 53 | [WHO recommendations on antenatal care for a positive pregnancy experience](https://www.who.int/publications/i/item/9789241549912) | 世界衛生組織（WHO） | 1 張卡片、1 條規則 | 只放連結 |
+| 55 | [Ginkgo folium - herbal medicinal product](https://www.ema.europa.eu/en/medicines/herbal/ginkgo-folium) | 歐洲藥品管理局（EMA） | 1 張卡片 | 只放連結 |
+| 56 | [KDIGO 2012 Clinical Practice Guideline for the Evaluation and Management of CKD](https://kdigo.org/guidelines/ckd-evaluation-and-management/) | 腎臟病改善全球預後組織（KDIGO） | 1 張卡片、1 條規則 | 只放連結 |
+| 57 | [Nutrition and PD](https://www.parkinson.org/library/fact-sheets/nutrition) | 美國帕金森基金會（Parkinson's Foundation） | 1 張卡片 | 只放連結 |
+| 58 | [OTC Monograph M012: Cough, Cold, Allergy, Bronchodilator, and Antiasthmatic Drug Products for OTC Human Use](https://www.accessdata.fda.gov/drugsatfda_docs/omuf/monographs/OTC%20Monograph_M012-Cough%20Cold%20Allergy%20Bronchodilator%20and%20Antiasthmatic%20Drug%20Products%20for%20OTC%20Human%20Use%2010.14.2022.pdf) | 美國食品藥物管理局（US FDA） | 1 張卡片、1 條規則 | 只放連結 |
+| 59 | [Qualified Health Claims: Letters of Enforcement Discretion](https://www.fda.gov/food/nutrition-food-labeling-and-critical-foods/qualified-health-claims-letters-enforcement-discretion) | 美國食品藥物管理局（US FDA） | 1 張卡片 | 只放連結 |
+| 60 | [Risk reduction of cognitive decline and dementia: WHO guidelines](https://www.who.int/publications/i/item/9789241550543) | 世界衛生組織（WHO） | 1 張卡片 | 只放連結 |
+| 61 | [Signs and Symptoms of Stroke](https://www.cdc.gov/stroke/signs-symptoms/index.html) | 美國疾病管制與預防中心（CDC） | 1 張卡片 | 只放連結 |
+| 62 | [WGO Global Guidelines: Probiotics and Prebiotics](https://www.worldgastroenterology.org/guidelines/probiotics-and-prebiotics) | 世界胃腸病學組織（WGO） | 1 張卡片 | 只放連結 |
+| 63 | [WHO guidelines on physical activity and sedentary behaviour](https://www.who.int/publications/i/item/9789240015128) | 世界衛生組織（WHO） | 1 張卡片 | 只放連結 |
+| 64 | [WHO Monographs on Selected Medicinal Plants – Volume 1](https://www.who.int/publications/i/item/9241545178) | 世界衛生組織（WHO） | 1 張卡片、1 條規則 | 只放連結 |
+| 65 | [WHO recommendations on antenatal care for a positive pregnancy experience](https://www.who.int/publications/i/item/9789241549912) | 世界衛生組織（WHO） | 1 張卡片、1 條規則 | 只放連結 |
 
-## 待你存檔的來源（12，存檔前不會出現在回答中）
+## 待你存檔的來源（11，存檔前不會出現在回答中）
 
 - 衛生福利部食品藥物管理署：健康食品許可證資料查詢（請存各成分查詢結果頁）（https://consumer.fda.gov.tw/Food/InfoHealthFood.aspx?nodeID=162）
-- 衛生福利部食品藥物管理署：食品原料整合查詢平臺（請存輔酶 Q10、紅麴、納豆等原料頁）（https://consumer.fda.gov.tw/Food/Material.aspx?nodeID=160）
 - 衛生福利部食品藥物管理署：藥品安全資訊（https://www.fda.gov.tw/TC/siteList.aspx?sid=1571）
 - 衛生福利部國民健康署：國人膳食營養素參考攝取量 第八版（https://www.hpa.gov.tw/Pages/Detail.aspx?nodeid=4248&pid=12285）
 - 美國國家衛生研究院膳食補充品辦公室（NIH ODS）：Omega-3 Fatty Acids – Fact Sheet for Health Professionals（https://ods.od.nih.gov/factsheets/Omega3FattyAcids-HealthProfessional/）

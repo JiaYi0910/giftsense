@@ -1,0 +1,16 @@
+# title: 食品原料整合查詢平臺：金盞草；萬壽菊（Calendula, Marigold；葉黃素來源）
+# url: https://consumer.fda.gov.tw/Food/MaterialDetail.aspx?nodeID=160&id=16679
+# authority: 衛生福利部食品藥物管理署
+# fetched: 2026-11-16
+# license: 政府網站資料（註明出處）
+
+大分類：可供食品使用之原料
+次分類：草、木本植物類(1)供茶包、膳食調理包或萃取後作為原料
+中文名稱：金盞草；萬壽菊
+外文名稱：Calendula, Marigold, Tagetes
+學名：Calendula officinalis L., Tagetes erecta L., Tagetes tenuifolia Cavanilles, Tagetes minuta L., Tagetes patula L.
+部位：全草
+備註：
+應符合衛生福利部113年7月11日衛授食字第1131301534號公告訂定之「食品原料金盞草及萬壽菊之使用限制」，並自發布日生效。詳細訊息可至衛生福利部食品藥物管理署網站(http://www.fda.gov.tw/TC/index.aspx)之「公告資訊」項下之「本署公告」查詢。
+一、	本規定所定金盞草及萬壽菊原料之品種為Calendula officinalis、Tagetes erecta、Tagetes tenuifolia、Tagetes minuta及Tagetes patula。
+二、	前點之金盞草及萬壽菊原料，限以濾袋等材料包裹後供沖泡茶飲或膳食調味使用，或經萃取後供食用，其每日食用限量，以產品中葉黃素(lutein)之總含量計為30毫克。

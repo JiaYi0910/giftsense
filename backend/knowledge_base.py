@@ -3,8 +3,8 @@
 AI 守護助理的知識來源（RAG 的原文依據）
 
 - knowledge_sources/sources.json：所有來源的清單（標題、機構、網址、授權、對應成分、查證紀錄）
-- knowledge_sources/ 底下的 .txt／.md／.html／.pdf：來源原文。官方網頁與 FDA 仿單由 tools/fetch_sources.py 下載，
-  食藥署、國健署等查詢系統的結果頁與 NIH ODS 由使用者以瀏覽器存檔放入
+- knowledge_sources/ 底下的 .txt／.md／.html／.pdf：來源原文。美國官方網頁、FDA 仿單與食藥署食品原料資料由 tools/fetch_sources.py 下載，
+  其他查詢系統的結果頁與 NIH ODS 由使用者以瀏覽器存檔放入
 - 原文切成段落（中文約 300–500 字；英文約 150–250 個單字），連同 source_title、authority、url、ingredient 存進資料庫，
   實際寫入由 database.sync_knowledge_base() 在啟動時依內容的雜湊值判斷要不要重做
 
@@ -19,6 +19,8 @@ from functools import lru_cache
 SOURCES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "knowledge_sources")
 MANIFEST_PATH = os.path.join(SOURCES_DIR, "sources.json")
 CHUNKER_VERSION = "2"            # 切段規則改變時調高，讓啟動時重新匯入
+FETCHED_MODES = ("fetch_html", "fetch_openfda_label", "fetch_tfda_material")   # 由 tools/fetch_sources.py 下載原文的來源
+CONTENT_MODES = FETCHED_MODES + ("link_only", "manual")
 
 ZH_MIN, ZH_MAX = 300, 500        # 中文：字數
 EN_MIN, EN_MAX = 150, 250        # 英文：單字數（約 900–1,500 個字元）
@@ -219,7 +221,7 @@ def build_rows(manifest: list = None) -> tuple:
                 t = t[t.index(f"## {start}"):]     # 只收和保健品相關的小節（例如 NCI 營養照護的後半段）
             if t.strip():
                 texts.append(t)
-        if s.get("content") in ("fetch_html", "fetch_openfda_label", "manual") and not texts:
+        if s.get("content") in FETCHED_MODES + ("manual",) and not texts:
             missing.append(s["id"])
         parts = []
         for t in texts:
