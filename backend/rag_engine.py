@@ -7,11 +7,13 @@ try:
     from backend.tfda_service import global_tfda_service
     from backend.product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
     from backend.knowledge_base import source_refs
+    from backend import live_sources
 except ImportError:
     from vector_store import global_vector_store, FULL_CLINICAL_LITERATURES
     from tfda_service import global_tfda_service
     from product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
     from knowledge_base import source_refs
+    import live_sources
 
 # Expose full clinical literatures for compatibility
 CLINICAL_LITERATURES = FULL_CLINICAL_LITERATURES
@@ -644,6 +646,13 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
             "desc": f"這題屬於{top_lit.get('category')}問題，以下依權威機構的指引整理重點；已比對{elder_name}（{elder_condition}）的病況與用藥，沒有命中撞藥規則。",
         }
 
+    # -------------------------------------------------------------------------
+    # 3b. 即時查詢：親友用藥的美國 FDA 仿單與 MedlinePlus（只補充原文與連結，不會取消規則的警示）
+    # -------------------------------------------------------------------------
+    live = live_sources.lookup(query, elder_condition, matched_ingredient)
+    # 沒有命中規則，但仿單的交互作用段落直接提到這項成分：保守處理，不推薦商品
+    label_caution = bool(live and live["label_mentions"]) and not is_collision
+
     # Action Card: TFDA 替代建議或同成分商品；價格一律來自暖心選物的實際查價資料
     if is_collision and not tfda_result.get("alternative"):
         # 命中交互作用規則：不推薦任何商品，避免推薦到與用藥衝突的成分
@@ -666,6 +675,13 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
                 "請先諮詢醫師或藥師",
                 "親友目前的用藥與這類保健品可能有交互作用，替代選擇請由醫師或藥師依實際用藥評估後再購買。"
             )
+    elif label_caution:
+        mention = live["label_mentions"][0]
+        action_card = _no_price_card(
+            "暫不推薦商品",
+            "請先詢問醫師或藥師",
+            f"美國 FDA 的 {mention['drug']} 仿單在交互作用段落提到{mention['supplement']}；是否適合使用，請帶著藥袋詢問醫師或藥師。"
+        )
     elif is_guidance:
         action_card = _no_price_card(
             "這題不需要購買保健品",
@@ -695,6 +711,7 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
         "title": tfda_result["title"],
         "desc": tfda_result["desc"],
         "radar_scores": radar_scores,
+        "label_caution": label_caution,
         "action_card": action_card
     }
 
@@ -702,6 +719,19 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
     # 4. LLM SYNTHESIS（只用檢索資料與規則結果，回覆附出處）
     # -------------------------------------------------------------------------
     gemini_text = ""
+    live_block = ""
+    if live:
+        live_block = f"""
+【即時查詢：親友用藥的美國官方資料（英文原文，只可忠實翻譯摘要，不可延伸）】
+{json.dumps([{
+    'drug': d['zh'],
+    'fda_label': ({'url': d['label']['url'], 'version': d['label']['effective'],
+                   'mentions_this_ingredient': d['label']['mentions'], 'excerpts': d['label']['excerpts']}
+                  if d['label'] else None),
+    'medlineplus': [{'title': p['title'], 'url': p['url']} for p in d['medlineplus']],
+} for d in live['drugs']], ensure_ascii=False, indent=2)}
+說明：{live['note']}
+"""
     if api_key and api_key.strip():
         try:
             prompt = f"""你是一位專業的銀髮健康 AI 守護助手。
@@ -724,10 +754,10 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
 說明：{tfda_result['mechanism']}
 處置建議：{tfda_result['clinical_action']}
 來源：{json.dumps([{'name': r['authority'] + '：' + r['title'], 'url': r['url']} for r in tfda_result.get('sources', [])], ensure_ascii=False)}
-
+{live_block}
 請以 20~30 歲年輕子女易懂、白話溫暖的語氣，簡要說明（2~3 句話）：
 1. 上方資料對這個問題的重點；資料沒有提到的事情不要補充，查不到依據就直接說「目前資料庫查無相關依據」。
-2. 是否命中交互作用規則；命中時以規則的警示為準。
+2. 是否命中交互作用規則；命中時以規則的警示為準。若有即時查詢的仿單原文，簡述仿單提到的內容；仿單沒有提到不代表確定沒有交互作用。
 3. 每一項重點後面附上對應的來源名稱與網址（只能用上方提供的網址，不可自行編造）。避免冗長大段文字。"""
 
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
@@ -742,6 +772,7 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
         except Exception as e:
             print("Gemini API call notice:", e)
 
+    from_gemini = bool(gemini_text)
     if not gemini_text and is_guidance:
         gemini_text = _guidance_text(top_lit)
         if top_lit.get("sources"):
@@ -767,6 +798,17 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
             if top_lit.get("sources"):
                 gemini_text += "\n\n出處：\n" + _source_lines(top_lit["sources"])
 
+    if live:
+        if from_gemini:
+            # Gemini 已依即時查詢資料回答；仍附上出處，確保網址可點
+            gemini_text += "\n\n即時查詢出處：\n" + _source_lines(live["sources"])
+        else:
+            gemini_text += "\n\n" + live_sources.summary_text(live)
+        if label_caution:
+            mention = live["label_mentions"][0]
+            gemini_text = (f"⚠️ 【仿單提醒】美國 FDA 的 {mention['drug']} 仿單在交互作用段落提到{mention['supplement']}，"
+                           f"本系統的交互作用規則沒有命中，仍建議先詢問醫師或藥師。\n\n" + gemini_text)
+
     return {
         "success": True,
         "has_match": True,
@@ -777,5 +819,6 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
         "tfda_verification": tfda_result,
         "vector_retrieval": vector_matches,
         "matched_literatures": vector_matches,
+        "live_sources": live,
         "gemini_synthesis": gemini_text
     }

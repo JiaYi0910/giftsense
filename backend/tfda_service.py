@@ -234,6 +234,20 @@ TFDA_COLLISION_RULES = [
         "alternative": None
     },
     {
+        "id": "rule_sedative_sleep_aid",
+        "drug_keywords": ["安眠", "鎮靜", "抗焦慮", "benzodiazepine", "zolpidem", "史蒂諾斯", "使蒂諾斯", "悠樂丁", "贊安諾"],
+        "supplement_keywords": ["gaba", "褪黑", "melatonin", "纈草", "助眠", "酒"],
+        "severity": "MAJOR",
+        "badge": "用藥安全警示：中樞神經抑制",
+        "title": "安眠藥加上助眠成分或酒精，可能加重嗜睡與跌倒風險",
+        "official_citation": "Sateia MJ, et al. Clinical Practice Guideline for the Pharmacologic Treatment of Chronic Insomnia in Adults: An American Academy of Sleep Medicine Clinical Practice Guideline. J Clin Sleep Med. 2017;13:307-349.（PMID 27998379）；衛生福利部食品藥物管理署：以微生物發酵製取之食品原料γ-胺基丁酸之使用限制及標示規定（114年2月13日衛授食字第1131303496號公告）",
+        "sources": ["pmid_27998379", "tfda_material_gaba"],
+        "mechanism": "助眠成分與酒精和鎮靜安眠藥同樣作用在中樞神經，一起使用可能加重嗜睡、頭暈，增加長輩夜間跌倒的風險；食藥署也規定含 GABA 的食品須標示「避免同時飲酒或服用降血壓、鎮靜及癲癇等藥物」。",
+        "clinical_action": "已在服用安眠藥的親友，不要自行加上助眠保健品，也不要喝酒；睡不好請回診與醫師討論調整。",
+        "radar_scores": [55, 75, 35, 80, 30],
+        "alternative": None
+    },
+    {
         "id": "rule_gaba_bp_sedative_epilepsy",
         "drug_keywords": ["血壓", "降壓", "鎮靜", "安眠", "抗焦慮", "癲癇", "benzodiazepine", "zolpidem", "史蒂諾斯", "使蒂諾斯", "悠樂丁", "贊安諾"],
         "supplement_keywords": ["gaba", "胺基丁酸"],
@@ -244,20 +258,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["tfda_material_gaba"],
         "mechanism": "食藥署規定以微生物發酵製取的 GABA 原料每日食用限量為 100 毫克，且使用 GABA 作為原料的食品，應標示「使用本產品應避免同時飲酒或服用降血壓、鎮靜及癲癇等藥物；孕婦、授乳者、嬰幼兒，須諮詢醫師方可使用」。",
         "clinical_action": "正在服用降血壓藥、鎮靜安眠藥或抗癲癇藥的親友，不要自行使用含 GABA 的產品，也避免同時喝酒；請先帶著藥袋詢問醫師或藥師。",
-        "radar_scores": [55, 75, 35, 80, 30],
-        "alternative": None
-    },
-    {
-        "id": "rule_sedative_sleep_aid",
-        "drug_keywords": ["安眠", "鎮靜", "抗焦慮", "benzodiazepine", "zolpidem", "史蒂諾斯", "使蒂諾斯", "悠樂丁", "贊安諾"],
-        "supplement_keywords": ["gaba", "褪黑", "melatonin", "纈草", "助眠", "酒"],
-        "severity": "MAJOR",
-        "badge": "用藥安全警示：中樞神經抑制",
-        "title": "安眠藥加上助眠成分或酒精，可能加重嗜睡與跌倒風險",
-        "official_citation": "Sateia MJ, et al. Clinical Practice Guideline for the Pharmacologic Treatment of Chronic Insomnia in Adults: An American Academy of Sleep Medicine Clinical Practice Guideline. J Clin Sleep Med. 2017;13:307-349.（PMID 27998379）",
-        "sources": ["pmid_27998379"],
-        "mechanism": "助眠成分與酒精和鎮靜安眠藥同樣作用在中樞神經，一起使用可能加重嗜睡、頭暈，增加長輩夜間跌倒的風險。",
-        "clinical_action": "已在服用安眠藥的親友，不要自行加上助眠保健品，也不要喝酒；睡不好請回診與醫師討論調整。",
         "radar_scores": [55, 75, 35, 80, 30],
         "alternative": None
     },

@@ -29,8 +29,8 @@ if hasattr(time, "tzset"):
 import db_engine
 from db_transfer import chat_seq_from, copy_database, table_columns, target_is_empty
 from models import (
-    TIME_FMT, AiGuardUsage, Base, CashbackOrder, ChatMessage, ClinicalKnowledge, KnowledgeChunk, KnowledgeSource, Order,
-    PharmacyCache, PointsLedger, RecommendationProduct, Recipient, RewardClaim, SystemConfig, User, now_str,
+    TIME_FMT, AiGuardUsage, Base, CashbackOrder, ChatMessage, ClinicalKnowledge, KnowledgeChunk, KnowledgeSource,
+    LiveSourceCache, Order, PharmacyCache, PointsLedger, RecommendationProduct, Recipient, RewardClaim, SystemConfig, User, now_str,
 )
 import knowledge_base
 # 💡 暖心選物商品資料（藥局官網實際查價）統一放在 product_catalog.py，init_db 啟動時同步寫入
@@ -571,6 +571,30 @@ def get_knowledge_sources() -> list:
         d["topics"] = json.loads(d.pop("topics_json") or "[]")
         out.append(d)
     return out
+
+
+def get_live_cache(key: str):
+    """即時查詢的快取；沒有資料時回傳 None"""
+    with _session() as session:
+        row = session.get(LiveSourceCache, key)
+        if row is None:
+            return None
+        return {"payload": json.loads(row.payload_json) if row.payload_json else None,
+                "ok": bool(row.ok), "fetched_at": row.fetched_at or ""}
+
+
+def clear_live_cache() -> int:
+    with _session() as session:
+        rows = session.scalars(select(LiveSourceCache)).all()
+        for row in rows:
+            session.delete(row)
+        return len(rows)
+
+
+def set_live_cache(key: str, payload, ok: bool = True):
+    with _session() as session:
+        session.merge(LiveSourceCache(key=key, ok=1 if ok else 0, fetched_at=now_str(),
+                                      payload_json=json.dumps(payload, ensure_ascii=False) if payload is not None else None))
 
 
 def get_knowledge_chunks(source_id: str = None, ingredient: str = None) -> list:

@@ -255,6 +255,16 @@ class KnowledgeChunk(Base):
     chunk_text: Mapped[str] = mapped_column(UnicodeText)
 
 
+class LiveSourceCache(Base):
+    """即時查詢美國官方開放資料（openFDA 仿單、MedlinePlus）的結果快取，見 live_sources.py"""
+    __tablename__ = "live_source_cache"
+
+    key: Mapped[str] = mapped_column(Unicode(200), primary_key=True)
+    payload_json: Mapped[str | None] = mapped_column(UnicodeText)
+    ok: Mapped[int | None] = mapped_column(Integer, default=1)
+    fetched_at: Mapped[str | None] = mapped_column(Unicode(TIME_LEN), default=now_str)
+
+
 class SystemConfig(Base):
     """系統設定與一次性資料遷移的完成標記"""
     __tablename__ = "system_config"
@@ -268,4 +278,5 @@ class SystemConfig(Base):
 ALL_MODELS = [
     SystemConfig, User, Recipient, Order, PointsLedger, PharmacyCache, RecommendationProduct,
     AiGuardUsage, RewardClaim, ChatMessage, CashbackOrder, ClinicalKnowledge, KnowledgeSource, KnowledgeChunk,
+    LiveSourceCache,
 ]

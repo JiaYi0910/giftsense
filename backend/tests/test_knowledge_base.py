@@ -23,6 +23,7 @@ shutil.copy(os.path.join(BACKEND, "caregift.db"), TEST_DB)
 os.environ["CAREGIFT_DB_PATH"] = TEST_DB
 for _key in ("TURSO_DATABASE_URL", "TURSO_AUTH_TOKEN", "GEMINI_API_KEY"):
     os.environ.pop(_key, None)
+os.environ["LIVE_SOURCES"] = "off"   # 不連線 openFDA／MedlinePlus（另見 test_live_sources.py）
 # 不碰開發用的資料庫（DATABASE_URL）；要在 SQL Server 上測試時另外設定 TEST_DATABASE_URL，指向空的測試資料庫
 os.environ.pop("DATABASE_URL", None)
 if os.getenv("TEST_DATABASE_URL"):
@@ -242,13 +243,18 @@ def test_cards_follow_tfda_limits():
 
 
 def test_gaba_with_blood_pressure_or_sedative_drugs_is_flagged():
-    for cond in ("高血壓，服用降血壓藥", "癲癇", "長期服用安眠藥"):
+    for cond in ("高血壓，服用降血壓藥", "癲癇"):
         res = query_rag_engine("睡不好，GABA 可以幫助入睡嗎？", "媽媽", cond)
         tfda = res["tfda_verification"]
         assert tfda["is_collision"] is True and tfda["rule_id"] == "rule_gaba_bp_sedative_epilepsy", cond
         assert [s["id"] for s in tfda["sources"]] == ["tfda_material_gaba"]
         assert res["safety"]["action_card"]["price"] is None
         assert MANIFEST["tfda_material_gaba"]["url"] in res["gemini_synthesis"]
+    # 服用安眠藥時由安眠藥規則處理（也涵蓋酒精），同樣附上食藥署 GABA 的標示規定
+    for q in ("睡不好，GABA 可以幫助入睡嗎？", "睡前喝點酒幫助入睡可以嗎？"):
+        tfda = query_rag_engine(q, "媽媽", "長期服用安眠藥")["tfda_verification"]
+        assert tfda["rule_id"] == "rule_sedative_sleep_aid", q
+        assert "tfda_material_gaba" in [s["id"] for s in tfda["sources"]]
 
 
 def test_answers_cite_only_listed_urls():
