@@ -594,11 +594,31 @@ def get_embeddings(keys: list) -> dict:
     return found
 
 
+_EMBED_BATCH = 20   # 每筆向量約 4 KB（768 維 float32 的 base64），一個 INSERT 約 80 KB
+
+
 def put_embeddings(items: dict, model: str, dim: int):
-    """items = {key: base64 向量}"""
-    with _session() as session:
-        for key, vec in items.items():
-            session.merge(EmbeddingCache(key=key, model=model, dim=dim, vector_b64=vec, created_at=now_str()))
+    """items = {key: base64 向量}。key 是模型、維度與文字的雜湊值，已存在的 key 內容相同，直接略過。
+    Turso 的交易超過幾秒會被取消（stream idle），所以先一次查出已存在的 key，再用多列 INSERT 批次寫入，
+    不逐筆 merge（每筆都要查詢再寫入，40 筆就有約 80 次網路往返）"""
+    if not items:
+        return
+    existing = set(get_embeddings(list(items)))
+    rows = [{"key": k, "model": model, "dim": dim, "vector_b64": v, "created_at": now_str()}
+            for k, v in items.items() if k not in existing]
+    try:
+        with _session() as session:
+            for i in range(0, len(rows), _EMBED_BATCH):
+                session.execute(insert(EmbeddingCache.__table__).values(rows[i:i + _EMBED_BATCH]))
+    except IntegrityError:
+        # 另一個建立工作剛寫入同樣的 key：逐批重試，已存在的略過
+        for i in range(0, len(rows), _EMBED_BATCH):
+            batch = {r["key"]: r["vector_b64"] for r in rows[i:i + _EMBED_BATCH]}
+            done = set(get_embeddings(list(batch)))
+            todo = [r for r in rows[i:i + _EMBED_BATCH] if r["key"] not in done]
+            if todo:
+                with _session() as session:
+                    session.execute(insert(EmbeddingCache.__table__).values(todo))
 
 
 def clear_live_cache() -> int:

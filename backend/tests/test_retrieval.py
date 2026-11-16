@@ -110,6 +110,28 @@ def test_index_builds_once_and_then_uses_the_database_cache(semantic, monkeypatc
     assert info["mode"] == "hybrid" and info["cards"] == len(CARDS) and "key" not in str(info).lower()
 
 
+def test_embedding_cache_writes_in_few_statements_and_skips_existing_keys():
+    """Turso 的交易超過幾秒會被取消：向量要用多列 INSERT 批次寫入，不可逐筆 merge"""
+    import uuid
+    from sqlalchemy import event
+
+    prefix = uuid.uuid4().hex[:8]
+    items = {f"{prefix}-{i}": si.pack([0.0] * si.EMBED_DIM) for i in range(45)}
+    statements = []
+
+    def record(conn, cursor, statement, params, context, executemany):
+        statements.append(statement.lstrip().upper())
+
+    event.listen(database.engine, "before_cursor_execute", record)
+    try:
+        database.put_embeddings(items, si.EMBED_MODEL, si.EMBED_DIM)
+        database.put_embeddings(items, si.EMBED_MODEL, si.EMBED_DIM)      # 第二次：全部已存在，只查詢
+    finally:
+        event.remove(database.engine, "before_cursor_execute", record)
+    assert sum(s.startswith("INSERT") for s in statements) == 3          # 45 筆分 3 批（每批 20 筆）
+    assert set(database.get_embeddings(list(items))) == set(items)
+
+
 def test_rate_limit_is_retried(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "test-key-not-real")
     monkeypatch.setenv("SEMANTIC_SEARCH", "on")
