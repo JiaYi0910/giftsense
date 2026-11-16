@@ -1,0 +1,57 @@
+# title: Red Yeast Rice
+# url: https://www.nccih.nih.gov/health/red-yeast-rice
+# authority: 美國國家輔助與整合衛生中心（NIH NCCIH）
+# fetched: 2026-11-16
+# license: 美國聯邦政府著作（公有領域），可存原文段落（NCCIH 頁面註明 public domain）
+
+Red Yeast Rice: What You Need To Know
+
+## What is red yeast rice?
+
+Red yeast rice is produced by fermentation of a fungus on rice, usually Monascus purpureus . Technically, M. purpureus is a mold (a fungus that produces filaments that include many cells) rather than a yeast (a single-celled fungus), but dietary supplement labels in the United States typically use the name “red yeast rice” instead of “red mold rice.”
+
+Depending on the strain used and the conditions of fermentation, the fungus can enrich the rice with substances known as monacolins, including monacolin K. Monacolin K is structurally identical to the medicine lovastatin.
+
+Lovastatin, like other statin drugs, helps slow the production of cholesterol in the body to decrease the amount of cholesterol that may build up on the walls of arteries and block blood flow to the heart, brain, and other parts of the body. Statin drugs are used together with diet, weight loss, and exercise to reduce the risk of heart attack and stroke.
+
+Red yeast rice comes in the forms of food, traditional Chinese medicine , dietary supplements , and other products.
+
+## How much monacolin K is in red yeast rice?
+
+Traditional red yeast rice may contain trace amounts of monacolin K (lovastatin).
+
+Some commercial red yeast rice products contain very little or no detectable monacolin K. Other products, however, have been found to contain large amounts of monacolin K. Some researchers reported that commercial lovastatin is illegally added to some red yeast rice products.
+
+It’s impossible for consumers to know the amount of monacolin K in red yeast rice products. Levels of monacolin K and lovastatin are not usually included on product labels. A 2017 review analyzed 28 brands of red yeast rice products from mainstream retailers in the United States, and none of the products included the quantity of monacolin K on the label. Monacolin K was not detected in two brands, and in the 26 brands that contained monacolin K, the quantity ranged more than 60-fold, from 0.09 to 5.48 mg per 1,200 mg of red yeast rice.
+
+## How does the U.S. Food and Drug Administration (FDA) regulate red yeast rice products?
+
+According to the FDA, red yeast rice products that have enhanced or added lovastatin—which is structurally identical to monacolin K—cannot be marketed as a dietary supplement in the United States. This regulation is based on the FDA’s approval of lovastatin as a new drug before it was ever marketed as a food or dietary supplement.
+
+On several occasions, the FDA sent warning letters to companies selling red yeast rice products that had enhanced or added lovastatin, telling the companies to correct their violations.
+
+## Are red yeast rice products effective?
+
+Red yeast rice products that have considerable amounts of monacolin K may effectively lower blood cholesterol levels, blood glucose levels, and blood pressure. They may also reduce the risk of heart problems and death in people with metabolic syndrome. (Metabolic syndrome, also called insulin resistance syndrome, is a group of conditions that raise the risk of heart disease, diabetes, and stroke.) But, because of the levels of monacolin K, these products are considered by the FDA to be unapproved new drugs and are not sold legally in the United States.
+
+Other red yeast rice products may contain very little monacolin K, and it’s unknown if these products are effective in reducing cholesterol levels or improving other areas of health. Some products have levels of monacolin K that are below the level known to lower cholesterol in clinical trials .
+
+## Are red yeast rice products safe?
+
+A 2019 systematic review of clinical trials suggested that red yeast rice products with varying levels of monacolin K were safe. But that went against the opinion of the European Food Safety Authority (EFSA), published in 2018, which concluded that exposure to monacolin K from red yeast rice products could lead to severe side effects. The EFSA panel could not identify a guaranteed safe dietary level of monacolins from red yeast rice products.
+
+## What are possible side effects from red yeast rice products?
+
+Red yeast rice products that contain significant amounts of monacolin K can have the same potential side effects as statin drugs, including muscle, kidney, and liver damage. They may also cause digestive problems (such as diarrhea, nausea, and stomach pain) and other reported side effects.
+
+Red yeast rice products can have the same types of drug interactions as statin drugs and therefore may interfere with certain medicines or increase the chance for side effects.
+
+## Are there other safety concerns with red yeast rice products?
+
+Yes. Some red yeast rice products contain a contaminant called citrinin, which is toxic and can damage the kidneys.
+
+In a 2021 analysis of 37 red yeast rice products, only one had citrinin levels below the maximum level currently set by the European Union. Also, four products that were contaminated with citrinin were labeled as “citrinin-free.”
+
+## Are red yeast rice products safe during pregnancy?
+
+There are no studies on the safety of red yeast rice products during pregnancy or while breastfeeding. Red yeast rice products are not recommended for those who are pregnant or lactating.

@@ -6,10 +6,12 @@ try:
     from backend.vector_store import global_vector_store, FULL_CLINICAL_LITERATURES
     from backend.tfda_service import global_tfda_service
     from backend.product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
+    from backend.knowledge_base import source_refs
 except ImportError:
     from vector_store import global_vector_store, FULL_CLINICAL_LITERATURES
     from tfda_service import global_tfda_service
     from product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
+    from knowledge_base import source_refs
 
 # Expose full clinical literatures for compatibility
 CLINICAL_LITERATURES = FULL_CLINICAL_LITERATURES
@@ -68,6 +70,20 @@ try:
     from clinical_guidance import GUIDANCE_CATEGORIES
 except ImportError:
     from backend.clinical_guidance import GUIDANCE_CATEGORIES
+
+
+def _with_sources(lit: dict) -> dict:
+    """文獻附上可點開的出處（來源 id 對應 knowledge_sources/sources.json；資料庫來的文獻已帶 sources）"""
+    lit = dict(lit)
+    if not lit.get("sources"):
+        lit["sources"] = source_refs(lit.get("sourceIds") or [])
+    if not lit.get("url") and lit["sources"]:
+        lit["url"] = lit["sources"][0]["url"]
+    return lit
+
+
+def _source_lines(refs: list) -> str:
+    return "\n".join(f"・{r['authority']}：{r['title']}（{r['url']}）" for r in refs)
 
 
 def _guidance_text(lit: dict) -> str:
@@ -517,7 +533,7 @@ def find_symptom_match(query: str, elder_name: str, elder_condition: str):
     return None
 
 # =========================================================================
-# UNIFIED HYBRID QUERY PIPELINE (VECTOR DB + TFDA VERIFICATION + GEMINI)
+# UNIFIED HYBRID QUERY PIPELINE (檢索 + 交互作用規則 + GEMINI)
 # =========================================================================
 def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key: str = None, model: str = "gemini-1.5-flash"):
     # -------------------------------------------------------------------------
@@ -581,7 +597,7 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
     # -------------------------------------------------------------------------
     # 2. TRACK 2: VECTOR DB SEMANTIC RETRIEVAL (Text-Embedding Semantic Space)
     # -------------------------------------------------------------------------
-    vector_matches = global_vector_store.search(query, top_k=3)
+    vector_matches = [_with_sources(m) for m in global_vector_store.search(query, top_k=3)]
     if not vector_matches:
         return {
             "success": True,
@@ -590,7 +606,7 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
             "message": f"針對「{query}」，目前 {len(global_vector_store.documents)} 篇實證文獻與照護指引中未檢索到高度直接相關項目。",
             "supported_areas": [
                 "肩頸與關節舒緩 (風池/肩井穴位、醫療熱敷墊、一條根貼片)",
-                "紅麴血脂調節 (Monacolin K / TFDA 黑框警語)",
+                "紅麴與 Statin 降血脂藥 (Monacolin K / NIH NCCIH)",
                 "納豆激酶溶栓 (Nattokinase / Warfarin 禁忌)",
                 "銀杏末梢循環 (EGb 761 / 出血警示)",
                 "二型膠原蛋白 (UC-II / 軟骨免疫耐受)",
@@ -599,7 +615,7 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
                 "高濃縮蔓越莓 (PACs / 泌尿道保護)",
                 "視力乾澀 (葉黃素/AREDS 2)", "心血管血脂 (Omega-3 魚油/AHA)",
                 "腸胃消化 (複合益生菌/WGO)", "骨密骨折 (檸檬酸鈣+D3/NOF)",
-                "關節消炎 (高純度薑黃素/NIH)", "心肌體力 (輔酶 Q10/TFDA)",
+                "薑黃與肝損傷提醒 (NIH NCCIH)", "輔酶 Q10 與用藥注意 (NIH NCCIH)",
                 "膝蓋軟骨痛 (葡萄糖胺/ESCEO)", "睡眠放鬆 (GABA+芝麻素/AASM)"
             ]
         }
@@ -608,7 +624,7 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
     matched_ingredient = top_lit["ingredient"]
 
     # -------------------------------------------------------------------------
-    # 3. TRACK 3: TFDA OFFICIAL REGULATORY COLLISION & BLACK BOX CHECK
+    # 3. TRACK 3: 交互作用規則比對（安全底線，與檢索結果衝突時以規則為準）
     # -------------------------------------------------------------------------
     tfda_result = global_tfda_service.check_interaction(
         elder_name=elder_name,
@@ -629,7 +645,14 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
         }
 
     # Action Card: TFDA 替代建議或同成分商品；價格一律來自暖心選物的實際查價資料
-    if is_collision and tfda_result.get("alternative"):
+    if is_collision and not tfda_result.get("alternative"):
+        # 命中交互作用規則：不推薦任何商品，避免推薦到與用藥衝突的成分
+        action_card = _no_price_card(
+            "暫不推薦商品",
+            "請先諮詢醫師或藥師",
+            "親友目前的病況或用藥與這類保健品可能有交互作用，是否使用、改用什麼，請由醫師或藥師依實際用藥評估。"
+        )
+    elif is_collision and tfda_result.get("alternative"):
         alt = tfda_result["alternative"]
         catalog_id = next((cid for kw, cid in ALT_NAME_TO_CATALOG if kw in alt["product_name"]), None)
         real = catalog_card_fields(catalog_id, elder_condition)
@@ -676,7 +699,7 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
     }
 
     # -------------------------------------------------------------------------
-    # 4. LLM SYNTHESIS (GEMINI 1.5 FLASH WITH TFDA & VECTOR INJECTION)
+    # 4. LLM SYNTHESIS（只用檢索資料與規則結果，回覆附出處）
     # -------------------------------------------------------------------------
     gemini_text = ""
     if api_key and api_key.strip():
@@ -685,25 +708,27 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
 當前親友：{elder_name}，目前病史與用藥：{elder_condition}。
 使用者問題：{query}
 
-【Vector DB 檢索到的臨床實證文獻】
+【檢索到的實證資料（只能使用這些內容）】
 {json.dumps([{
     'title': m['title'], 'authority': m['authority'], 'ingredient': m['ingredient'],
     'evidenceLevel': m['evidenceLevel'], 'dose': m['recommendedDose'],
     'mechanism': m['mechanism'], 'contraindications': m['contraindications'], 'citation': m['citation'],
+    'sources': [{'name': r['authority'] + '：' + r['title'], 'url': r['url']} for r in m.get('sources', [])],
     'vector_similarity': m.get('vector_score', 0)
 } for m in vector_matches], ensure_ascii=False, indent=2)}
 
-【衛福部食藥署 (TFDA) 官方藥物檢驗報告】
-檢驗結果：{tfda_result['badge']}
-官方標題：{tfda_result['title']}
-官方依據：{tfda_result['official_citation']}
-機轉說明：{tfda_result['mechanism']}
+【交互作用規則比對結果（與上方資料衝突時以此為準）】
+結果：{tfda_result['badge']}
+標題：{tfda_result['title']}
+依據：{tfda_result['official_citation']}
+說明：{tfda_result['mechanism']}
 處置建議：{tfda_result['clinical_action']}
+來源：{json.dumps([{'name': r['authority'] + '：' + r['title'], 'url': r['url']} for r in tfda_result.get('sources', [])], ensure_ascii=False)}
 
 請以 20~30 歲年輕子女易懂、白話溫暖的語氣，簡要說明（2~3 句話）：
-1. 臨床實證建議的核心成分與好處。
-2. 明確說明衛福部 TFDA 官方檢驗結果：是否與親友病史（如 Warfarin、Statin、燙傷、高血壓）產生撞藥或重大黑框警語？
-3. 標註官方文獻出處。避免冗長大段文字。"""
+1. 上方資料對這個問題的重點；資料沒有提到的事情不要補充，查不到依據就直接說「目前資料庫查無相關依據」。
+2. 是否命中交互作用規則；命中時以規則的警示為準。
+3. 每一項重點後面附上對應的來源名稱與網址（只能用上方提供的網址，不可自行編造）。避免冗長大段文字。"""
 
             url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
             payload = {
@@ -719,23 +744,28 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
 
     if not gemini_text and is_guidance:
         gemini_text = _guidance_text(top_lit)
+        if top_lit.get("sources"):
+            gemini_text += "\n\n出處：\n" + _source_lines(top_lit["sources"])
         if is_collision:
             gemini_text = (f"【用藥安全警示】{tfda_result['title']}\n{tfda_result['mechanism']}\n"
                            f"處置建議：{tfda_result['clinical_action']}\n\n" + gemini_text)
 
     if not gemini_text:
-        # High quality offline synthesis with TFDA endorsement
+        # 離線回覆：只用檢索到的資料與規則，附上出處
         if is_collision:
-            gemini_text = f"⚠️ 【衛福部食藥署 (TFDA) 官方撞藥警訊】：\n" \
-                          f"針對「{query}」，檢索到核心成分為【{matched_ingredient}】。\n" \
-                          f"經比對親友病史【{elder_name}】({elder_condition})，命中 {tfda_result['badge']}！\n" \
-                          f"依據 {tfda_result['official_citation']}：{tfda_result['mechanism']}\n" \
-                          f"💡 處置建議：{tfda_result['clinical_action']}"
+            gemini_text = (f"⚠️ 【用藥安全警示】{tfda_result['title']}\n"
+                           f"針對「{query}」，檢索到的成分為【{matched_ingredient}】；比對【{elder_name}】（{elder_condition}）的病況與用藥，命中交互作用規則。\n"
+                           f"{tfda_result['mechanism']}\n"
+                           f"💡 處置建議：{tfda_result['clinical_action']}")
+            if tfda_result.get("sources"):
+                gemini_text += "\n\n出處：\n" + _source_lines(tfda_result["sources"])
         else:
-            gemini_text = f"✅ 【衛福部食藥署 (TFDA) 臨床實證相容】：\n" \
-                          f"針對「{query}」，{top_lit['authority']} 推薦核心成分為【{matched_ingredient}】。\n" \
-                          f"經比對 TFDA 官方資料庫，與【{elder_name}】({elder_condition}) 當前處方無已知重大黑框警語與撞藥衝突，相容度 98%。\n" \
-                          f"💡 作用機轉：{top_lit['mechanism']}"
+            gemini_text = (f"✅ 【未命中已收錄的交互作用規則】\n"
+                           f"針對「{query}」，檢索到的資料為【{top_lit['title']}】（{top_lit['authority']}）。\n"
+                           f"已比對【{elder_name}】（{elder_condition}）的病況與用藥，沒有命中本系統收錄的交互作用規則；這不代表確定沒有交互作用，購買前仍請詢問醫師或藥師。\n"
+                           f"💡 重點：{top_lit['mechanism']}")
+            if top_lit.get("sources"):
+                gemini_text += "\n\n出處：\n" + _source_lines(top_lit["sources"])
 
     return {
         "success": True,

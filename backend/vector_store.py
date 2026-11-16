@@ -13,20 +13,22 @@ FULL_CLINICAL_LITERATURES: List[Dict[str, Any]] = [
     {
         "id": "lit_lutein_01",
         "title": "AREDS 2 臨床試驗：葉黃素與玉米黃素對成人黃斑部與視覺機能之實證研究",
-        "authority": "美國國家衛生研究院 (NIH / NEI) & 台灣衛福部食藥署 (TFDA)",
+        "authority": "美國國家眼科研究所（NIH NEI）AREDS2 臨床試驗",
         "category": "視力保健",
         "ingredient": "Lutein (葉黃素) & Zeaxanthin (玉米黃素)",
         "evidenceLevel": "Level 1 (大規模多中心隨機對照試驗 RCT)",
-        "recommendedDose": "游離型葉黃素 10mg + 玉米黃素 2mg / 每日（TFDA 規範每日上限 30mg）",
-        "mechanism": "作為視網膜黃斑部重要類胡蘿蔔素，能有效過濾有害高能量藍光，減少光氧化自由基損傷，延緩視力退化。",
-        "contraindications": "長期吸菸者避免與高劑量 β-胡蘿蔔素同服；對金盞花萃取物過敏者慎用。",
+        "recommendedDose": "AREDS2 試驗配方：葉黃素 10 mg＋玉米黃素 2 mg／每日（試驗對象為有惡化成晚期黃斑部病變風險的 50–85 歲成人）",
+        "mechanism": "葉黃素與玉米黃素是視網膜黃斑部的類胡蘿蔔素。AREDS2 在原本的 AREDS 配方中加入葉黃素＋玉米黃素，主要分析並沒有進一步降低惡化成晚期黃斑部病變的風險；但因 β-胡蘿蔔素與前吸菸者的肺癌增加有關，葉黃素＋玉米黃素可作為替代的類胡蘿蔔素。",
+        "contraindications": "AREDS2 中含 β-胡蘿蔔素的組別肺癌較多，且多為前吸菸者；吸菸或曾吸菸者應避免含 β-胡蘿蔔素的配方。黃斑部病變的補充與追蹤請依眼科醫師建議。",
         "targetSymptoms": ["用眼過度", "眼睛乾澀", "夜間視力不佳", "黃斑部保健", "頻繁使用3C"],
-        "citation": "National Eye Institute (NEI) AREDS2 Research Group. JAMA. 2013;309(19):2005-2015."
+        "citation": "NIH NEI：Age-Related Eye Disease Studies (AREDS/AREDS2)；Age-Related Eye Disease Study 2 Research Group, et al. Lutein + zeaxanthin and omega-3 fatty acids for age-related macular degeneration: the Age-Related Eye Disease Study 2 (AREDS2) randomized clinical trial. JAMA. 2013;309:2005-15.（PMID 23644932）",
+        "url": "https://www.nei.nih.gov/eye-health-information/clinical-trials/age-related-eye-disease-studies-aredsareds2",
+        "sourceIds": ["nei_areds", "pmid_23644932"]
     },
     {
         "id": "lit_omega3_02",
         "title": "Omega-3 脂肪酸 (EPA/DHA) 對心血管風險與發炎反應之臨床指引",
-        "authority": "美國心臟學會 (AHA) & 美國食品藥物管理局 (US FDA Qualified Health Claim)",
+        "authority": "美國心臟學會（AHA）科學建議、NIH NCCIH",
         "category": "心血管與循環",
         "ingredient": "Omega-3 魚油 (EPA / DHA)",
         "evidenceLevel": "Level 1 (Meta-Analysis 系統性回顧)",
@@ -34,12 +36,14 @@ FULL_CLINICAL_LITERATURES: List[Dict[str, Any]] = [
         "mechanism": "競爭性抑制花生四烯酸代謝路徑，減少發炎介質 (TXA2, PGE2) 生成，提升血管內皮細胞彈性並降低血小板凝聚。",
         "contraindications": "【重大禁忌】正服用抗凝血藥 (Warfarin, NOACs) 或阿斯匹靈者需嚴格控制劑量；凝血功能不全、重大手術前 14 天應停用；對魚類過敏者禁用。",
         "targetSymptoms": ["血壓偏高", "血脂偏高", "心血管保健", "慢性關節發炎", "注意力不集中"],
-        "citation": "American Heart Association (AHA) Science Advisory. Circulation. 2019;140:e673–e691."
+        "citation": "NIH NCCIH：Omega-3 Supplements: What You Need To Know；Skulas-Ray AC, et al. Omega-3 Fatty Acids for the Management of Hypertriglyceridemia: A Science Advisory From the American Heart Association. Circulation. 2019;140:e673-e691.（PMID 31422671）；US FDA：Qualified Health Claims: Letters of Enforcement Discretion",
+        "url": "https://www.nccih.nih.gov/health/omega3-supplements-what-you-need-to-know",
+        "sourceIds": ["nccih_omega3", "pmid_31422671", "fda_qhc", "ods_omega3fattyacids"]
     },
     {
         "id": "lit_probiotics_03",
         "title": "世界胃腸病學組織 (WGO)：益生菌在腸道微生態與消化免疫調節之臨床應用",
-        "authority": "世界胃腸病學組織 (WGO) & 考科藍合作組織 (Cochrane Review)",
+        "authority": "世界胃腸病學組織（WGO）全球指引、NIH NCCIH",
         "category": "腸胃與免疫",
         "ingredient": "複合專利益生菌 (Lactobacillus, Bifidobacterium)",
         "evidenceLevel": "Level 1 (Cochrane Systematic Review)",
@@ -47,12 +51,14 @@ FULL_CLINICAL_LITERATURES: List[Dict[str, Any]] = [
         "mechanism": "透過競爭排斥致病菌、增強腸道黏膜屏障緊密連接蛋白、調節腸道相關淋巴組織 (GALT) 分泌 sIgA 抗體。",
         "contraindications": "與抗生素同時使用會殺死活菌，需間隔 2 小時以上；重度免疫不全、中心靜脈導管患者應經主治醫師評估以防菌血症。",
         "targetSymptoms": ["便秘", "脹氣腹瀉", "消化不良", "排便不順", "季節性過敏"],
-        "citation": "World Gastroenterology Organisation Global Guidelines: Probiotics and prebiotics, 2023."
+        "citation": "WGO：WGO Global Guidelines: Probiotics and Prebiotics；NIH NCCIH：Probiotics: Usefulness and Safety；期刊版：J Clin Gastroenterol. 2024（doi:10.1097/MCG.0000000000002002）",
+        "url": "https://www.worldgastroenterology.org/guidelines/probiotics-and-prebiotics",
+        "sourceIds": ["wgo_probiotics", "nccih_probiotics", "ods_probiotics"]
     },
     {
         "id": "lit_calcium_d3_04",
         "title": "美國國家骨質疏鬆症基金會 (NOF)：鈣質與維生素 D3 協同維持骨密臨床指南",
-        "authority": "美國國家骨質疏鬆症基金會 (NOF) & 台灣衛福部國人膳食營養素參考攝取量 (DRIs)",
+        "authority": "美國骨骼健康暨骨質疏鬆症基金會（BHOF，前身為 NOF）臨床指引",
         "category": "骨骼關節",
         "ingredient": "檸檬酸鈣 / 碳酸鈣 + 活性維生素 D3 (Cholecalciferol)",
         "evidenceLevel": "Level 1 (臨床實證指引)",
@@ -60,51 +66,59 @@ FULL_CLINICAL_LITERATURES: List[Dict[str, Any]] = [
         "mechanism": "維生素 D3 促進小腸上皮細胞合成鈣結合蛋白 (Calbindin)，提升腸道鈣質吸收率 30-40%，協同成骨細胞礦化骨基質。",
         "contraindications": "高血鈣症、高尿鈣症或副甲狀腺機能亢進患者禁用；腎結石病史者應優先選擇檸檬酸鈣並大量飲水；避免與鐵劑或四環黴素同服。",
         "targetSymptoms": ["骨質疏鬆", "骨折修復期", "關節退化", "抽筋", "日曬不足"],
-        "citation": "National Osteoporosis Foundation (NOF) Clinician's Guide to Prevention and Treatment of Osteoporosis. 2022."
+        "citation": "LeBoff MS, et al. The clinician's guide to prevention and treatment of osteoporosis. Osteoporos Int. 2022;33:2049-2102.（PMID 35478046）",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/35478046/",
+        "sourceIds": ["pmid_35478046", "ods_calcium", "ods_vitamind", "hpa_dri"]
     },
     {
         "id": "lit_curcumin_05",
         "title": "高生物利用率薑黃素對於慢性關節退化發炎指數之調節實證",
-        "authority": "美國國家補充和整合健康中心 (NIH NCCIH) & 歐洲食品安全局 (EFSA)",
+        "authority": "美國國家輔助與整合衛生中心（NIH NCCIH）",
         "category": "關節與消炎",
         "ingredient": "Curcumin (薑黃素 / 95% 薑黃萃取物)",
-        "evidenceLevel": "Level 2 (隨機雙盲對照試驗)",
-        "recommendedDose": "標準化薑黃素 500-1,000mg/日（搭配黑胡椒萃取物 Piperine 可提高 2,000% 生物利用率）",
+        "evidenceLevel": "NCCIH 衛教（整理現有研究）",
+        "recommendedDose": "依產品標示劑量；NCCIH 提醒：加強吸收（高生物利用率）的薑黃素配方曾有肝損傷案例",
         "mechanism": "強力抑制 NF-κB 轉錄因子活化，下調促發炎細胞因子 (TNF-α, IL-6) 及 COX-2 酵素活性，舒緩關節發炎症狀。",
-        "contraindications": "【禁忌】膽結石、膽道阻塞患者禁用（刺激膽囊收縮）；具有抗血小板凝聚作用，手術前兩週應停用；避免與抗凝血藥併用。",
+        "contraindications": "【肝損傷】NCCIH：高生物利用率的薑黃素產品曾有使用者發生肝損傷，出現疲倦、噁心、食慾差、茶色尿或黃疸時，應立即停用並就醫。有膽道疾病、服用抗凝血藥或即將手術者，使用前請先詢問醫師或藥師。",
         "targetSymptoms": ["關節疼痛", "退化性關節炎", "肌肉痠痛", "慢性發炎", "運動後修復"],
-        "citation": "National Center for Complementary and Integrative Health (NCCIH). Turmeric/Curcumin Science Brief, 2023."
+        "citation": "NIH NCCIH：Turmeric",
+        "url": "https://www.nccih.nih.gov/health/turmeric",
+        "sourceIds": ["nccih_turmeric"]
     },
     {
         "id": "lit_coq10_06",
-        "title": "輔酶 Q10 在心肌能量代謝與 Statin 肌肉酸痛緩解之臨床回顧",
-        "authority": "台灣衛福部食藥署 (TFDA 保健法規) & 美國心臟病學會 (ACC)",
+        "title": "輔酶 Q10 的能量代謝角色與用藥注意事項",
+        "authority": "美國國家輔助與整合衛生中心（NIH NCCIH）",
         "category": "心肌代謝與活力",
         "ingredient": "Coenzyme Q10 (輔酶 Q10 / 泛醌)",
-        "evidenceLevel": "Level 2 (系統性文獻回顧與臨床試驗)",
-        "recommendedDose": "每日 30mg（台灣 TFDA 規範每日食用限量 30mg 以下）",
-        "mechanism": "作為粒線體電子傳遞鏈關鍵輔酶，促進 ATP 生成，提升心肌細胞能量代謝，並具強效親脂性抗氧化活性。",
-        "contraindications": "【法規警語】15歲以下小孩、懷孕或哺乳期間婦女及服用抗凝血藥品 (Warfarin) 之病患不宜食用。",
+        "evidenceLevel": "NCCIH 衛教（整理現有研究）",
+        "recommendedDose": "依產品標示劑量食用；服用抗凝血藥或胰島素者使用前先詢問醫師或藥師",
+        "mechanism": "輔酶 Q10 參與細胞粒線體產生能量的過程，也具抗氧化作用。NCCIH 整理現有研究指出，整體證據不支持輔酶 Q10 能減輕 Statin 降血脂藥造成的肌肉痠痛。",
+        "contraindications": "NCCIH：輔酶 Q10 可能與抗凝血藥 Warfarin、糖尿病用藥胰島素產生交互作用，也可能與部分癌症治療不相容；懷孕、哺乳與兒童使用前請先詢問醫師。",
         "targetSymptoms": ["容易疲倦", "體力衰退", "心臟機能保養", "服用降血脂藥肌無力", "精力不足"],
-        "citation": "TFDA 衛署食字第 0950400854 號公告 & J Am Coll Cardiol. 2014;64(14):1456-1463."
+        "citation": "NIH NCCIH：Coenzyme Q10",
+        "url": "https://www.nccih.nih.gov/health/coenzyme-q10",
+        "sourceIds": ["nccih_coq10", "tfda_food_material"]
     },
     {
         "id": "lit_glucosamine_07",
         "title": "歐洲骨質疏鬆與骨關節炎臨床經濟學會 (ESCEO)：結晶型硫酸鹽葡萄糖胺治療指引",
-        "authority": "歐洲骨質疏鬆與骨關節炎學會 (ESCEO) & 國際骨關節炎研究學會 (OARSI)",
+        "authority": "歐洲骨質疏鬆與骨關節炎臨床經濟學會（ESCEO）、NIH NCCIH",
         "category": "骨骼關節",
         "ingredient": "Crystalline Glucosamine Sulfate (結晶型硫酸鹽葡萄糖胺)",
         "evidenceLevel": "Level 1 (國際臨床實證首選推薦 First-Line)",
         "recommendedDose": "結晶型硫酸鹽葡萄糖胺 1,500mg/日 (單次服用生物利用率最高)",
         "mechanism": "刺激關節滑膜軟骨細胞合成蛋白聚糖 (Proteoglycans) 與玻尿酸，抑制發炎介質 IL-1β，維持關節軟骨基質完整性與潤滑。",
-        "contraindications": "對甲殼類/蝦蟹過敏者應選擇發酵型植物葡萄糖胺；一般不具抗凝血交互作用，心血管患者可安心替代。",
+        "contraindications": "【出血風險】NCCIH：葡萄糖胺與軟骨素和服用抗凝血藥 Warfarin 者的出血風險增加有關，也可能使部分人的血糖上升；服用 Warfarin 或有糖尿病者使用前請先詢問醫師或藥師。對甲殼類過敏者應確認原料來源。",
         "targetSymptoms": ["膝蓋痛", "上下樓梯無力", "退化性關節炎", "關節卡卡異音", "活動受限"],
-        "citation": "Bruyère O, et al. Consensus statement on the treatment of knee osteoarthritis. Seminars in Arthritis and Rheumatism. 2019;49(3):337-350."
+        "citation": "NIH NCCIH：Glucosamine and Chondroitin for Osteoarthritis: What You Need To Know；Bruyère O, et al. An updated algorithm recommendation for the management of knee osteoarthritis from the European Society for Clinical and Economic Aspects of Osteoporosis, Osteoarthritis and Musculoskeletal Diseases (ESCEO). Semin Arthritis Rheum. 2019;49:337-350.（PMID 31126594）",
+        "url": "https://www.nccih.nih.gov/health/glucosamine-and-chondroitin-for-osteoarthritis-what-you-need-to-know",
+        "sourceIds": ["nccih_glucosamine", "pmid_31126594"]
     },
     {
         "id": "lit_gaba_sesamin_08",
         "title": "GABA 協同芝麻素對銀髮族睡眠障礙與自律神經放鬆之臨床實證",
-        "authority": "美國睡眠醫學會 (AASM 臨床指引) & 日本機能性表示食品 (CAA)",
+        "authority": "Food Science and Biotechnology 期刊（人體試驗）",
         "category": "睡眠與神經放鬆",
         "ingredient": "GABA (γ-胺基丁酸) & Sesamin (芝麻素)",
         "evidenceLevel": "Level 2 (隨機雙盲安慰劑對照臨床試驗)",
@@ -112,26 +126,30 @@ FULL_CLINICAL_LITERATURES: List[Dict[str, Any]] = [
         "mechanism": "GABA 作為中樞神經系統主要抑制性神經傳導物質，能活化 GABA-A 受體，提升副交感神經活性，誘導深層慢波睡眠。",
         "contraindications": "避免與抗焦慮處方鎮靜劑 (Benzodiazepines) 同時大量服用；嚴重低血壓患者應監測血壓變化。",
         "targetSymptoms": ["失眠睡不好", "入睡困難", "淺眠多夢", "自律神經失調", "焦慮緊繃"],
-        "citation": "Yamatsu A, et al. Effect of oral GABA on sleep and autonomic nervous system. Food Sci Biotechnol. 2016;25(2):547-551."
+        "citation": "Yamatsu A, et al. Effect of oral γ-aminobutyric acid (GABA) administration on sleep and its absorption in humans. Food Sci Biotechnol. 2016;25:547-551.（PMID 30263304）",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/30263304/",
+        "sourceIds": ["pmid_30263304"]
     },
     # --- EXPANDED ELDER INGREDIENTS & CLINICAL GUIDELINES ---
     {
         "id": "lit_red_yeast_09",
         "title": "紅麴萃取物 (Monacolin K) 調節膽固醇之臨床療效與 Statin 交互作用警示",
-        "authority": "台灣衛福部食藥署 (TFDA 警示) & 歐洲食品安全局 (EFSA)",
+        "authority": "美國國家輔助與整合衛生中心（NIH NCCIH）、歐洲食品安全局（EFSA）",
         "category": "心血管與血脂",
         "ingredient": "Red Yeast Rice (紅麴 / Monacolin K)",
-        "evidenceLevel": "Level 1 (臨床隨機對照試驗與安全性警示)",
-        "recommendedDose": "每日 Monacolin K 4.8mg ~ 10mg（TFDA 規範每日上限 15mg）",
-        "mechanism": "Monacolin K 結構與降血脂處方藥 Lovastatin 相同，競爭性抑制肝臟 HMG-CoA 還原酶，阻斷內生性膽固醇生合成。",
-        "contraindications": "【TFDA 重大黑框警語】嚴禁與 Statin 類處方降血脂藥 (Atorvastatin, Rosuvastatin) 併用，否則血中濃度疊加，引發『橫紋肌溶解症』、肌肉壞死與急性腎衰竭！肝腎功能不全者禁用。",
+        "evidenceLevel": "NCCIH 衛教與 EFSA 安全性評估",
+        "recommendedDose": "紅麴產品的 Monacolin K 含量差異很大，而且通常沒有標示（NCCIH）；EFSA 2018 年評估認為紅麴產品中的 Monacolin K 可能造成嚴重副作用。已在服用 Statin 者不可併用。",
+        "mechanism": "紅麴所含的 Monacolin K 與降血脂藥 Lovastatin 結構相同，作用和 Statin 類藥物一樣是減少體內膽固醇的製造。",
+        "contraindications": "【與 Statin 重複】NCCIH：含大量 Monacolin K 的紅麴產品可能有和 Statin 相同的副作用（肌肉、腎臟與肝臟損傷），也有相同的藥物交互作用；已在服用 Statin 降血脂藥者不可自行併用，肝腎功能不全者使用前請先詢問醫師。",
         "targetSymptoms": ["總膽固醇偏高", "低密度膽固醇 (LDL) 偏高", "心血管保健", "血脂代謝異常"],
-        "citation": "TFDA 衛署食字第 0960408532 號公告 & EFSA Journal 2018;16(8):5368."
+        "citation": "NIH NCCIH：Red Yeast Rice；EFSA Panel on Food Additives and Nutrient Sources added to Food. Scientific opinion on the safety of monacolins in red yeast rice. EFSA Journal. 2018;16(8):5368（doi:10.2903/j.efsa.2018.5368）",
+        "url": "https://www.nccih.nih.gov/health/red-yeast-rice",
+        "sourceIds": ["nccih_red_yeast_rice", "efsa_monacolins", "tfda_food_material"]
     },
     {
         "id": "lit_nattokinase_10",
         "title": "納豆激酶 (Nattokinase) 纖維蛋白溶解與抗血栓作用之臨床實證",
-        "authority": "日本納豆激酶協會 (JNKA) & 台灣衛福部食藥署 (TFDA)",
+        "authority": "Scientific Reports 期刊（人體試驗）",
         "category": "循環與血栓預防",
         "ingredient": "Nattokinase (納豆激酶 / 納豆菌發酵物)",
         "evidenceLevel": "Level 2 (人體臨床血栓指標試驗)",
@@ -139,38 +157,44 @@ FULL_CLINICAL_LITERATURES: List[Dict[str, Any]] = [
         "mechanism": "具直接水解血栓纖維蛋白活性，並刺激血管內皮細胞釋放組織型纖維蛋白溶酶原活化劑 (t-PA)，預防夜間微血栓形成。",
         "contraindications": "【重大禁忌】嚴禁與處方抗凝血藥 (Warfarin, NOAC) 或抗血小板藥 (Aspirin, Plavix) 併用，會引發嚴重自發性內出血、腦出血或消化道潰瘍出血！手術前兩週停用。",
         "targetSymptoms": ["血液循環不良", "手腳冰冷", "血栓預防", "高黏稠血症", "心腦血管保養"],
-        "citation": "Kurosawa Y, et al. A single dose of oral nattokinase potentiates thrombolysis and anticoagulation. Sci Rep. 2015;5:11601."
+        "citation": "Kurosawa Y, et al. A single-dose of oral nattokinase potentiates thrombolysis and anti-coagulation profiles. Sci Rep. 2015;5:11601.（PMID 26109079）",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/26109079/",
+        "sourceIds": ["pmid_26109079", "tfda_food_material"]
     },
     {
         "id": "lit_ginkgo_11",
         "title": "銀杏葉標準萃取物 (EGb 761) 對末梢循環障礙與認知機能之實證研究",
-        "authority": "世界衛生組織 (WHO Monographs) & 歐洲藥品管理局 (EMA)",
+        "authority": "NIH NCCIH、世界衛生組織（WHO）、歐洲藥品管理局（EMA）",
         "category": "腦部與末梢循環",
         "ingredient": "Ginkgo Biloba Leaf Extract (銀杏葉萃取物 EGb 761)",
         "evidenceLevel": "Level 1 (系統性回顧與 Cochrane 臨床分析)",
         "recommendedDose": "每日 120mg ~ 240mg 標準化萃取物 (含 24% 銀杏黃酮配醣體、6% 萜類內酯)",
         "mechanism": "清除自由基並強力抑制血小板活化因子 (PAF)，改善血液流變學，增加腦部微血管及末梢動脈血流灌注。",
-        "contraindications": "【重大出血警示】具強效抗血小板凝集活性，嚴禁與抗凝血藥 (Warfarin) 或阿斯匹靈併用；易導致顱內出血或創面大量滲血；手術前 14 天必須停用。",
+        "contraindications": "【出血風險】NCCIH：銀杏與 Warfarin 等抗凝血藥併用，重大出血事件的風險比單用 Warfarin 高；接近分娩時使用可能引起早產或生產時出血增加。服用抗凝血、抗血小板藥或即將手術者，使用前請先詢問醫師。",
         "targetSymptoms": ["末梢血液循環不良", "手腳冰冷麻木", "注意力記憶力減退", "間歇性跛行", "耳鳴眩暈"],
-        "citation": "World Health Organization. WHO Monographs on Selected Medicinal Plants - Volume 1, Ginkgo folium. 1999."
+        "citation": "NIH NCCIH：Ginkgo；NIH NCCIH：Herb-Drug Interactions (Clinical Digest for Health Professionals)；WHO：WHO Monographs on Selected Medicinal Plants – Volume 1；EMA：Ginkgo folium - herbal medicinal product",
+        "url": "https://www.nccih.nih.gov/health/ginkgo",
+        "sourceIds": ["nccih_ginkgo", "nccih_herb_drug", "who_ginkgo_monograph", "ema_ginkgo"]
     },
     {
         "id": "lit_ucii_12",
         "title": "非變性二型膠原蛋白 (UC-II) 透過口服免疫耐受調節關節炎之多中心 RCT",
-        "authority": "美國國家衛生研究院 (NIH PubMed) & 國際骨關節研究學會 (OARSI)",
+        "authority": "Nutrition Journal 期刊（多中心隨機雙盲試驗）",
         "category": "骨骼關節",
         "ingredient": "UC-II (Undenatured Type II Collagen / 非變性第二型膠原蛋白)",
         "evidenceLevel": "Level 1 (隨機雙盲對照臨床試驗)",
         "recommendedDose": "每日 40mg (含非變性二型膠原蛋白 10mg) / 空腹食用",
         "mechanism": "於腸道派氏結 (Peyer's Patches) 誘發口服免疫耐受 (Oral Tolerance)，刺激調節型 T 細胞 (Treg) 遷移至關節軟骨，抑制發炎並促進軟骨基質修復。",
-        "contraindications": "對禽肉類蛋白質嚴重過敏者慎用；與抗凝血藥無已知重大交互作用，心血管親友可安心食用。",
+        "contraindications": "目前的臨床試驗沒有評估與抗凝血藥併用的安全性，服用抗凝血藥者使用前請先詢問醫師或藥師；對雞肉蛋白過敏者慎用。",
         "targetSymptoms": ["膝蓋卡卡不順", "上下樓梯膝蓋痠軟", "關節僵硬", "活動受限", "退化性關節炎保養"],
-        "citation": "Lugo JP, et al. Efficacy and tolerability of an undenatured type II collagen supplement in modulating knee osteoarthritis symptoms. Nutr J. 2016;15:14."
+        "citation": "Lugo JP, et al. Efficacy and tolerability of an undenatured type II collagen supplement in modulating knee osteoarthritis symptoms: a multicenter randomized, double-blind, placebo-controlled study. Nutr J. 2016;15:14.（PMID 26822714）",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/26822714/",
+        "sourceIds": ["pmid_26822714"]
     },
     {
         "id": "lit_vitamin_b_13",
         "title": "高單位活性維生素 B 群 (B1, B6, B12) 對親友末梢神經修復之實證指南",
-        "authority": "台灣衛福部食藥署 (TFDA 臨床指引) & 國際神經學聯盟 (WFN)",
+        "authority": "Alternative Medicine Review 期刊（文獻回顧）",
         "category": "神經與活力代謝",
         "ingredient": "Active Vitamin B Complex (活性 B1 / 活化 B6 / 甲鈷胺 Methyl-B12)",
         "evidenceLevel": "Level 1 (隨機對照試驗與神經傳導檢查實證)",
@@ -178,12 +202,14 @@ FULL_CLINICAL_LITERATURES: List[Dict[str, Any]] = [
         "mechanism": "甲鈷胺 (Methylcobalamin) 作為輔酶參與髓鞘磷脂合成，促進受損周圍神經纖維再生與軸突傳導，改善糖尿病或退化引起的四肢發麻。B 群也是醣類與胺基酸轉換成能量的輔酶，外食、飲食不均或作息不規律而攝取不足時，補充 B 群有助維持正常的能量代謝。",
         "contraindications": "高劑量 B6 長期超過 200mg/日可能引發感覺神經病變；請依包裝建議劑量服用，尿液變深黃屬正常核黃素代謝現象。熬夜造成的疲勞仍要靠充足睡眠改善，B 群只能補足攝取不足，無法取代休息。",
         "targetSymptoms": ["手麻腳麻", "四肢末梢刺痛感", "慢性疲勞", "熬夜容易疲勞", "補充 B 群", "神經痛", "貧血頭暈"],
-        "citation": "Head KA. Peripheral neuropathy: pathogenic mechanisms and alternative therapies. Altern Med Rev. 2006;11(4):294-329."
+        "citation": "Head KA, et al. Peripheral neuropathy: pathogenic mechanisms and alternative therapies. Altern Med Rev. 2006;11:294-329.（PMID 17176168）",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/17176168/",
+        "sourceIds": ["pmid_17176168", "ods_vitaminb12", "ods_vitaminb6", "ods_thiamin"]
     },
     {
         "id": "lit_zinc_wound_14",
         "title": "甘胺酸鋅與高優質蛋白質對銀髮族皮膚創面與燙傷組織癒合之臨床指引",
-        "authority": "美國腸道與靜脈營養學會 (ASPEN) & 歐洲臨床營養學會 (ESPEN)",
+        "authority": "歐洲臨床營養與代謝學會（ESPEN）加護病房營養指引",
         "category": "創傷組織修復",
         "ingredient": "Zinc Glycinate (螯合鋅) + Whey Protein (乳清蛋白質)",
         "evidenceLevel": "Level 1 (ESPEN 臨床創傷照護指南)",
@@ -191,20 +217,24 @@ FULL_CLINICAL_LITERATURES: List[Dict[str, Any]] = [
         "mechanism": "鋅是人體 DNA 聚合酶、基質金屬蛋白酶 (MMP) 及上皮細胞生長之關鍵輔因子，能加速纖維母細胞合成膠原蛋白，加快創面結痂與肉芽組織生長。",
         "contraindications": "避免與四環黴素、氟喹諾酮抗生素或鐵劑同服（間隔 2 小時）；過量（>40mg/日）可能干擾銅吸收。",
         "targetSymptoms": ["燙傷創面修復", "壓瘡褥瘡", "術後傷口癒合慢", "皮膚脆弱破皮", "指甲毛髮生長不良"],
-        "citation": "ESPEN guideline on clinical nutrition in the intensive care unit. Clin Nutr. 2019;38(1):48-79."
+        "citation": "Singer P, et al. ESPEN guideline on clinical nutrition in the intensive care unit. Clin Nutr. 2019;38:48-79.（PMID 30348463）",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/30348463/",
+        "sourceIds": ["pmid_30348463", "ods_zinc"]
     },
     {
         "id": "lit_cranberry_mannose_15",
         "title": "高濃縮蔓越莓 PACs 與 D-甘露糖對高齡者復發性泌尿道感染之考科藍回顧",
-        "authority": "考科藍合作組織 (Cochrane Database) & 歐洲泌尿科醫學會 (EAU)",
+        "authority": "Cochrane 實證回顧、NIH NCCIH",
         "category": "泌尿道健康",
         "ingredient": "Cranberry PACs (原花青素 A 型 36mg) + D-Mannose (D-甘露糖)",
         "evidenceLevel": "Level 1 (Cochrane Systematic Review 2023)",
         "recommendedDose": "前花青素 (PACs) 每日至少 36mg，D-甘露糖 1,000mg ~ 2,000mg / 每日",
         "mechanism": "A 型原花青素與 D-甘露糖可競爭性結合致病性大腸桿菌 (UPEC) 表面的 I 型纖毛與 P 纖毛，阻斷細菌附著於尿路上皮，隨尿液排出。",
-        "contraindications": "【重大交互作用】高濃縮蔓越莓會抑制肝臟 CYP2C9 酵素，使抗凝血藥 (Warfarin) 代謝減慢，造成血中濃度劇增與大出血風險；Warfarin 患者嚴禁高劑量飲用！",
+        "contraindications": "NCCIH：蔓越莓是否會和抗凝血藥 Warfarin 產生交互作用，目前證據不一致；服用 Warfarin 或其他藥物者，使用前請先詢問醫師或藥師。",
         "targetSymptoms": ["頻尿尿急", "排尿灼熱不適", "復發性泌尿道感染", "銀髮女性私密保養", "憋尿發炎"],
-        "citation": "Williams G, et al. Cranberries for preventing urinary tract infections. Cochrane Database of Systematic Reviews. 2023;Issue 11."
+        "citation": "Cranberries for preventing urinary tract infections. Cochrane Database Syst Rev. 2023. doi:10.1002/14651858.CD001321.pub7（PMID 37947276）；NIH NCCIH：Cranberry；NIH NCCIH：Herb-Drug Interactions (Clinical Digest for Health Professionals)",
+        "url": "https://pubmed.ncbi.nlm.nih.gov/37947276/",
+        "sourceIds": ["pmid_37947276", "nccih_cranberry", "nccih_herb_drug"]
     }
 ]
 

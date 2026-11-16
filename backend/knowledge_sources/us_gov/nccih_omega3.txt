@@ -1,0 +1,167 @@
+# title: Omega-3 Supplements: What You Need To Know
+# url: https://www.nccih.nih.gov/health/omega3-supplements-what-you-need-to-know
+# authority: 美國國家輔助與整合衛生中心（NIH NCCIH）
+# fetched: 2026-11-16
+# license: 美國聯邦政府著作（公有領域），可存原文段落（NCCIH 頁面註明 public domain）
+
+Omega-3 Supplements: What You Need To Know
+
+## What are omega-3s?
+
+Omega-3s (short for omega-3 fatty acids ) are a kind of fat found in foods and in the human body. They are also sold as dietary supplements . They are sometimes referred to as n-3s.
+
+Most of the research on omega-3s has focused on EPA (eicosapentaenoic acid) and DHA (docosahexaenoic acid).
+
+EPA and DHA are found in seafood, especially cold-water fish such as salmon, mackerel, and tuna, as well as shellfish and fish oil supplements.
+
+A different type of omega-3, ALA (alpha-linolenic acid), is found in certain plant oils, such as flaxseed, soybean, and canola oils, and in some other plant foods, such as chia seeds and walnuts.
+
+Extensive research has been done on the potential health benefits of consuming omega-3s.
+
+The Federal Government’s Dietary Guidelines for Americans 2020–2025 recommends that adults eat 8 ounces or more of a variety of seafood (fish or shellfish) per week for all the nutrients seafood provides. Some seafood choices with higher amounts of EPA and DHA should be included. Smaller amounts of seafood are recommended for young children.
+
+## What dietary supplements contain omega-3s?
+
+Several types of dietary supplements contain omega-3s.
+
+Fish oil supplements contain EPA and DHA.
+
+Fish liver oil supplements, such as cod liver oil, contain EPA and DHA, and they also contain vitamins A and D, in amounts that vary from product to product. Vitamins A and D can be harmful in excessive amounts.
+
+Krill oil contains omega-3s in the form of phospholipids.
+
+Algal oils are a vegetarian source of DHA; some also contain EPA.
+
+Flaxseed oil contains ALA.
+
+## What does the science say about seafood vs. supplements?
+
+For some health conditions, the evidence for benefits from seafood (fish and shellfish) is stronger than the evidence for omega-3 supplements.
+
+Other nutrients in seafood besides omega-3s may play a role in its benefits.
+
+Some of the benefits of seafood may result from people eating it in place of less healthful foods.
+
+There’s evidence that people who eat seafood have generally healthier lifestyles.
+
+## Can omega-3 supplements help to prevent heart disease and other cardiovascular events?
+
+There is some evidence that people with heart disease or high triglycerides may benefit from taking omega-3 supplements.
+
+A 2020 review of 86 studies involving 162,796 people found that increasing EPA and DHA slightly reduced the risk of coronary events and coronary death. The trials lasted between 12 and 88 months and included adults with varying cardiovascular risk. While most of the trials (65) used supplement capsules, other sources included food (13), a combination of food and dietary advice (5), and only dietary advice (3).
+
+A 2019 analysis of 13 major omega-3 supplementation studies (127,477 total participants) showed marine omega-3 supplementation lowered the risk of myocardial infarction (MI), coronary heart disease (CHD) death, and total CHD. This analysis updated the findings from a 2018 review of 10 studies and included results from three recent large trials: VITamin D and OmegA-3 TriaL (VITAL), A Study of Cardiovascular Events in Diabetes (ASCEND), and Reduction of Cardiovascular Events with Icosapent Ethyl-Intervention Trial (REDUCE-IT).
+
+A 2019 review of the VITAL, ASCEND, and REDUCE-IT trials concluded that the findings of each study showed that for the general population, consuming 1 gram per day of omega-3 fatty acids provides some benefits to cardiovascular health.
+
+## Can omega-3s help to prevent stroke?
+
+Eating seafood (fish and shellfish) has been linked to a moderate reduction in the risk of stroke.
+
+A 2020 review of 31 trials with 138,888 participants found increasing omega-3 supplements had little or no effect on reducing strokes.
+
+A 2021 analysis of 10 studies (73,124 participants) found that taking omega-3 supplements at low doses (1 capsule per day or less) was not associated with a reduced risk of stroke. However, a reduction in stroke risk was seen at high doses (three or more capsules per day). Only two of the studies used doses this high, though, so there isn’t enough evidence to allow a definite conclusion to be reached.
+
+According to a 2016 report from the Agency for Healthcare Research and Quality (AHRQ), there is some evidence that omega-3s from marine sources (such as fish oil) may reduce the risk of one type of stroke (ischemic stroke—the type caused by narrowing or blockage of a blood vessel in the brain), but omega-3s have not been shown to reduce total strokes or death from stroke.
+
+## Can omega-3s help to reduce triglyceride levels?
+
+Triglycerides are a type of fat found in people’s bodies; excessive levels may raise the risk of heart disease. Lifestyle changes such as dietary modifications, weight control, and exercise are used to lower triglyceride levels. Some people also need to take medicine to lower their triglyceride levels.
+
+A 2020 review of 23 studies (43,998 participants) showed that EPA and DHA reduce triglycerides by about 15 percent but do not affect body fat or other lipids.
+
+Several products containing omega-3s have been approved as prescription drugs to be used in combination with diet to reduce triglyceride levels in patients whose triglyceride levels are very high. The composition of these products is not the same as that of typical omega-3 supplements, and the testing and regulation of prescription drugs differ from those for dietary supplements. Therefore, the effects of these prescription products may not be the same as those of omega-3 dietary supplements.
+
+## Are omega-3s helpful for depression?
+
+Although some studies have had promising results, it’s uncertain whether omega-3 fatty acid supplements are helpful for depression.
+
+A 2021 review of 35 studies (1,964 participants) reaffirmed the conclusion from a 2015 review that if there is an effect, it may be too small to be meaningful. Further, the authors of the review judged the quality of the evidence on which this result is based to be low or very low.
+
+Other reviews have suggested that if omega-3s do have an effect, EPA may be more beneficial than DHA and that omega-3s may best be used in addition to antidepressant medication rather than in place of it. Publication bias and key differences among the trials, however, suggest the need for more high-quality studies to clearly determine the therapeutic potential of EPA and DHA.
+
+In a 2019 review of the effects of omega-3s on mental health during pregnancy and postpartum, 9 out of 14 studies (3,543 participants) showed that high consumption of DHA, either alone or with other fatty acids, may reduce symptoms of depression and anxiety during gestation. However, none of the studies showed omega-3s had an effect on depression or anxiety during postpartum. The authors of the review recommend further research.
+
+Depression can be a serious illness. If you or someone in your family may have depression, consult a health care provider.
+
+## Are omega-3s helpful for attention-deficit hyperactivity disorder (ADHD)?
+
+There is some evidence that ADHD could be related to lower dietary intake of omega-3 and higher dietary intake of omega-6 fatty acids. However, research on omega-3 supplements for ADHD has had conflicting results. It’s uncertain whether omega-3s have any benefit for symptoms of this condition.
+
+A 2023 review of 36 studies compared supplements of polyunsaturated fatty acids (omega-3s, omega-6s, or both) to placebo for ADHD treatment in children and adolescents. The authors evaluated three groups of omega-3 supplement studies (omega-3 only; omega-3 combined with omega-6; and omega-3 combined with prescription ADHD medications) and did not find evidence that ADHD symptoms are likely to improve in children or adolescents with ADHD who receive polyunsaturated fatty acid supplements. The authors noted that while research on the effectiveness of omega-3 supplements for ADHD has increased, more high-quality studies are needed due to small sample sizes, variations in types and dosage of supplements, and duration of the studies.
+
+## Can omega-3s help to prevent Alzheimer’s disease (AD) or cognitive impairment?
+
+Some research indicates that people who eat more seafood may have a reduced risk of cognitive decline.
+
+A 2022 review of 33 studies suggests that dietary and supplemental omega-3s may have a protective effect against cognitive decline for healthy people without preexisting AD or dementia. However, there was no effect on cognition for people already diagnosed with AD.
+
+A 2018 review of 7 studies (795 participants) of men and women between the ages of 55 and 90 with mild to moderate AD found that omega-3 fatty acid supplementation may be beneficial in disease onset, when there is slight impairment of brain function. The authors said there is not enough evidence to support omega-3 fatty acid supplementation for treatment of the disease.
+
+It’s possible that omega-3s might have different effects in people with different genetic backgrounds. A 2017 research review suggested that people who carry a gene called APOE4, which is associated with an increased risk of AD, might benefit from taking DHA before developing signs of AD.
+
+## Are omega-3s helpful for other conditions affecting the brain, nervous system, or mental health?
+
+Studies of omega-3s for multiple sclerosis have shown some beneficial effects on relapse rates, inflammation, and improving quality of life. Omega-3s have also been studied for autism spectrum disorders, with research to date suggesting no beneficial effects. Omega-3s may be a beneficial treatment for people with borderline personality disorder, particularly for impulsive behavioral dyscontrol (the inability to control impulses or behaviors) and affective dysregulation (the impaired ability to regulate and/or tolerate negative emotional states). EPA has been found to reduce positive, negative, depressive, and anxious symptoms associated with schizophrenia and may reduce violent behaviors as well. Medium- and long-term efficacy of omega-3 fatty acids in stable schizophrenia is not known. Further, additional evidence regarding their effects on these and other mental health conditions varies.
+
+## Can omega-3s help to prevent age-related macular degeneration and other eye diseases?
+
+## Age-Related Macular Degeneration (AMD)
+
+Age-related macular degeneration (AMD) is an eye disease that can cause vision loss in older people.
+
+Two major National Institutes of Health (NIH)-sponsored studies, called Age-Related Eye Disease Study (AREDS) and Age-Related Eye Disease Study 2 (AREDS2), showed that dietary supplements containing specific combinations of vitamins, antioxidants, and zinc helped slow the progression of AMD in people who were at high risk of developing the advanced stage of this disease. AREDS2, which had more than 4,000 participants and was completed in 2013, also tested EPA and DHA. The results showed that adding these omega-3s to the supplement formulation didn’t provide any additional benefits.
+
+Other studies of omega-3 supplements also haven’t shown a beneficial effect on the progression of AMD.
+
+## Dry Eye Disease
+
+Dry eye disease is a common condition that affects millions of Americans each year. It can cause discomfort, redness, blurry vision, and sensitivity to light.
+
+The results of several small studies suggested that taking omega-3 supplements might help relieve symptoms of dry eye disease.
+
+A 2022 review of 8 studies (1,107 participants) of omega-3 supplements, in either a capsule (6 studies) or eyedrops (2 studies), concluded that supplementation may improve symptoms in patients with dry eye disease. However, the authors noted that the sample sizes and durations of the studies varied as well as the possibility of bias.
+
+A 2018 NIH-sponsored study, called the Dry Eye Assessment and Management (DREAM) study, tested omega-3 supplements for a full year in 535 study participants with moderate-to-severe dry eye disease. The study found that the supplements were no more helpful than a placebo (an inactive substance).
+
+At the end of their year in the DREAM study, 43 study participants agreed to participate in an extension study in which they were randomly assigned to continue using omega-3s or switch to a placebo. After 12 months, outcomes didn’t differ between the two groups.
+
+## Retinitis Pigmentosa
+
+Retinitis pigmentosa is a rare genetic disease that affects the retina. It causes loss of night vision and side (peripheral) vision and can lead to blindness. Only a few studies have been conducted on omega-3s for retinitis pigmentosa, and these studies have not shown any clear evidence of beneficial effects.
+
+## Can omega-3s help to relieve symptoms of rheumatoid arthritis?
+
+A 2022 review of 30 studies (1,420 participants) found eating foods rich in polyunsaturated fatty acids (PUFAs), especially omega-3s, may improve symptoms such as pain and swollen and tender joints, and might be an appropriate addition to drug therapy for rheumatoid arthritis.
+
+A 2021 review of 12 studies (776 participants) found that diets rich in omega-3 fatty acids resulted in lower pain than ordinary diets. However, the authors noted that evidence was low.
+
+Conventional medical treatment for rheumatoid arthritis can slow joint damage. If you have rheumatoid arthritis, don’t change your use of prescribed medications without consulting your health care provider.
+
+## Are omega-3s beneficial for infant development?
+
+The nutritional value of seafood is important during early development. The Dietary Guidelines for Americans 2020–2025 and guidance from the U.S. Food and Drug Administration and the U.S. Environmental Protection Agency recommend that women who are pregnant or breastfeeding eat at least 8 ounces but no more than 12 ounces of a variety of seafood each week, from choices that are lower in methyl mercury. Methyl mercury can be harmful to the brain and nervous system if a person is exposed to too much of it.
+
+In 2020, a review of 15 trials was conducted to examine the relationship between omega-3 supplementation during pregnancy and/or lactation and neurodevelopment in children for the Scientific Report of the 2020 Dietary Guidelines Advisory Committee. The authors concluded that there is limited evidence that omega-3 fatty acid supplementation during pregnancy has positive effects on cognitive development in children. They also found insufficient evidence to evaluate the effects on other developmental results, such as language; social-emotional, physical, or visual development; academic performance; or risk of ADHD, autism, anxiety, or depression.
+
+A 2018 review of 70 studies with 19,927 pregnant women found preterm births (before 37 weeks) and early preterm births (before 34 weeks) were less likely among women who received omega-3 long-chain polyunsaturated fatty acid (LCPUFA) supplementation than those who did not receive omega-3s. There were also fewer babies with low birth weight, and the risk of the babies dying or being ill and going to neonatal intensive care units was also lower among women who received omega-3 LCPUFAs.
+
+In 2016, AHRQ reviewed 143 studies that evaluated the effects of giving omega-3 supplements to pregnant or breastfeeding women or giving formulas with added DHA to infants. They found that when women took omega-3 supplements during pregnancy, their babies’ birth weight was slightly higher, but the risk of an undesirably low birth weight did not change. Also, when women took omega-3 supplements during pregnancy, their pregnancies lasted a little longer, but there was no effect on the risk of premature birth. Omega-3s were not found to have effects on any other aspects of the mothers’ or infants’ health or the infants’ long-term development. Aspects of the infants’ health that were not shown to be affected by omega-3s include growth after birth, visual acuity, long-term neurological and cognitive development, and the risks of autism, ADHD, learning disorders, and allergies.
+
+## Are omega-3 supplements safe?
+
+Side effects of omega-3 supplements are usually mild. They include unpleasant taste, bad breath, bad-smelling sweat, headache, and gastrointestinal symptoms such as heartburn, nausea, and diarrhea.
+
+## NCCIH-Funded Research
+
+The National Center for Complementary and Integrative Health (NCCIH) is supporting studies on omega-3s, including:
+
+A follow-up study of participants in the VITAL trial to assess potential latent and long-term effects of omega-3 and vitamin D supplementation.
+
+A clinical trial of an EPA-enriched omega-3 fatty acid supplement as an addition to drug treatment in patients with treatment-resistant depression.
+
+A study to test the effects of omega-3 supplementation on lipid balance, inflammation, and biomarkers linked to heart disease in African American and European American volunteers with different variants of a gene that influences the response to omega-3s.
+
+## More To Consider
+
+Take charge of your health—talk with your health care providers about any complementary health approaches you use. Together, you can make shared, well-informed decisions.

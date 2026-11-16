@@ -1,0 +1,229 @@
+# title: Probiotics: Usefulness and Safety
+# url: https://www.nccih.nih.gov/health/probiotics-usefulness-and-safety
+# authority: 美國國家輔助與整合衛生中心（NIH NCCIH）
+# fetched: 2026-11-16
+# license: 美國聯邦政府著作（公有領域），可存原文段落（NCCIH 頁面註明 public domain）
+
+Probiotics: Usefulness and Safety
+
+## What are probiotics?
+
+Probiotics are live microorganisms that are intended to have health benefits when consumed or applied to the body. They can be found in yogurt and other fermented foods, dietary supplements , and beauty products. Cases of severe or fatal infections have been reported in premature infants who were given probiotics, and the U.S. Food and Drug Administration (FDA) has warned health care providers about this risk.
+
+Although people often think of bacteria and other microorganisms as harmful “germs,” many are actually helpful. Some bacteria help digest food, destroy disease-causing cells, or produce vitamins. Many of the microorganisms in probiotic products are the same as or similar to microorganisms that naturally live in our bodies.
+
+## What types of bacteria are in probiotics?
+
+Probiotics may contain a variety of microorganisms. The most common are bacteria that belong to groups called Lactobacillus and Bifidobacterium . Other bacteria may also be used as probiotics, and so may yeasts such as Saccharomyces boulardii .
+
+Different types of probiotics may have different effects. For example, if a specific kind of Lactobacillus helps prevent an illness, that doesn’t necessarily mean that another kind of Lactobacillus or any of the Bifidobacterium probiotics would do the same thing.
+
+## Are prebiotics the same as probiotics?
+
+No, prebiotics aren’t the same as probiotics. Prebiotics are nondigestible food components that selectively stimulate the growth or activity of desirable microorganisms.
+
+## What are synbiotics?
+
+Synbiotics are products that combine probiotics and prebiotics.
+
+## How popular are probiotics?
+
+The 2012 National Health Interview Survey (NHIS) showed that about 4 million (1.6 percent) U.S. adults had used probiotics or prebiotics in the past 30 days. Among adults, probiotics or prebiotics were the third most commonly used dietary supplement other than vitamins and minerals. The use of probiotics by adults quadrupled between 2007 and 2012. The 2012 NHIS also showed that 300,000 children age 4 to 17 (0.5 percent) had used probiotics or prebiotics in the 30 days before the survey.
+
+## How might probiotics work?
+
+Probiotics may have a variety of effects in the body, and different probiotics may act in different ways.
+
+Help your body maintain a healthy community of microorganisms or help your body’s community of microorganisms return to a healthy condition after being disturbed
+
+Produce substances that have desirable effects
+
+Influence your body’s immune response.
+
+## How are probiotics regulated in the United States?
+
+Government regulation of probiotics in the United States is complex. Depending on a probiotic product’s intended use, the FDA might regulate it as a dietary supplement, a food ingredient, or a drug.
+
+Many probiotics are sold as dietary supplements, which don’t require FDA approval before they are marketed. Dietary supplement labels may make claims about how the product affects the structure or function of the body without FDA approval, but they aren’t allowed to make health claims, such as saying the supplement lowers your risk of getting a disease, without the FDA’s consent.
+
+If a probiotic is going to be marketed as a drug for treatment of a disease or disorder, it has to meet stricter requirements. It must be proven safe and effective for its intended use through clinical trials and be approved by the FDA before it can be sold.
+
+## Learning About the Microbiome
+
+The community of microorganisms that lives on us and in us is called the “microbiome,” and it’s a hot topic for research. The Human Microbiome Project, supported by the National Institutes of Health (NIH) from 2007 to 2016, played a key role in this research by mapping the normal bacteria that live in and on the healthy human body. With this understanding of a normal microbiome as the basis, researchers around the world, including many supported by NIH, are now exploring the links between changes in the microbiome and various diseases. They’re also developing new therapeutic approaches designed to modify the microbiome to treat disease and support health.
+
+The National Center for Complementary and Integrative Health (NCCIH) is among the many agencies funding research on the microbiome. Researchers supported by NCCIH are studying the interactions between components of food and microorganisms in the digestive tract. The focus is on the ways in which diet-microbiome interactions may lead to the production of substances with beneficial health effects.
+
+## What has science shown about the effectiveness of probiotics for health conditions?
+
+A great deal of research has been done on probiotics, but much remains to be learned about whether they’re helpful and safe for various health conditions.
+
+Probiotics have shown promise for a variety of health purposes, including prevention of antibiotic-associated diarrhea (including diarrhea caused by Clostridium difficile ), prevention of necrotizing enterocolitis and sepsis in premature infants, treatment of infant colic , treatment of periodontal disease , and induction or maintenance of remission in ulcerative colitis .
+
+However, in most instances, we still don’t know which probiotics are helpful and which are not. We also don’t know how much of the probiotic people would have to take or who would be most likely to benefit. Even for the conditions that have been studied the most, researchers are still working toward finding the answers to these questions.
+
+The following sections summarize the research on probiotics for some of the conditions for which they’ve been studied.
+
+## Gastrointestinal Conditions
+
+## Antibiotic-Associated Diarrhea
+
+Probiotics have been studied for antibiotic-associated diarrhea in general, as well as for antibiotic-associated diarrhea caused by one specific bacterium, Clostridium difficile . This section discusses the research on antibiotic-associated diarrhea in general. C. difficile is discussed in a separate section below.
+
+A 2017 review of 17 studies (3,631 total participants) in people who were not hospitalized indicated that giving probiotics to patients along with antibiotics was associated with a decrease of about half in the likelihood of antibiotic-associated diarrhea. However, this conclusion was considered tentative because the quality of the studies was only moderate. Patients who were given probiotics had no more side effects than patients who didn’t receive them.
+
+Probiotics may be helpful for antibiotic-associated diarrhea in young and middle-aged people, but a benefit has not been demonstrated in elderly people, according to a 2016 review of 30 studies (7,260 participants), 5 of which focused on people age 65 or older. It’s uncertain whether probiotics actually don’t work in elderly people or whether no effect was seen because there were only a few studies of people in this age group.
+
+A review of 23 studies (with 3,938 participants) of probiotics to prevent antibiotic-associated diarrhea in children provided moderate quality evidence that probiotics had a protective effect. No serious side effects were observed in children who were otherwise healthy, except for the infection for which they were being treated.
+
+## Clostridium difficile Infection
+
+The bacterium Clostridium difficile can infect the colon (large intestine) of patients who have received antibiotics, causing diarrhea that can range from mild to severe. C. difficile infection is difficult to treat and sometimes comes back after treatment. It’s more common in people who take antibiotics long-term and in elderly people, and it can spread in hospitals and nursing homes. C. difficile infection affects about half a million people a year in the United States and causes about 15,000 deaths.
+
+A 2017 analysis of 31 studies (8,672 total patients) concluded that it is moderately certain that probiotics can reduce the risk of C. difficile diarrhea in adults and children who are receiving antibiotics. Most of these studies involved hospital patients. The analysis also concluded that the use of probiotics along with antibiotics appears to be safe, except for patients who are very weak or have poorly functioning immune systems.
+
+The types of probiotics that would be most useful in reducing the risk of C. difficile diarrhea, the length of time for which they should be taken, and the most appropriate doses are uncertain.
+
+## Constipation
+
+A 2014 review of 14 studies (1,182 participants) of probiotics for constipation in adults showed some evidence of benefit, especially for Bifidobacterium lactis .
+
+A 2017 evaluation of 9 studies (778 participants) of probiotics for constipation in elderly people indicated that probiotics produced a small but meaningful benefit. The type of bacteria most often tested was Bifidobacterium longum . The researchers who performed the evaluation suggested that probiotics might be helpful for chronic constipation in older people as an addition to the usual forms of treatment.
+
+A 2017 review looked at 7 studies of probiotics for constipation in children (515 participants). The studies were hard to compare because of differences in the groups of children studied, the types of probiotics used, and other factors. The reviewers did not find evidence that any of the probiotics tested in the children were helpful. A second 2017 review, which included 4 of the same studies and 2 others (498 total participants in the 6 studies examined), took a more optimistic view of the evidence, noting that overall, probiotics did increase stool frequency, and that the effect was more noticeable in Asian than European children.
+
+## Diarrhea Caused by Cancer Treatment
+
+Diarrhea is a common side effect of chemotherapy or radiotherapy for cancer. It’s been suggested that probiotics might help prevent or treat this type of diarrhea. However, a 2018 review of 12 studies (1,554 participants) found that the evidence for a beneficial effect of probiotics was inconclusive.
+
+## Diverticular Disease
+
+In diverticulosis, small pouches develop at weak spots in the wall of the colon (large intestine). In most cases, this does not cause any symptoms. If symptoms (such as bloating, constipation, diarrhea, or cramping) do occur, the condition is called diverticular disease. If any of the pouches become inflamed, the condition is called diverticulitis. Patients with diverticulitis can have severe abdominal pain and may develop serious complications.
+
+A 2016 review of 11 studies (764 participants) of probiotics for diverticular disease was unable to reach conclusions on whether the probiotics were helpful because of the poor quality of the studies.
+
+## Inflammatory Bowel Disease
+
+Inflammatory bowel disease is a term for a group of conditions that cause a portion of the digestive system to become inflamed; the most common types are ulcerative colitis and Crohn’s disease. Symptoms may include abdominal pain, diarrhea (which may be bloody), loss of appetite, weight loss, and fever. The symptoms can range from mild to severe, and they may come and go. Treatment includes medicines and in some cases, surgery.
+
+A 2014 review of 21 studies in patients with ulcerative colitis (1,700 participants) indicated that adding probiotics, prebiotics, or synbiotics to conventional treatment could be helpful in inducing or maintaining remission of the disease. The same review also looked at 14 studies (746 participants) of probiotics, prebiotics, or synbiotics for Crohn’s disease and did not find evidence that they were beneficial.
+
+## Irritable Bowel Syndrome
+
+A 2018 review of 53 studies (5,545 total participants) of probiotics for irritable bowel syndrome (IBS) concluded that probiotics may have beneficial effects on global IBS symptoms and abdominal pain, but it was not possible to draw definite conclusions about their effectiveness or to identify which species, strains, or combinations of probiotics are most likely to be helpful.
+
+For more information, see the NCCIH fact sheet on irritable bowel syndrome .
+
+## Traveler’s Diarrhea
+
+A 2018 review evaluated 11 studies (5,143 participants) of probiotics or prebiotics for prevention of traveler’s diarrhea and found evidence that they may be helpful. However, the review didn’t assess the quality of the studies and didn’t include data on side effects.
+
+A 2017 clinical practice guideline by the International Society of Travel Medicine stated that there’s insufficient evidence to recommend probiotics or prebiotics to prevent or treat traveler’s diarrhea. The guidelines acknowledged that there’s evidence suggesting a small benefit but pointed out that studies vary greatly in terms of factors such as the probiotic strains used, the causes of the diarrhea, and geographic locations. Also, some studies had weaknesses in their design.
+
+## Conditions in Infants
+
+## Infant Colic
+
+Colic is excessive, unexplained crying in young infants. Babies with colic may cry for 3 hours a day or more, but they eat well and grow normally. The cause of colic is not well understood, but studies have shown differences in the microbial community in the digestive tract between infants who have colic and those who don’t, which suggests that microorganisms may be involved.
+
+A 2018 review of 7 studies (471 participants) of probiotics for colic, 5 of which involved the probiotic Lactobacillus reuteri DSM 17938, found that this probiotic was associated with successful treatment (defined as a reduction of more than half in daily crying time). However, the effect was mainly seen in exclusively breastfed infants.
+
+No harmful effects were seen in a review of 4 studies (345 participants) of L. reuteri DSM 17938 for colic or in a small NCCIH-funded study that included repeated physical examinations and blood tests in infants with colic who were given this probiotic, as well as parents’ reports of symptoms.
+
+## Necrotizing Enterocolitis
+
+Necrotizing enterocolitis is a serious, sometimes fatal disease that occurs in premature infants. It involves injury or damage to the intestinal tract, causing death of intestinal tissue. Its exact cause is unknown, but an abnormal reaction to food components and the microorganisms that live in a premature baby’s digestive tract may play a role.
+
+A 2017 review of 23 studies (7,325 infants) showed that probiotics helped to prevent necrotizing enterocolitis in very-low-birth-weight infants. However, the results of individual studies varied; not all showed a benefit. Probiotics that included both Lactobacillus and Bifidobacterium seemed to produce the best results, but it was not possible to identify the most beneficial strains within these large groups of bacteria.
+
+None of the infants in the studies described above developed harmful short-term side effects from the probiotics. However, the long-term effects of receiving probiotics at such a young age are uncertain. Outside of these studies, there have been instances when probiotics did have harmful effects in newborns. In 2023, the FDA warned health care providers that premature infants who are given probiotics are at risk of severe, potentially fatal infections caused by the microorganisms in the products.
+
+## Sepsis in Infants
+
+Sepsis is a serious illness in which the body has a harmful, overwhelming response to an infection. It can cause major organs and body systems to stop working properly and can be life threatening. The risk of sepsis is highest in infants, children, the elderly, and people with serious medical problems. One group particularly at risk for sepsis is premature infants.
+
+A review of 37 studies (9,416 participants) found that probiotics were helpful in reducing the risk of sepsis in premature infants.
+
+## Dental Disorders
+
+## Dental Caries (Tooth Decay)
+
+A small amount of research, all in infants and young children, has examined the possibility that probiotics might be helpful in preventing dental caries (also called cavities or tooth decay). A review of 7 studies (1,715 total participants) found that the use of probiotics was associated with fewer cavities in 4 of the 7 studies, but the quality of the evidence was low, and no definite conclusions about the effectiveness of probiotics could be reached.
+
+## Periodontal Diseases (Gum Disease)
+
+Periodontal diseases result from infections and inflammation of the gums and bone that surround and support the teeth. If the disease is severe, the gums can pull away from the teeth, bone can be lost, and teeth may loosen or fall out.
+
+A 2016 review of 12 studies (452 participants) that evaluated probiotics for periodontal disease found evidence that they could be a helpful addition to treatment by reducing disease-causing bacteria and improving clinical signs of the disease. However, effects may differ for different probiotics.
+
+## Conditions Related to Allergy
+
+## Allergic Rhinitis (Hay Fever)
+
+A review of 23 studies (1,919 participants) in which probiotics were tested for treating allergic rhinitis found some evidence that they may be helpful for improving symptoms and quality of life. However, because the studies tested different probiotics and measured different effects, no recommendations about the use of probiotics could be made. Few side effects of probiotics were reported in these studies.
+
+## Asthma
+
+A review of 11 studies (910 participants) of probiotics for asthma in children had inconclusive results.
+
+## Atopic Dermatitis
+
+Atopic dermatitis is an itchy chronic skin disorder that’s associated with allergies but not caused by them. It’s most common in infants and may start as early as age 2 to 6 months. Many people outgrow it by early adulthood. Atopic dermatitis is one of several types of eczema.
+
+A 2017 review of 13 studies (1,271 participants) of probiotics for the treatment of atopic dermatitis in infants and children did not find consistent evidence of a beneficial effect. A review of 9 studies (269 participants) in adults provided preliminary evidence that some strains of probiotics might be beneficial for symptoms of atopic dermatitis.
+
+## Prevention of Allergies
+
+It’s been suggested that changes in people’s lifestyles and environment may have led to reduced contact with microorganisms early in life, and that this decrease may have contributed to an increase in allergies. This is sometimes called the “hygiene hypothesis,” although factors unrelated to hygiene, such as smaller family size and the use of antibiotics, may also play a role. Studies have been done in which probiotics were given to pregnant women and/or young infants in the hope of preventing the development of allergies.
+
+A 2015 review of 17 studies (4,755 participants) that evaluated the use of probiotics during pregnancy or early infancy found that infants exposed to probiotics had a lower risk of developing atopic dermatitis, especially if they were exposed to a mixture of probiotics. However, probiotics did not have an effect on the risks of asthma, wheezing, or hay fever (allergic rhinitis).
+
+## Other Conditions
+
+## Acne
+
+Research has identified mechanisms by which probiotics, either taken orally or used topically (applied to the skin), might influence acne. However, there has been very little research in people on probiotics for acne, and the American Academy of Dermatology’s 2016 guidelines for managing acne state that the existing evidence isn’t strong enough to justify any recommendations about the use of probiotics.
+
+## Hepatic Encephalopathy
+
+When the liver is damaged and unable to remove toxic substances from the blood, the toxins can build up in the bloodstream and affect the nervous system. This may lead to impairments of brain function called hepatic encephalopathy.
+
+A 2017 review looked at 21 studies (1,420 participants) of probiotics for hepatic encephalopathy and concluded that they were generally of low quality. There was evidence that compared with a placebo (an inactive substance) or no treatment, probiotics probably had beneficial effects on hepatic encephalopathy, but it was uncertain whether probiotics were better than lactulose, a conventional treatment for liver disease.
+
+## Upper Respiratory Infections
+
+Probiotics have been tested for their effects against upper respiratory infections (a group that includes the common cold, middle ear infections, sinusitis, and various throat infections). A 2015 evaluation of 12 studies with 3,720 total participants indicated that people taking probiotics may have fewer and shorter upper respiratory infections. However, the quality of the evidence was low because some of the studies were poorly conducted.
+
+## Urinary Tract Infections
+
+A 2015 review of 9 studies (735 participants) of probiotics for the prevention of urinary tract infection did not find evidence of a beneficial effect.
+
+## Can probiotics be harmful?
+
+Probiotics have an extensive history of apparently safe use, particularly in healthy people. However, few studies have looked at the safety of probiotics in detail, so there’s a lack of solid information on the frequency and severity of side effects.
+
+The risk of harmful effects from probiotics is greater in people with severe illnesses or compromised immune systems. When probiotics are being considered for high-risk individuals, such as premature infants or seriously ill hospital patients, the potential risks of probiotics should be carefully weighed against their benefits. Cases of severe or fatal infections have been reported in premature infants who were given probiotics, and the U.S. Food and Drug Administration (FDA) has warned health care providers about this risk.
+
+Possible harmful effects of probiotics include infections, production of harmful substances by the probiotic microorganisms, and transfer of antibiotic resistance genes from probiotic microorganisms to other microorganisms in the digestive tract.
+
+Some probiotic products have been reported to contain microorganisms other than those listed on the label. In some instances, these contaminants may pose serious health risks.
+
+## NCCIH-Funded Research
+
+NCCIH sponsors a variety of research projects related to probiotics or the microbiome. In addition to the previously mentioned studies on diet-microbiome interactions in the digestive tract, recent topics include:
+
+The mechanisms by which probiotics may help to reduce postmenopausal bone loss
+
+Engineering probiotics to synthesize natural substances for microbiome-brain research
+
+The mechanisms by which certain probiotics may relieve chronic pelvic pain
+
+The effects of a specific Bifidobacterium strain on changes in short-chain fatty acid production in the gut that may play a role in antibiotic-associated diarrhea.
+
+## More To Consider
+
+Don’t use probiotics as a reason to postpone seeing your health care provider about any health problem.
+
+If you’re considering a probiotic dietary supplement, consult your health care provider first. This is especially important if you have health problems. Anyone with a serious underlying health condition should be monitored closely while taking probiotics.
+
+Take charge of your health—talk with your health care providers about any complementary health approaches you use. Together, you can make shared, well-informed decisions.

@@ -29,9 +29,10 @@ if hasattr(time, "tzset"):
 import db_engine
 from db_transfer import chat_seq_from, copy_database, table_columns, target_is_empty
 from models import (
-    TIME_FMT, AiGuardUsage, Base, CashbackOrder, ChatMessage, ClinicalKnowledge, Order, PharmacyCache,
-    PointsLedger, RecommendationProduct, Recipient, RewardClaim, SystemConfig, User, now_str,
+    TIME_FMT, AiGuardUsage, Base, CashbackOrder, ChatMessage, ClinicalKnowledge, KnowledgeChunk, KnowledgeSource, Order,
+    PharmacyCache, PointsLedger, RecommendationProduct, Recipient, RewardClaim, SystemConfig, User, now_str,
 )
+import knowledge_base
 # 💡 暖心選物商品資料（藥局官網實際查價）統一放在 product_catalog.py，init_db 啟動時同步寫入
 from product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
 
@@ -385,6 +386,23 @@ def _run_data_migrations(session):
                         setattr(row, col, getattr(fresh, col))
             _mark_migration(session, "knowledge_sync_20261015")
 
+    # 一次性：內建文獻改為可查證的出處（2026/11/16）：更正引用、補上網址與依據來源，移除查無出處的公告文號與期刊
+    if not _migration_done(session, "knowledge_sources_20261116"):
+        try:
+            from vector_store import FULL_CLINICAL_LITERATURES as _builtin_lits
+        except Exception as e:
+            _builtin_lits = None
+            print("Notice: clinical knowledge source sync deferred:", e)
+        if _builtin_lits:
+            for lit in _builtin_lits:
+                row = session.get(ClinicalKnowledge, lit["id"])
+                if row is not None:
+                    fresh = _knowledge_from_literature(lit, default_level="")
+                    for col in ("title", "authority", "category", "ingredient", "evidence_level", "recommended_dose", "mechanism",
+                                "contraindications", "target_symptoms_json", "citation", "url", "source_ids_json"):
+                        setattr(row, col, getattr(fresh, col))
+            _mark_migration(session, "knowledge_sources_20261116")
+
     # 一次性：快速提問改為依病況分類的新題庫，重新產生每位親友的提問
     if not _migration_done(session, "quick_chips_v2_20261015"):
         try:
@@ -419,7 +437,19 @@ def _knowledge_from_literature(lit: dict, default_level: str = "Level 1") -> Cli
         contraindications=lit.get("contraindications", ""),
         target_symptoms_json=json.dumps(symptoms, ensure_ascii=False),
         citation=lit.get("citation", ""),
+        url=lit.get("url") or "",
+        source_ids_json=json.dumps(_source_ids_of(lit), ensure_ascii=False),
     )
+
+
+def _source_ids_of(lit: dict) -> list:
+    ids = lit.get("sourceIds") if lit.get("sourceIds") is not None else lit.get("source_ids")
+    if isinstance(ids, str):
+        try:
+            ids = json.loads(ids)
+        except Exception:
+            ids = [x.strip() for x in ids.split(",") if x.strip()]
+    return [str(x) for x in ids or []]
 
 
 def init_db():
@@ -476,6 +506,7 @@ def init_db():
 
     save_recommendation_products(DEFAULT_RECOMMENDATION_PRODUCTS)
     _lock_tracked_cashback_prices()
+    sync_knowledge_base()
 
 
 def _lock_tracked_cashback_prices():
@@ -496,11 +527,69 @@ def _lock_tracked_cashback_prices():
 
 
 # =========================================================================
+# 知識來源與原文段落（knowledge_sources/ → knowledge_sources、knowledge_chunks 資料表）
+# =========================================================================
+_KB_BATCH = 40     # 一次寫入的筆數：Turso 每個指令都是一次網路往返，SQL Server 一個指令最多 2,100 個參數
+
+
+def sync_knowledge_base(force: bool = False) -> dict:
+    """依 knowledge_sources/ 的內容重建來源與段落；內容（清單與原文檔的雜湊值）沒變就略過"""
+    checksum = knowledge_base.content_checksum()
+    with _session() as session:
+        saved = session.get(SystemConfig, "knowledge_sources_checksum")
+        if not force and saved is not None and json.loads(saved.value_json or "{}").get("checksum") == checksum:
+            return {"updated": False, "checksum": checksum}
+    sources, chunks, missing = knowledge_base.build_rows()
+    with _session() as session:
+        session.execute(delete(KnowledgeChunk.__table__))
+        session.execute(delete(KnowledgeSource.__table__))
+        for table, rows in ((KnowledgeSource.__table__, sources), (KnowledgeChunk.__table__, chunks)):
+            for i in range(0, len(rows), _KB_BATCH):
+                session.execute(insert(table).values(rows[i:i + _KB_BATCH]))
+        # 雜湊值最後才寫入：中途失敗時下次啟動會重新匯入
+        session.merge(SystemConfig(key="knowledge_sources_checksum", value_json=json.dumps(
+            {"checksum": checksum, "sources": len(sources), "chunks": len(chunks), "missing": missing, "done_at": now_str()},
+            ensure_ascii=False), updated_at=now_str()))
+    print(f"【知識庫】匯入 {len(sources)} 個來源、{len(chunks)} 段原文；尚缺原文檔 {len(missing)} 個")
+    return {"updated": True, "sources": len(sources), "chunks": len(chunks), "missing": missing}
+
+
+def get_knowledge_sources() -> list:
+    with _session() as session:
+        rows = session.scalars(select(KnowledgeSource).order_by(KnowledgeSource.id)).all()
+    out = []
+    for r in rows:
+        d = _as_dict(r)
+        d["ingredients"] = json.loads(d.pop("ingredients_json") or "[]")
+        d["topics"] = json.loads(d.pop("topics_json") or "[]")
+        out.append(d)
+    return out
+
+
+def get_knowledge_chunks(source_id: str = None, ingredient: str = None) -> list:
+    stmt = select(KnowledgeChunk).order_by(KnowledgeChunk.source_id, KnowledgeChunk.chunk_index)
+    if source_id:
+        stmt = stmt.where(KnowledgeChunk.source_id == source_id)
+    if ingredient:
+        stmt = stmt.where(KnowledgeChunk.ingredient.like(f"%{ingredient}%"))
+    with _session() as session:
+        return [_as_dict(r) for r in session.scalars(stmt).all()]
+
+
+# =========================================================================
 # 實證文獻（AI 守護助理的檢索來源）
 # =========================================================================
 def save_clinical_knowledge(item: dict):
     with _session() as session:
-        session.merge(_knowledge_from_literature(item))
+        fresh = _knowledge_from_literature(item)
+        existing = session.get(ClinicalKnowledge, fresh.id)
+        if existing is not None:
+            # 後台編輯沒有送出處欄位時，保留原本的網址與依據來源
+            if item.get("url") is None:
+                fresh.url = existing.url
+            if item.get("sourceIds") is None and item.get("source_ids") is None:
+                fresh.source_ids_json = existing.source_ids_json
+        session.merge(fresh)
     return item
 
 
@@ -531,6 +620,9 @@ def get_all_clinical_knowledge():
             d["targetSymptoms"] = []
         d["evidenceLevel"] = d.get("evidence_level", "Level 1")
         d["recommendedDose"] = d.get("recommended_dose", "")
+        d["sourceIds"] = _source_ids_of({"source_ids": d.get("source_ids_json") or "[]"})
+        d["sources"] = knowledge_base.source_refs(d["sourceIds"])
+        d["url"] = d.get("url") or (d["sources"][0]["url"] if d["sources"] else "")
         items.append(d)
     return items
 
@@ -1122,7 +1214,7 @@ _STATS_MODELS = {
     "users": User, "recipients": Recipient, "orders": Order, "points_ledger": PointsLedger,
     "pharmacy_cache": PharmacyCache, "recommendation_products": RecommendationProduct,
     "clinical_knowledge": ClinicalKnowledge, "system_config": SystemConfig, "cashback_orders": CashbackOrder,
-    "ai_guard_usage": AiGuardUsage, "chat_messages": ChatMessage,
+    "ai_guard_usage": AiGuardUsage, "chat_messages": ChatMessage, "knowledge_chunks": KnowledgeChunk,
 }
 
 

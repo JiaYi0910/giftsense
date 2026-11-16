@@ -1,0 +1,169 @@
+# title: Age-Related Eye Disease Studies (AREDS/AREDS2)
+# url: https://www.nei.nih.gov/eye-health-information/clinical-trials/age-related-eye-disease-studies-aredsareds2
+# authority: 美國國家眼科研究所（NIH NEI）
+# fetched: 2026-11-16
+# license: 美國聯邦政府著作（公有領域），可存原文段落
+
+Age-Related Eye Disease Studies (AREDS/AREDS2)
+
+Get the facts about the Age-Related Eye Disease Studies! Learn about recommended supplements for Age-Related Macular Degeneration and more.
+
+The Age-Related Eye Disease Study (AREDS) and AREDS2 are major clinical trials sponsored by the National Eye Institute. The AREDS studies were designed to learn more about the natural history and risk factors of age-related macular degeneration (AMD) and cataract and to evaluate the effect of vitamins on the progression of these eye diseases.
+
+## What do the AREDS studies mean for you?
+
+The AREDS studies have shown that certain vitamins can slow the progression of intermediate to advanced AMD
+
+## For Clinicians and Educators
+
+## For Researchers
+
+## AREDS Reports
+
+Vitale S, Agrón E, Clemons TE, Keenan TDL, Domalpally A, Danis RP Jr, Chew EY. Association of 2-Year Progression Along the AREDS AMD Scale and Development of Late Age-Related Macular Degeneration or Loss of Visual Acuity: AREDS Report 41. JAMA Ophthalmol. 2020 Jun 1;138(6):610-617. doi: 10.1001/jamaophthalmol.2020.0824. Erratum in: JAMA Ophthalmol. 2020 Jul 1;138(7):804. PMID: 32271358 ; PMCID: PMC7146539.
+
+Christakis PG, Agrón E, Klein ML, Clemons TE, Campbell JP, Ferris FL, Chew EY, Keenan TD; Age-Related Eye Diseases Study Research Group. Incidence of Macular Atrophy after Untreated Neovascular Age-Related Macular Degeneration: Age-Related Eye Disease Study Report 40. Ophthalmology. 2020 Jun;127(6):784-792. doi: 10.1016/j.ophtha.2019.11.016. Epub 2019 Nov 26. PMID: 31899035 ; PMCID: PMC7246151.
+
+Tisdale AK, Agrón E, Sunshine SB, Clemons TE, Ferris FL 3rd, Chew EY; Age-Related Eye Disease Study Research Group. Association of Dietary and Supplementary Calcium Intake With Age-Related Macular Degeneration: Age-Related Eye Disease Study Report 39. JAMA Ophthalmol. 2019 May 1;137(5):543-550. doi: 10.1001/jamaophthalmol.2019.0292. PMID: 30896764 ; PMCID: PMC6512260.
+
+Chew EY, Klein ML, Clemons TE, Agrón E, Ratnapriya R, Edwards AO, Fritsche LG, Swaroop A, Abecasis GR; Age-Related Eye Disease Study Research Group. No clinically significant association between CFH and ARMS2 genotypes and response to nutritional supplements: AREDS report number 38. Ophthalmology. 2014 Nov;121(11):2173-80. doi: 10.1016/j.ophtha.2014.05.008. Epub 2014 Jun 26. PMID: 24974817 ; PMCID: PMC4253656.
+
+Glaser TS, Doss LE, Shih G, Nigam D, Sperduto RD, Ferris FL 3rd, Agrón E, Clemons TE, Chew EY; Age-Related Eye Disease Study Research Group. The Association of Dietary Lutein plus Zeaxanthin and B Vitamins with Cataracts in the Age-Related Eye Disease Study: AREDS Report No. 37. Ophthalmology. 2015 Jul;122(7):1471-9. doi: 10.1016/j.ophtha.2015.04.007. Epub 2015 May 9. PMID: 25972257 ; PMCID: PMC4485544.
+
+Chew EY, Clemons TE, Agrón E, Sperduto RD, Sangiovanni JP, Davis MD, Ferris FL 3rd; Age-Related Eye Disease Study Research Group. Ten-year follow-up of age-related macular degeneration in the age-related eye disease study: AREDS report no. 36. JAMA Ophthalmol. 2014 Mar;132(3):272-7. doi: 10.1001/jamaophthalmol.2013.6636. PMID: 24385141 .
+
+Chew EY, Clemons TE, Agrón E, Sperduto RD, Sangiovanni JP, Kurinij N, Davis MD; Age-Related Eye Disease Study Research Group. Long-term effects of vitamins C and E, β-carotene, and zinc on age-related macular degeneration: AREDS report no. 35. Ophthalmology. 2013 Aug;120(8):1604-11.e4. doi: 10.1016/j.ophtha.2013.01.021. Epub 2013 Apr 10. Erratum in: Ophthalmology. 2016 Dec;123(12 ):2634. PMID: 23582353 ; PMCID: PMC3728272.
+
+Indaram M, Agrón E, Clemons TE, Sperduto RD, Wong WT, Ferris FL 3rd, Chew EY; Age-Related Eye Disease Study Research Group. Changes in lens opacities on the age-related eye disease study grading scale predict progression to cataract surgery and vision loss: age-related eye disease study report no. 34. Ophthalmology. 2015 May;122(5):888-96. doi: 10.1016/j.ophtha.2014.12.037. Epub 2015 Feb 11. PMID: 25682177 ; PMCID: PMC4414714.
+
+Koo E, Chang JR, Agrón E, Clemons TE, Sperduto RD, Ferris FL 3rd, Chew EY; Age-Related Eye Disease Study Research Group. Ten-year incidence rates of age-related cataract in the Age-Related Eye Disease Study (AREDS): AREDS report no. 33. Ophthalmic Epidemiol. 2013 Apr;20(2):71-81. doi: 10.3109/09286586.2012.759598. PMID: 23510310 .
+
+Chang JR, Koo E, Agrón E, Hallak J, Clemons T, Azar D, Sperduto RD, Ferris FL 3rd, Chew EY; Age-Related Eye Disease Study Group. Risk factors associated with incident cataracts and cataract surgery in the Age-related Eye Disease Study (AREDS): AREDS report number 32. Ophthalmology. 2011 Nov;118(11):2113-9. doi: 10.1016/j.ophtha.2011.03.032. PMID: 21684602 ; PMCID: PMC3178670.
+
+Chew EY, Kim J, Sperduto RD, Datiles MB 3rd, Coleman HR, Thompson DJ, Milton RC, Clayton JA, Hubbard LD, Danis RP, Ferris FL 3rd. Evaluation of the age- related eye disease study clinical lens grading system AREDS report No. 31. Ophthalmology. 2010 Nov;117(11):2112-9.e3. doi: 10.1016/j.ophtha.2010.02.033. Epub 2010 Jun 18. PMID: 24974817 PMID:; PMCID: PMC2944007.
+
+Sangiovanni JP, Agrón E, Meleth AD, Reed GF, Sperduto RD, Clemons TE, Chew EY; Age-Related Eye Disease Study Research Group. Omega-3 Long-chain polyunsaturated fatty acid intake and 12-y incidence of neovascular age-related macular degeneration and central geographic atrophy: AREDS report 30, a prospective cohort study from the Age-Related Eye Disease Study. Am J Clin Nutr. 2009 Dec;90(6):1601-7. doi: 10.3945/ajcn.2009.27594. Epub 2009 Oct 7. PMID: 19812176 ; PMCID: PMC2777471.
+
+Cukras C, Agrón E, Klein ML, Ferris FL 3rd, Chew EY, Gensler G, Wong WT; Age-Related Eye Disease Study Research Group. Natural history of drusenoid pigment epithelial detachment in age-related macular degeneration: Age-Related Eye Disease Study Report No. 28. Ophthalmology. 2010 Mar;117(3):489-99. doi: 10.1016/j.ophtha.2009.12.002. Epub 2010 Jan 15. PMID: 20079925 ; PMCID: PMC2947750.
+
+Forooghian F, Agrón E, Clemons TE, Ferris FL 3rd, Chew EY; Age-Related Eye Disease Study Research Group. Visual acuity outcomes after cataract surgery in patients with age-related macular degeneration: age-related eye disease study report no. 27. Ophthalmology. 2009 Nov;116(11):2093-100. doi: 10.1016/j.ophtha.2009.04.033. Epub 2009 Aug 22. PMID: 19700198 ; PMCID: PMC3021463.
+
+Lindblad AS, Lloyd PC, Clemons TE, Gensler GR, Ferris FL 3rd, Klein ML, Armstrong JR; Age-Related Eye Disease Study Research Group. Change in area of geographic atrophy in the Age-Related Eye Disease Study: AREDS report number 26. Arch Ophthalmol. 2009 Sep;127(9):1168-74. doi: 10.1001/archophthalmol.2009.198. PMID: 19752426 ; PMCID: PMC6500457.
+
+Chew EY, Sperduto RD, Milton RC, Clemons TE, Gensler GR, Bressler SB, Klein R, Klein BE, Ferris FL 3rd. Risk of advanced age-related macular degeneration after cataract surgery in the Age-Related Eye Disease Study: AREDS report 25. Ophthalmology. 2009 Feb;116(2):297-303. doi: 10.1016/j.ophtha.2008.09.019. Epub 2008 Dec 16. PMID: 19091420 ; PMCID: PMC3021282.
+
+Sperduto RD, Clemons TE, Lindblad AS, Ferris FL 3rd; Age-Related Eye Disease Study Research Group. Cataract classification using serial examinations in the age-related eye disease study: age-related eye disease study report no. 24. Am J Ophthalmol. 2008 Mar;145(3):504-8. doi: 10.1016/j.ajo.2007.10.024. Epub 2008 Jan 16. PMID: 18201681 .
+
+SanGiovanni JP, Chew EY, Agrón E, Clemons TE, Ferris FL 3rd, Gensler G, Lindblad AS, Milton RC, Seddon JM, Klein R, Sperduto RD; Age-Related Eye Disease Study Research Group. The relationship of dietary omega-3 long-chain polyunsaturated fatty acid intake with incident age-related macular degeneration: AREDS report no. 23. Arch Ophthalmol. 2008 Sep;126(9):1274-9. doi: 10.1001/archopht.126.9.1274. PMID: 18779490 ; PMCID: PMC2812063.
+
+Age-Related Eye Disease Study Research Group, SanGiovanni JP, Chew EY, Clemons TE, Ferris FL 3rd, Gensler G, Lindblad AS, Milton RC, Seddon JM, Sperduto RD. The relationship of dietary carotenoid and vitamin A, E, and C intake with age-related macular degeneration in a case-control study: AREDS Report No. 22. Arch Ophthalmol. 2007 Sep;125(9):1225-32. doi: 10.1001/archopht.125.9.1225. PMID: 17846363 .
+
+Milton RC, Sperduto RD, Clemons TE, Ferris FL 3rd; Age-Related Eye Disease Study Research Group. Centrum use and progression of age-related cataract in the Age-Related Eye Disease Study: a propensity score approach. AREDS report No. 21. Ophthalmology. 2006 Aug;113(8):1264-70. doi: 10.1016/j.ophtha.2006.02.054. PMID: 16877067 ; PMCID: PMC1857284.
+
+SanGiovanni JP, Chew EY, Clemons TE, Davis MD, Ferris FL 3rd, Gensler GR, Kurinij N, Lindblad AS, Milton RC, Seddon JM, Sperduto RD; Age-Related Eye Disease Study Research Group. The relationship of dietary lipid intake and age- related macular degeneration in a case-control study: AREDS Report No. 20. Arch Ophthalmol. 2007 May;125(5):671-9. doi: 10.1001/archopht.125.5.671. PMID: 17502507 .
+
+Clemons TE, Milton RC, Klein R, Seddon JM, Ferris FL 3rd; Age-Related Eye Disease Study Research Group. Risk factors for the incidence of Advanced Age-Related Macular Degeneration in the Age-Related Eye Disease Study (AREDS) AREDS report no. 19. Ophthalmology. 2005 Apr;112(4):533-9. doi: 10.1016/j.ophtha.2004.10.047. PMID: 15808240 ; PMCID: PMC1513667.
+
+Ferris FL, Davis MD, Clemons TE, Lee LY, Chew EY, Lindblad AS, Milton RC, Bressler SB, Klein R; Age-Related Eye Disease Study (AREDS) Research Group. A simplified severity scale for age-related macular degeneration: AREDS Report No. 18. Arch Ophthalmol. 2005 Nov;123(11):1570-4. doi: 10.1001/archopht.123.11.1570. PMID: 16286620 ; PMCID: PMC1473206.
+
+Clemons TE, Rankin MW, McBee WL; Age-Related Eye Disease Study Research Group. Cognitive impairment in the Age-Related Eye Disease Study: AREDS report no. 16. Arch Ophthalmol. 2006 Apr;124(4):537-43. doi: 10.1001/archopht.124.4.537. PMID: 16606880 ; PMCID: PMC1472655.
+
+Rankin MW, Clemons TE, McBee WL. Correlation analysis of the in-clinic and telephone batteries from the AREDS cognitive function ancillary study. AREDS Report No. 15. Ophthalmic Epidemiol. 2005 Aug;12(4):271-7. doi: 10.1080/09286580591003815. PMID: 16033748 ; PMCID: PMC1473214.
+
+van Asten F, Simmons M, Singhal A, Keenan TD, Ratnapriya R, Agrón E, Clemons TE, Swaroop A, Lu Z, Chew EY; Age-Related Eye Disease Study 2 Research Group. A Deep Phenotype Association Study Reveals Specific Phenotype Associations with Genetic Variants in Age-related Macular Degeneration: Age-Related Eye Disease Study 2 (AREDS2) Report No. 14. Ophthalmology. 2018 Apr;125(4):559-568. doi: 10.1016/j.ophtha.2017.09.023. Epub 2017 Oct 31. PMID: 29096998 ; PMCID: PMC5866166.
+
+Clemons TE, Kurinij N, Sperduto RD; AREDS Research Group. Associations of mortality with ocular disorders and an intervention of high-dose antioxidants and zinc in the Age-Related Eye Disease Study: AREDS Report No. 13. Arch Ophthalmol. 2004 May;122(5):716-26. doi: 10.1001/archopht.122.5.716. PMID: 15136320 ; PMCID: PMC1473208.
+
+Bressler NM, Bressler SB, Congdon NG, Ferris FL 3rd, Friedman DS, Klein R, Lindblad AS, Milton RC, Seddon JM; Age-Related Eye Disease Study Research Group. Potential public health impact of Age-Related Eye Disease Study results: AREDS report no. 11. Arch Ophthalmol. 2003 Nov;121(11):1621-4. doi: 10.1001/archopht.121.11.1621. PMID: 14609922 ; PMCID: PMC1473209.
+
+Clemons TE, Chew EY, Bressler SB, McBee W; Age-Related Eye Disease Study Research Group. National Eye Institute Visual Function Questionnaire in the Age-Related Eye Disease Study (AREDS): AREDS Report No. 10. Arch Ophthalmol. 2003 Feb;121(2):211-7. doi: 10.1001/archopht.121.2.211. PMID: 12583787 ; PMCID: PMC1473210.
+
+Age-Related Eye Disease Study Research Group. A randomized, placebo-controlled, clinical trial of high-dose supplementation with vitamins C and E and beta carotene for age-related cataract and vision loss: AREDS report no. 9. Arch Ophthalmol. 2001 Oct;119(10):1439-52. doi: 10.1001/archopht.119.10.1439. Erratum in: Arch Ophthalmol. 2008 Sep;126(9):1251. PMID: 11594943 ; PMCID: PMC1472812.
+
+Age-Related Eye Disease Study Research Group. A randomized, placebo-controlled, clinical trial of high-dose supplementation with vitamins C and E, beta carotene, and zinc for age-related macular degeneration and vision loss: AREDS report no. 8. Arch Ophthalmol. 2001 Oct;119(10):1417-36. doi: 10.1001/archopht.119.10.1417. Erratum in: Arch Ophthalmol. 2008 Sep;126(9):1251. PMID: 11594942 ; PMCID: PMC1462955.
+
+Age-Related Eye Disease Study Research Group. The effect of five-year zinc supplementation on serum zinc, serum cholesterol and hematocrit in persons randomly assigned to treatment group in the age-related eye disease study: AREDS Report No. 7. J Nutr. 2002 Apr;132(4):697-702. doi: 10.1093/jn/132.4.697. PMID: 11925463 ; PMCID: PMC1464086.
+
+Age-Related Eye Disease Study Research Group. The Age-Related Eye Disease Study system for classifying age-related macular degeneration from stereoscopic color fundus photographs: the Age-Related Eye Disease Study Report Number 6. Am J Ophthalmol. 2001 Nov;132(5):668-81. doi: 10.1016/s0002-9394(01)01218-1. PMID: 11704028 .
+
+Age-Related Eye Disease Study Research Group. Risk factors associated with age-related nuclear and cortical cataract : a case-control study in the Age- Related Eye Disease Study, AREDS Report No. 5. Ophthalmology. 2001 Aug;108(8):1400-8. doi: 10.1016/s0161-6420(01)00626-1. PMID: 11470690 ; PMCID: PMC1473213.
+
+Age-Related Eye Disease Study Research Group. The age-related eye disease study (AREDS) system for classifying cataracts from photographs: AREDS report no. 4. Am J Ophthalmol. 2001 Feb;131(2):167-75. doi: 10.1016/s0002-9394(00)00732-7. PMID: 11228291 ; PMCID: PMC2032014.
+
+Age-Related Eye Disease Study Research Group. Risk factors associated with age-related macular degeneration. A case-control study in the age-related eye disease study: Age-Related Eye Disease Study Report Number 3. Ophthalmology. 2000 Dec;107(12):2224-32. doi: 10.1016/s0161-6420(00)00409-7. PMID: 11097601 ; PMCID: PMC1470467.
+
+Age-Related Eye Disease Study Research Group. The Age-Related Eye Disease Study: a clinical trial of zinc and antioxidants--Age-Related Eye Disease Study Report No. 2. J Nutr. 2000 May;130(5S Suppl):1516S-9S. doi: 10.1093/jn/130.5.1516S. PMID: 10801969 ; PMCID: PMC1472633.
+
+Age-Related Eye Disease Study Research Group. The Age-Related Eye Disease Study (AREDS): design implications. AREDS report no. 1. Control Clin Trials. 1999 Dec;20(6):573-600. doi: 10.1016/s0197-2456(99)00031-8. PMID: 10588299 ; PMCID: PMC1473211.
+
+## AREDS2 Reports
+
+Agrón E, Domalpally A, Cukras CA, Clemons TE, Chen Q, Lu Z, Chew EY, Keenan TDL; AREDS and AREDS2 Research Groups. Reticular Pseudodrusen: The Third Macular Risk Feature for Progression to Late Age-Related Macular Degeneration: Age-Related Eye Disease Study 2 Report 30. Ophthalmology. 2022 Oct;129(10):1107-1119. doi: 10.1016/j.ophtha.2022.05.021. Epub 2022 May 31. PMID: 35660417 ; PMCID: PMC9509418.
+
+Domalpally A, Xing B, Pak JW, Agrón E, Ferris FL 3rd, Clemons TE, Chew EY. Extramacular Drusen and Progression of Age-Related Macular Degeneration: Age Related Eye Disease Study 2 Report 30. Ophthalmol Retina. 2022 Aug 6:S2468-6530(22)00374-8. doi: 10.1016/j.oret.2022.08.001. Epub ahead of print. PMID: 35940477 .
+
+Agrón E, Mares J, Chew EY, Keenan TDL; AREDS2 Research Group. Adherence to a Mediterranean Diet and Geographic Atrophy Enlargement Rate: Age-Related Eye Disease Study 2 Report 29. Ophthalmol Retina. 2022 Sep;6(9):762-770. doi: 10.1016/j.oret.2022.03.022. Epub 2022 Apr 4. PMID: 35381392 ; PMCID: PMC9464676.
+
+Chew EY, Clemons TE, Agrón E, Domalpally A, Keenan TDL, Vitale S, Weber C, Smith DC, Christen W; AREDS2 Research Group. Long-term Outcomes of Adding Lutein/Zeaxanthin and ω-3 Fatty Acids to the AREDS Supplements on Age-Related Macular Degeneration Progression: AREDS2 Report 28. JAMA Ophthalmol. 2022 Jul 1;140(7):692-698. doi: 10.1001/jamaophthalmol.2022.1640. PMID: 35653117 ; PMCID: PMC9164119.
+
+Bhandari S, Vitale S, Agrón E, Clemons TE, Chew EY; Age-Related Eye Disease Study 2 Research Group. Cataract Surgery and the Risk of Developing Late Age-Related Macular Degeneration: The Age-Related Eye Disease Study 2 Report Number 27. Ophthalmology. 2022 Apr;129(4):414-420. doi: 10.1016/j.ophtha.2021.11.014. Epub 2021 Nov 16. PMID: 34793832 .
+
+Le JT, Peprah D, Agrón E, Keenan TDL, Clemons TE, Chew EY; Age-Related Eye Disease Study 2 Research Group. Associations between Age-Related Eye Diseases and Charles Bonnet Syndrome in Participants of the Age-Related Eye Disease Study 2: Report Number 26. Ophthalmology. 2022 Feb;129(2):233-235. doi: 10.1016/j.ophtha.2021.08.012. Epub 2021 Aug 20. PMID: 34419554 ; PMCID: PMC8792186.
+
+Keenan TDL, Oden NL, Agrón E, Clemons TE, Henning A, Fritsche LG, Wong WT, Chew EY; Age-Related Eye Disease Study 2 Research Group. Cluster Analysis and Genotype-Phenotype Assessment of Geographic Atrophy in Age-Related Macular Degeneration: Age-Related Eye Disease Study 2 Report 25. Ophthalmol Retina. 2021 Nov;5(11):1061-1073. doi: 10.1016/j.oret.2021.07.006. Epub 2021 Jul 26. PMID: 34325054 ; PMCID: PMC8578299.
+
+Hwang CK, Agrón E, Domalpally A, Cukras CA, Wong WT, Chew EY, Keenan TDL; AREDS2 Research Group. Progression of Geographic Atrophy with Subsequent Exudative Neovascular Disease in Age-Related Macular Degeneration: AREDS2 Report 24. Ophthalmol Retina. 2021 Feb;5(2):108-117. doi: 10.1016/j.oret.2020.10.008. Epub 2020 Oct 16. PMID: 33075546 ; PMCID: PMC7870515.
+
+Okeagu CU, Agrón E, Vitale S, Domalpally A, Chew EY, Keenan TDL; Age-Related Eye Disease Study 2 Research Group. Principal Cause of Poor Visual Acuity after Neovascular Age-Related Macular Degeneration: Age-Related Eye Disease Study 2 Report Number 23. Ophthalmol Retina. 2021 Jan;5(1):23-31. doi: 10.1016/j.oret.2020.09.025. Epub 2020 Oct 10. PMID: 33045457 ; PMCID: PMC7796863.
+
+Domalpally A, Agrón E, Pak JW, Keenan TD, Ferris FL 3rd, Clemons TE, Chew EY. Prevalence, Risk, and Genetic Association of Reticular Pseudodrusen in Age-related Macular Degeneration: Age-Related Eye Disease Study 2 Report 21. Ophthalmology. 2019 Dec;126(12):1659-1666. doi: 10.1016/j.ophtha.2019.07.022. Epub 2019 Jul 29. PMID: 31558345 ; PMCID: PMC6875626.
+
+Keenan TD, Wiley HE, Agrón E, Aronow ME, Christen WG, Clemons TE, Chew EY; Age-Related Eye Disease Study and Age-Related Eye Disease Study 2 Research Groups. The Association of Aspirin Use with Age-Related Macular Degeneration Progression in the Age-Related Eye Disease Studies: Age-Related Eye Disease Study 2 Report No. 20. Ophthalmology. 2019 Dec;126(12):1647-1656. doi: 10.1016/j.ophtha.2019.06.023. Epub 2019 Jun 26. PMID: 31358390 ; PMCID: PMC6875604.
+
+Keenan TD, Vitale S, Agrón E, Domalpally A, Antoszyk AN, Elman MJ, Clemons TE, Chew EY; Age-Related Eye Disease Study 2 Research Group. Visual Acuity Outcomes after Anti-Vascular Endothelial Growth Factor Treatment for Neovascular Age-Related Macular Degeneration: Age-Related Eye Disease Study 2 Report Number 19. Ophthalmol Retina. 2020 Jan;4(1):3-12. doi: 10.1016/j.oret.2019.06.001. Epub 2019 Jun 11. PMID: 31395505 ; PMCID: PMC6904530.
+
+van Asten F, Chiu CY, Agrón E, Clemons TE, Ratnapriya R, Swaroop A, Klein ML, Fan R, Chew EY; Age-Related Eye Disease Study 2 Research Group. No CFH or ARMS2 Interaction with Omega-3 Fatty Acids, Low versus High Zinc, or β-Carotene versus Lutein and Zeaxanthin on Progression of Age-Related Macular Degeneration in the Age-Related Eye Disease Study 2: Age-Related Eye Disease Study 2 Report No. 18. Ophthalmology. 2019 Nov;126(11):1541-1548. doi: 10.1016/j.ophtha.2019.06.004. Epub 2019 Jun 12. PMID: 31358387 ; PMCID: PMC6810822.
+
+Yu JJ, Agrón E, Clemons TE, Domalpally A, van Asten F, Keenan TD, Cukras C, Chew EY; Age-Related Eye Disease Study 2 Research Group. Natural History of Drusenoid Pigment Epithelial Detachment Associated with Age-Related Macular Degeneration: Age-Related Eye Disease Study 2 Report No. 17. Ophthalmology. 2019 Feb;126(2):261-273. doi: 10.1016/j.ophtha.2018.08.017. Epub 2018 Aug 22. PMID: 30142373 ; PMCID: PMC6348044
+
+Keenan TD, Agrón E, Domalpally A, Clemons TE, van Asten F, Wong WT, Danis RG, Sadda S, Rosenfeld PJ, Klein ML, Ratnapriya R, Swaroop A, Ferris FL 3rd, Chew EY; AREDS2 Research Group. Progression of Geographic Atrophy in Age-related Macular Degeneration: AREDS2 Report Number 16. Ophthalmology. 2018 Dec;125(12):1913-1928. doi: 10.1016/j.ophtha.2018.05.028. Epub 2018 Jul 27. PMID: 30060980 ; PMCID: PMC6246813.
+
+Domalpally A, Danis RP, Trane R, Blodi BA, Clemons TE, Chew EY; Age-Related Eye Disease Study 2 (AREDS2) Research Group. Atrophy in Neovascular Age-Related Macular Degeneration: Age-Related Eye Disease Study 2 Report Number 15. Ophthalmol Retina. 2018 Oct;2(10):1021-1027. doi: 10.1016/j.oret.2018.04.009. Epub 2018 Jun 2. PMID: 30506012 ; PMCID: PMC6261277.
+
+van Asten F, Simmons M, Singhal A, Keenan TD, Ratnapriya R, Agrón E, Clemons TE, Swaroop A, Lu Z, Chew EY; Age-Related Eye Disease Study 2 Research Group. A Deep Phenotype Association Study Reveals Specific Phenotype Associations with Genetic Variants in Age-related Macular Degeneration: Age-Related Eye Disease Study 2 (AREDS2) Report No. 14. Ophthalmology. 2018 Apr;125(4):559-568. doi: 10.1016/j.ophtha.2017.09.023. Epub 2017 Oct 31. PMID: 29096998 ; PMCID: PMC5866166.
+
+Age-Related Eye Disease Study 2 Research Group, Papudesu C, Clemons TE, Agrón E, Chew EY. Association of Mortality with Ocular Diseases and Visual Impairment in the Age-Related Eye Disease Study 2: Age-Related Eye Disease Study 2 Report Number 13. Ophthalmology. 2018 Apr;125(4):512-521. doi: 10.1016/j.ophtha.2017.10.028. Epub 2017 Nov 16. PMID: 29153456 ; PMCID: PMC5866182.
+
+Writing Committee for the OPTOS PEripheral RetinA (OPERA) study (Ancillary Study of Age-Related Eye Disease Study 2), Domalpally A, Clemons TE, Danis RP, Sadda SR, Cukras CA, Toth CA, Friberg TR, Chew EY. Peripheral Retinal Changes Associated with Age-Related Macular Degeneration in the Age-Related Eye Disease Study 2: Age-Related Eye Disease Study 2 Report Number 12 by the Age-Related Eye Disease Study 2 Optos PEripheral RetinA (OPERA) Study Research Group. Ophthalmology. 2017 Apr;124(4):479-487. doi: 10.1016/j.ophtha.2016.12.004. Epub 2017 Jan 12. PMID: 28089680 .
+
+Domalpally A, Danis R, Agrón E, Blodi B, Clemons T, Chew E; Age-Related Eye Disease Study 2 Research Group. Evaluation of Geographic Atrophy from Color Photographs and Fundus Autofluorescence Images: Age-Related Eye Disease Study 2 Report Number 11. Ophthalmology. 2016 Nov;123(11):2401-2407. doi: 10.1016/j.ophtha.2016.06.025. Epub 2016 Jul 19. PMID: 27448832 ; PMCID: PMC5077673.
+
+Vitale S, Clemons TE, Agrón E, Ferris FL 3rd, Domalpally A, Danis RP, Chew EY; Age-Related Eye Disease Study 2 (AREDS2) Research Group. Evaluating the Validity of the Age-Related Eye Disease Study Grading Scale for Age-Related Macular Degeneration: AREDS2 Report 10. JAMA Ophthalmol. 2016 Sep 1;134(9):1041-7. doi: 10.1001/jamaophthalmol.2016.2383. PMID: 27442263 .
+
+Al-Holou SN, Tucker WR, Agrón E, Clemons TE, Cukras C, Ferris FL 3rd, Chew EY; Age-Related Eye Disease Study 2 Research Group. The Association of Statin Use with Age-Related Macular Degeneration Progression: The Age-Related Eye Disease Study 2 Report Number 9. Ophthalmology. 2015 Dec;122(12):2490-6. doi: 10.1016/j.ophtha.2015.08.028. Epub 2015 Oct 4. PMID: 26435335 ; PMCID: PMC4658271.
+
+AREDS2 Research Group, Al-Holou SN, Tucker WR, Agrón E, Clemons TE, Sperduto RD, Ferris FL 3rd, Chew EY. The Association of Statin Use with Cataract Progression and Cataract Surgery: The AREDS2 Report Number 8. Ophthalmology. 2016 Apr;123(4):916-7. doi: 10.1016/j.ophtha.2015.10.040. Epub 2015 Dec 11. PMID: 26686966 ; PMCID: PMC4808327.
+
+Domalpally A, Danis RP, Chew EY, Clemons TE, Reed S, Sangiovanni JP, Ferris FL 3rd; Age-Related Eye Disease Study 2 Research Group. Evaluation of optimized digital fundus reflex photographs for lens opacities in the age-related eye disease study 2: AREDS2 report 7. Invest Ophthalmol Vis Sci. 2013 Sep 5;54(9):5989-94. doi: 10.1167/iovs.13-12301. PMID: 23887802 ; PMCID: PMC3771555.
+
+Age-Related Eye Disease Study 2 Research Group. Lutein + zeaxanthin and omega-3 fatty acids for age-related macular degeneration: the Age-Related Eye Disease Study 2 (AREDS2) randomized clinical trial. JAMA. 2013 May 15;309(19):2005-15. doi: 10.1001/jama.2013.4997. Erratum in: JAMA. 2013 Jul 10;310(2):208. PMID: 23644932 .
+
+Age-Related Eye Disease Study 2 (AREDS2) Research Group, Chew EY, SanGiovanni JP, Ferris FL, Wong WT, Agron E, Clemons TE, Sperduto R, Danis R, Chandra SR, Blodi BA, Domalpally A, Elman MJ, Antoszyk AN, Ruby AJ, Orth D, Bressler SB, Fish GE, Hubbard GB, Klein ML, Friberg TR, Rosenfeld PJ, Toth CA, Bernstein P. Lutein/zeaxanthin for the treatment of age-related cataract: AREDS2 randomized trial report no. 4. JAMA Ophthalmol. 2013 Jul;131(7):843-50. doi: 10.1001/jamaophthalmol.2013.4412. PMID: 23645227 ; PMCID: PMC6774801.
+
+Age-Related Eye Disease Study 2 (AREDS2) Research Group, Chew EY, Clemons TE, Sangiovanni JP, Danis RP, Ferris FL 3rd, Elman MJ, Antoszyk AN, Ruby AJ, Orth D, Bressler SB, Fish GE, Hubbard GB, Klein ML, Chandra SR, Blodi BA, Domalpally A, Friberg T, Wong WT, Rosenfeld PJ, Agrón E, Toth CA, Bernstein PS, Sperduto RD. Secondary analyses of the effects of lutein/zeaxanthin on age-related macular degeneration progression: AREDS2 report No. 3. JAMA Ophthalmol. 2014 Feb;132(2):142-9. doi: 10.1001/jamaophthalmol.2013.7376. PMID: 24310343 ; PMCID: PMC4636082.
+
+Danis RP, Domalpally A, Chew EY, Clemons TE, Armstrong J, SanGiovanni JP, Ferris FL 3rd; AREDS2 Study Group. Methods and reproducibility of grading optimized digital color fundus photographs in the Age-Related Eye Disease Study 2 (AREDS2 Report Number 2). Invest Ophthalmol Vis Sci. 2013 Jul 8;54(7):4548-54. doi: 10.1167/iovs.13-11804. PMID: 23620429 ; PMCID: PMC3706107.
+
+AREDS2 Research Group, Chew EY, Clemons T, SanGiovanni JP, Danis R, Domalpally A, McBee W, Sperduto R, Ferris FL. The Age-Related Eye Disease Study 2 (AREDS2): study design and baseline characteristics (AREDS2 report number 1). Ophthalmology. 2012 Nov;119(11):2282-9. doi: 10.1016/j.ophtha.2012.05.027. Epub 2012 Jul 26. PMID: 22840421 ; PMCID: PMC3485447.
+
+## Additional AREDS and AREDS2 Findings
+
+Chew EY, Clemons TE, Agrón E, Launer LJ, Grodstein F, Bernstein PS; Age-Related Eye Disease Study 2 (AREDS2) Research Group. Effect of Omega-3 Fatty Acids, Lutein/Zeaxanthin, or Other Nutrient Supplementation on Cognitive Function: The AREDS2 Randomized Clinical Trial. JAMA. 2015 Aug 25;314(8):791-801. doi: 10.1001/jama.2015.9677. PMID: 26305649 ; PMCID: PMC5369607.
+
+Hubbard LD, Danis RP, Neider MW, Thayer DW, Wabers HD, White JK, Pugliese AJ, Pugliese MF; Age-Related Eye Disease 2 Research Group. Brightness, contrast, and color balance of digital versus film retinal images in the age-related eye disease study 2. Invest Ophthalmol Vis Sci. 2008 Aug;49(8):3269-82. doi: 10.1167/iovs.07-1267. Epub 2008 Apr 17. PMID: 18421079 .
+
+Toy BC, Krishnadev N, Indaram M, Cunningham D, Cukras CA, Chew EY, Wong WT. Drusen regression is associated with local changes in fundus autofluorescence in intermediate age-related macular degeneration. Am J Ophthalmol. 2013 Sep;156(3):532-542.e1. doi: 10.1016/j.ajo.2013.04.031. Epub 2013 Jul 3. PMID: 23830564 ; PMCID: PMC3748172.
+
+Writing Group for the AREDS2 Research Group, Bonds DE, Harrington M, Worrall BB, Bertoni AG, Eaton CB, Hsia J, Robinson J, Clemons TE, Fine LJ, Chew EY. Effect of long-chain ω-3 fatty acids and lutein + zeaxanthin supplements on cardiovascular outcomes: results of the Age-Related Eye Disease Study 2 (AREDS2) randomized clinical trial. JAMA Intern Med. 2014 May;174(5):763-71. doi: 10.1001/jamainternmed.2014.328. PMID: 24638908 .
+
+Last updated: March 20, 2026

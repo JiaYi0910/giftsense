@@ -1,0 +1,69 @@
+# title: Grapefruit Juice and Some Drugs Don't Mix
+# url: https://www.fda.gov/consumers/consumer-updates/grapefruit-juice-and-some-drugs-dont-mix
+# authority: 美國食品藥物管理局（US FDA）
+# fetched: 2026-11-16
+# license: 美國聯邦政府著作（公有領域），可存原文段落
+
+Grapefruit juice and grapefruit can be part of a healthy diet. Grapefruit has vitamin C and potassium, nutrients your body needs to work properly.
+
+Grapefruit juice and grapefruit can affect the way your medicines work, and that food and drug interaction can be a concern. The U.S. Food and Drug Administration has required that some prescription and over-the-counter drugs generally taken by mouth include warnings against drinking grapefruit juice or eating grapefruit while taking the drug.
+
+Here are examples of some types of drugs that grapefruit juice can cause problems (interact) with:
+
+Some statin drugs to lower cholesterol, such as Zocor (simvastatin) and Lipitor (atorvastatin).
+
+Some drugs that treat high blood pressure, such as Procardia and Adalat CC (both nifedipine).
+
+Some organ-transplant rejection drugs, such as Neoral and Sandimmune capsule or oral solution (both cyclosporine).
+
+Some anti-anxiety drugs, such as BuSpar (buspirone).
+
+Some corticosteroids that treat Crohn’s disease or ulcerative colitis, such as Entocort EC and Uceris tablet (both budesonide).
+
+Some drugs that treat abnormal heart rhythms, such as Pacerone and Cordarone tablet (both amiodarone).
+
+Some antihistamines, such as Allegra (fexofenadine).
+
+Grapefruit juice does not affect all the drugs in the categories above. The severity of the interaction can be different depending on the person, the drug, and the amount of grapefruit juice you drink. Talk to your health care provider or pharmacist, and read any information provided with your prescription or non-prescription drug to find out:
+
+If your specific drug may be affected.
+
+How much, if any, grapefruit juice you can have.
+
+What other fruits or juices may also affect your drug in a similar way to grapefruit juice.
+
+## How Grapefruit Juice Can Interfere With Medications
+
+With most drugs that are affected by grapefruit juice, “the juice lets more of the drug enter the blood,” says Shiew Mei Huang, Ph.D., of the FDA. “When there is too much drug in the blood, you may have more side effects.”
+
+For example, if you drink a lot of grapefruit juice while taking certain statin drugs to lower cholesterol, too much of the drug may stay in your body, increasing your risk for liver and muscle damage that can lead to kidney failure.
+
+Many drugs are broken down (metabolized) with the help of a vital enzyme called CYP3A4 in the small intestine. Grapefruit juice can block the action of intestinal CYP3A4, so instead of being metabolized, more of the drug enters the blood and stays in the body longer. The result: too much drug in your body.
+
+The amount of the CYP3A4 enzyme in the intestine varies from person to person. Some people have a lot of this enzyme and others just a little. So grapefruit juice may affect people differently even when they take the same drug.
+
+Although scientists have known for several decades that grapefruit juice can cause too much of certain drugs in the body, more recent studies have found that the juice has the opposite effect on a few other drugs.
+
+“Grapefruit juice can cause less fexofenadine to enter the blood,” decreasing how well the drug works, Huang says. Fexofenadine (brand name Allegra) is available as both prescription and OTC to relieve symptoms of seasonal allergies. Fexofenadine may also not work as well if taken with orange or apple juice, so the drug label says, “Do not take with fruit juices.”
+
+Why this opposite effect? Instead of changing metabolism, grapefruit juice can affect proteins in the body known as drug transporters, some of which help move a drug into our cells for absorption. As a result, less of the drug enters the blood and the drug may not work as well, Huang says.
+
+## How Grapefruit Juice Affects Some Drugs
+
+When drugs are swallowed, they may be broken down (metabolized) by enzymes and/or absorbed using transporters in cells found in the small intestine. Grapefruit juice can cause problems with these enzymes and transporters, causing too much or too little drug in the body.
+
+Some drugs, like certain statins used to lower cholesterol, are broken down by enzymes. As shown above, grapefruit juice can block the action of these enzymes, increasing the amount of drug in the body and may cause more side effects.
+
+Other drugs, like fexofenadine, are moved by transporters into the body’s cells. As shown above, grapefruit juice can block the action of transporters, decreasing the amount of drug in the body and may cause the drug to not work as well.
+
+## Find Out if You Should Avoid Grapefruit or Other Juices
+
+Ask your doctor or pharmacist if grapefruit juice interacts with your medication.
+
+Read the medication guide or patient information sheet that comes with your prescription drug to find out if grapefruit juice affects your drug.
+
+Read the Drug Facts label on your OTC drug, which will say whether you shouldn’t have grapefruit or other fruit juices with it.
+
+If you must avoid grapefruit juice with your medicine, check the labels of fruit juices or drinks flavored with fruit juice to see whether they are made with grapefruit juice.
+
+Seville oranges (often used to make orange marmalade), pomelos, and tangelos (a cross between tangerines and grapefruit) might have the same effect as grapefruit juice. Do not eat those fruits if your medicine interacts with grapefruit juice.

@@ -1,0 +1,69 @@
+# title: Herb-Drug Interactions (Clinical Digest for Health Professionals)
+# url: https://www.nccih.nih.gov/health/providers/digest/herb-drug-interactions
+# authority: 美國國家輔助與整合衛生中心（NIH NCCIH）
+# fetched: 2026-11-16
+# license: 美國聯邦政府著作（公有領域），可存原文段落（NCCIH 頁面註明 public domain）
+
+Herb-Drug Interactions
+
+The possibilities of drug interactions, direct toxicities, and contamination with active pharmaceutical agents are among the safety concerns about dietary and herbal supplements. Although there is a widespread public perception that herbs and botanical products in dietary supplements are safe, research has demonstrated that these products carry the same dangers as other pharmacologically active compounds. Interactions may occur between prescription drugs, over-the-counter drugs, dietary supplements, and even small molecules in food—making it a daunting challenge to identify all interactions that are of clinical concern.
+
+Concerns about herb-drug interactions are often not based on rigorous research. Most herb-drug interactions identified in current sources are hypothetical, inferred from animal studies or cellular assays, or based on other indirect means; however, attention to this issue is needed for drugs with a narrow therapeutic index, such as cancer chemotherapeutic agents, warfarin, and digoxin.
+
+To date, well-designed clinical studies evaluating herbal supplement–drug interactions are limited and sometimes inconclusive. This issue of the Digest provides information about several herbs and their potential interactions with other agents.
+
+What the Science Says: Herb-Drug Interactions
+
+## Herbal Supplement and Potential Interactions
+
+There are uncertainties about whether ginseng might interact with certain medications, such as calcium channel blockers and other high blood pressure medications, as well as statin medications and some antidepressants. Studies on the effect of Asian ginseng on the anticoagulant warfarin have had mixed results.
+
+Read more about the efficacy and safety profile of Asian ginseng
+
+Cat’s claw may interact with anticoagulant/antiplatelet drugs, hypertensive drugs, calcium channel blockers, cytochrome P450 3A4 (CYP3A4) substrates, and immunosuppressants.
+
+Read more about the efficacy and safety profile of cat's claw
+
+Preliminary studies suggest that taking chamomile along with birth control pills might decrease the effects of oral contraceptives.
+
+Interactions between chamomile and some drugs metabolized by the liver and warfarin have been reported, and there are theoretical reasons to suspect that chamomile might interact with other drugs as well, such as sedatives.
+
+Read more about the efficacy and safety profile of chamomile
+
+There is conflicting evidence about whether cranberry interacts with the anticoagulant warfarin.
+
+Read more about the efficacy and safety profile of cranberry
+
+Taking Ginkgo biloba with warfarin is associated with increased risk for major bleeding events compared to warfarin alone. Concomitant use of Ginkgo biloba preparations and efavirenz (a non-nucleoside reverse transcriptase inhibitor) is not recommended.
+
+Read more about the efficacy and safety profile of ginkgo
+
+A study funded by the National Center for Complementary and Integrative Health (NCCIH) found that levels of metformin decreased about 25 percent in healthy adults who were given goldenseal extract plus metformin. This drop was enough to potentially hinder glucose control in people with type 2 diabetes taking metformin.
+
+Read more about the efficacy and safety profile of goldenseal
+
+Green tea at high doses has been shown to reduce blood levels and, therefore, the effectiveness of the drug nadolol, a beta-blocker used for high blood pressure and heart problems. Green tea extract can reduce blood levels of the cholesterol-lowering drug atorvastatin. Green tea may also interact with other medicines.
+
+Read more about the efficacy and safety profile of green tea
+
+St. John’s wort has been found to have an overall high risk of drug interaction because it is a potent inducer of both cytochrome P-450 enzymes and intestinal P-glycoprotein.
+
+Clinically significant interactions with St. John’s wort and the immunosuppressant drug cyclosporine, the antiretroviral agent indinavir, oral contraceptives, coumadin, digoxin, and benzodiazepines, among others, have been documented.
+
+Read more about the efficacy and safety profile of St. John's wort
+
+## Scientific Literature
+
+Herb-Drug Interactions - Systematic Reviews/Reviews/Meta-analyses (PubMed®)
+
+Herb-Drug Interactions - Randomized Controlled Trials (PubMed®)
+
+## Information for Your Patients
+
+NCCIH Clinical Digest is a service of the National Center for Complementary and Integrative Health, NIH, DHHS. NCCIH Clinical Digest, a monthly e-newsletter, offers evidence-based information on complementary health approaches, including scientific literature searches, summaries of NCCIH-funded research, fact sheets for patients, and more.
+
+The National Center for Complementary and Integrative Health is dedicated to exploring complementary health products and practices in the context of rigorous science, training complementary health researchers, and disseminating authoritative information to the public and professionals. For additional information, call NCCIH’s Clearinghouse toll-free at 1-888-644-6226, or visit the NCCIH website at nccih.nih.gov . NCCIH is 1 of 27 institutes and centers at the National Institutes of Health, the Federal focal point for medical research in the United States.
+
+## Copyright
+
+Content is in the public domain and may be reprinted, except if marked as copyrighted (©). Please credit the National Center for Complementary and Integrative Health as the source. All copyrighted material is the property of its respective owners and may not be reprinted without their permission.

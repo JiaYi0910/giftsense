@@ -20,6 +20,7 @@ TIME_FMT = "%Y-%m-%d %H:%M:%S"
 ID_LEN = 64
 ACCOUNT_LEN = 200   # 帳號（email 或 google_xxx）；組合主鍵在 SQL Server 有 900 bytes 上限
 TIME_LEN = 32
+URL_LEN = 1000
 
 
 def now_str() -> str:
@@ -214,6 +215,44 @@ class ClinicalKnowledge(Base):
     target_symptoms_json: Mapped[str] = mapped_column(UnicodeText)
     citation: Mapped[str] = mapped_column(UnicodeText)
     created_at: Mapped[str | None] = mapped_column(Unicode(TIME_LEN), default=now_str)
+    # 主要出處網址與依據來源（knowledge_sources 的 id，JSON 陣列）
+    url: Mapped[str | None] = mapped_column(Unicode(URL_LEN), default="")
+    source_ids_json: Mapped[str | None] = mapped_column(UnicodeText, default="[]")
+
+
+class KnowledgeSource(Base):
+    """知識來源（官方網頁、藥品仿單、期刊、指引），內容由 knowledge_sources/sources.json 同步"""
+    __tablename__ = "knowledge_sources"
+
+    id: Mapped[str] = mapped_column(Unicode(100), primary_key=True)
+    title: Mapped[str] = mapped_column(Unicode(500))
+    authority: Mapped[str | None] = mapped_column(Unicode(500))
+    url: Mapped[str | None] = mapped_column(Unicode(URL_LEN))
+    source_type: Mapped[str | None] = mapped_column(Unicode(50))
+    content_mode: Mapped[str | None] = mapped_column(Unicode(50))
+    language: Mapped[str | None] = mapped_column(Unicode(10))
+    license: Mapped[str | None] = mapped_column(UnicodeText)
+    citation: Mapped[str | None] = mapped_column(UnicodeText)
+    ingredients_json: Mapped[str | None] = mapped_column(UnicodeText)
+    topics_json: Mapped[str | None] = mapped_column(UnicodeText)
+    verified: Mapped[str | None] = mapped_column(UnicodeText)
+    chunk_count: Mapped[int | None] = mapped_column(Integer, default=0)
+
+
+class KnowledgeChunk(Base):
+    """來源原文切成的段落（RAG 檢索的單位）"""
+    __tablename__ = "knowledge_chunks"
+    __table_args__ = (Index("idx_knowledge_chunks_source", "source_id"),)
+
+    id: Mapped[str] = mapped_column(Unicode(150), primary_key=True)
+    source_id: Mapped[str] = mapped_column(Unicode(100))
+    chunk_index: Mapped[int] = mapped_column(Integer)
+    source_title: Mapped[str] = mapped_column(Unicode(500))
+    authority: Mapped[str | None] = mapped_column(Unicode(500))
+    url: Mapped[str | None] = mapped_column(Unicode(URL_LEN))
+    ingredient: Mapped[str | None] = mapped_column(Unicode(500))
+    language: Mapped[str | None] = mapped_column(Unicode(10))
+    chunk_text: Mapped[str] = mapped_column(UnicodeText)
 
 
 class SystemConfig(Base):
@@ -228,5 +267,5 @@ class SystemConfig(Base):
 # 匯入資料時的順序（沒有外鍵，順序只影響閱讀）
 ALL_MODELS = [
     SystemConfig, User, Recipient, Order, PointsLedger, PharmacyCache, RecommendationProduct,
-    AiGuardUsage, RewardClaim, ChatMessage, CashbackOrder, ClinicalKnowledge,
+    AiGuardUsage, RewardClaim, ChatMessage, CashbackOrder, ClinicalKnowledge, KnowledgeSource, KnowledgeChunk,
 ]

@@ -34,6 +34,7 @@ from database import (
     get_points_ledger, add_points_transaction,
     get_all_clinical_knowledge, save_clinical_knowledge, batch_save_clinical_knowledge,
     delete_clinical_knowledge, reset_clinical_knowledge_to_defaults,
+    get_knowledge_sources, get_knowledge_chunks, sync_knowledge_base,
     get_system_config, set_system_config, get_database_stats, export_full_database,
     get_db, update_user_profile_in_db, get_user_profile_by_account, get_user_display_name, find_user_by_account_or_email,
     get_ai_guard_quota, consume_ai_guard_quota, add_ai_guard_bonus,
@@ -254,6 +255,9 @@ class KnowledgeItemRequest(BaseModel):
     contraindications: Optional[str] = ""
     targetSymptoms: Optional[List[str]] = []
     citation: Optional[str] = ""
+    # 出處網址與依據來源；沒有送（None）時保留資料庫原本的值，避免後台編輯時把出處清掉
+    url: Optional[str] = None
+    sourceIds: Optional[List[str]] = None
 
 class KnowledgeSyncRequest(BaseModel):
     literatures: List[Dict[str, Any]]
@@ -783,6 +787,24 @@ def reset_clinical_knowledge(admin: str = Depends(current_admin)):
     res = reset_clinical_knowledge_to_defaults()
     _refresh_rag_index()
     return {"success": True, "total": len(res), "literatures": res}
+
+@app.get("/api/knowledge/sources")
+def list_knowledge_sources():
+    """知識來源清單（機構、網址、授權、查證紀錄）與各來源的原文段落數"""
+    sources = get_knowledge_sources()
+    return {"success": True, "total": len(sources),
+            "chunks": sum(s.get("chunk_count") or 0 for s in sources), "sources": sources}
+
+@app.get("/api/knowledge/chunks")
+def list_knowledge_chunks(source_id: Optional[str] = None, ingredient: Optional[str] = None):
+    """來源原文切成的段落（RAG 的檢索單位）"""
+    chunks = get_knowledge_chunks(source_id=source_id, ingredient=ingredient)
+    return {"success": True, "total": len(chunks), "chunks": chunks}
+
+@app.post("/api/knowledge/sources/reload")
+def reload_knowledge_sources(admin: str = Depends(current_admin)):
+    """重新匯入 knowledge_sources/ 的原文（新增或更新原文檔後使用）"""
+    return {"success": True, **sync_knowledge_base(force=True)}
 
 @app.delete("/api/knowledge/{item_id}")
 def remove_clinical_knowledge(item_id: str, admin: str = Depends(current_admin)):
