@@ -170,7 +170,7 @@ TFDA_COLLISION_RULES = [
         "severity": "MAJOR",
         "badge": "用藥安全警示：食物與藥物交互作用",
         "title": "葡萄柚可能讓降血壓、降血脂藥濃度升高",
-        "official_citation": "US FDA：Grapefruit Juice and Some Drugs Don't Mix；Bailey DG, et al. Grapefruit-medication interactions: forbidden fruit or avoidable consequences?. CMAJ. 2013;185:309-16.（PMID 23184849）",
+        "official_citation": "US FDA：Grapefruit Juice and Some Drugs Don't Mix；Bailey DG, et al. Grapefruit-medication interactions: forbidden fruit or avoidable consequences? CMAJ. 2013;185:309-16.（PMID 23184849）",
         "sources": ["fda_grapefruit", "pmid_23184849"],
         "mechanism": "葡萄柚會抑制腸道 CYP3A4 酵素，使鈣離子阻斷劑（如 felodipine、nifedipine）與部分 Statin（simvastatin、atorvastatin）的血中濃度升高，可能造成血壓過低、頭暈或肌肉病變，錯開時間吃也無法避免。",
         "clinical_action": "服用上述藥物期間避免葡萄柚與葡萄柚汁；不確定自己的藥是否受影響，請帶著藥袋詢問藥師。",

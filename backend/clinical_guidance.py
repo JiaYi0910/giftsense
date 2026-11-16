@@ -68,7 +68,7 @@ GUIDANCE_LITERATURES: List[Dict[str, Any]] = [
         "mechanism": "葡萄柚中的呋喃香豆素會抑制腸道的 CYP3A4 酵素，讓部分藥物吸收變多、血中濃度升高，可能造成血壓過低、頭暈或肌肉病變；作用可持續一天以上，錯開時間吃也無法避免。",
         "contraindications": "柳丁、橘子通常沒有相同作用；文旦等柚類也可能含有呋喃香豆素，服用上述藥物者先詢問藥師。",
         "targetSymptoms": ["葡萄柚", "葡萄柚汁", "降血壓藥", "降血脂藥", "柚子", "文旦", "藥物交互作用"],
-        "citation": "US FDA：Grapefruit Juice and Some Drugs Don't Mix；Bailey DG, et al. Grapefruit-medication interactions: forbidden fruit or avoidable consequences?. CMAJ. 2013;185:309-16.（PMID 23184849）",
+        "citation": "US FDA：Grapefruit Juice and Some Drugs Don't Mix；Bailey DG, et al. Grapefruit-medication interactions: forbidden fruit or avoidable consequences? CMAJ. 2013;185:309-16.（PMID 23184849）",
         "url": "https://www.fda.gov/consumers/consumer-updates/grapefruit-juice-and-some-drugs-dont-mix",
         "sourceIds": ["fda_grapefruit", "pmid_23184849"]
     },
