@@ -40,6 +40,9 @@
 
 ### AI 守護助理
 - [x] 實證文獻檢索（RAG）：15 篇保健成分文獻加上 21 篇用藥安全與照護指引，共 36 篇
+  - [x] 知識庫原文：78 個官方或期刊來源、141 段原文（含食藥署食品原料 12 頁），出處清單見 `docs/RAG_文獻清單.md`
+  - [x] 混合檢索：TF-IDF 加上 Gemini 語意向量，門檻以真實向量校正（見 `docs/RAG_待查證清單.md` 第八節）；回答引用原文段落並標示多機構交叉驗證
+  - [x] 即時查詢：親友用藥的美國 FDA 仿單（openFDA）與 MedlinePlus 衛教頁
 - [x] 18 條藥物／食物／保健品交互作用規則（修正高血壓、糖尿病的誤判）
 - [x] 快速提問依 22 類病況分類、共 104 題，每題都驗證會檢索到對應資料（`backend/tests/test_quick_questions.py`）；資料庫裡的文獻已和程式碼同步，正式站也是 104/104
 - [x] 文獻庫查不到相關資料時顯示「尚未收錄」，不顯示評分和商品
@@ -65,7 +68,7 @@
 - [x] 最新 APK 已安裝到 Android 模擬器，購物回饋流程實際走過一次
 
 ### 測試與文件
-- [x] 後端 pytest 145 項（`backend/tests`：會員通行證 101、購物回饋 32、LINE Webhook 5、資料庫搬移 7）在 SQLite、SQL Server、Turso 三種資料庫都全數通過，104 題快速提問在 SQL Server 上也是 104/104；`flutter analyze` 沒有錯誤
+- [x] 後端 pytest 184 項（`backend/tests`：會員通行證 101、購物回饋 32、RAG 知識庫 18、混合檢索 12、即時查詢 9、資料庫搬移 7、LINE Webhook 5）在 SQLite、SQL Server、Turso 三種資料庫都全數通過，104 題快速提問在 SQL Server 上也是 104/104；`flutter analyze` 沒有錯誤
 - [x] 系統說明網頁 `/guide`，共 9 節：架構、功能架構、流程、技術、ER、DFD、點數、Demo 腳本（原始檔 [giftsense_system_guide.html](giftsense_system_guide.html)）
 - [x] 7 張圖檔（[diagrams/](diagrams/)）
 - [x] Turso、SQL Server、iOS、第三方登入四份設定說明

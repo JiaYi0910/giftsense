@@ -330,8 +330,10 @@ class MedicalVectorStore:
         self.idf, self.doc_vectors, self.documents = fresh.idf, fresh.doc_vectors, fresh.documents
         return len(docs)
 
-    def search(self, query: str, top_k: int = 3) -> List[Dict[str, Any]]:
-        """Semantic vector retrieval via Cosine Similarity in high-dimensional space."""
+    TFIDF_MIN_SCORE = 0.10
+
+    def scores(self, query: str) -> List[tuple]:
+        """TF-IDF 向量的餘弦相似度：回傳所有卡片的 (分數, 卡片)，依分數由高到低"""
         q_tokens = self._tokenize(query)
         if not q_tokens:
             return []
@@ -361,10 +363,13 @@ class MedicalVectorStore:
             scores.append((dot_product, documents[idx]))
 
         scores.sort(key=lambda x: x[0], reverse=True)
-        # Return matched documents with score >= 0.12 (normalized threshold)
+        return scores
+
+    def search(self, query: str, top_k: int = 3) -> List[Dict[str, Any]]:
+        """TF-IDF 檢索：分數達門檻的前 top_k 張卡片（語意檢索見 retrieval.py）"""
         results = []
-        for score, doc in scores:
-            if score >= 0.10:
+        for score, doc in self.scores(query):
+            if score >= self.TFIDF_MIN_SCORE:
                 doc_copy = dict(doc)
                 doc_copy["vector_score"] = round(float(score), 4)
                 results.append(doc_copy)

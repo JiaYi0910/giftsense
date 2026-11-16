@@ -23,6 +23,7 @@ shutil.copy(os.path.join(BACKEND, "caregift.db"), os.path.join(TEST_DIR, "caregi
 os.environ["CAREGIFT_DB_PATH"] = os.path.join(TEST_DIR, "caregift.db")
 os.environ.pop("TURSO_DATABASE_URL", None)  # 測試一律用本機的暫存資料庫，不碰雲端資料庫
 os.environ["LIVE_SOURCES"] = "off"           # 不連線 openFDA／MedlinePlus（另見 test_live_sources.py）
+os.environ["SEMANTIC_SEARCH"] = "off"        # 只測 TF-IDF；混合檢索以真實向量校正的結果見 docs/RAG_待查證清單.md 第八節
 # 不碰開發用的資料庫（DATABASE_URL）；要在 SQL Server 上測試時另外設定 TEST_DATABASE_URL，指向空的測試資料庫
 os.environ.pop("DATABASE_URL", None)
 if os.getenv("TEST_DATABASE_URL"):

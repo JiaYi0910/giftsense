@@ -7,13 +7,14 @@ try:
     from backend.tfda_service import global_tfda_service
     from backend.product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
     from backend.knowledge_base import source_refs
-    from backend import live_sources
+    from backend import live_sources, retrieval
 except ImportError:
     from vector_store import global_vector_store, FULL_CLINICAL_LITERATURES
     from tfda_service import global_tfda_service
     from product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
     from knowledge_base import source_refs
     import live_sources
+    import retrieval
 
 # Expose full clinical literatures for compatibility
 CLINICAL_LITERATURES = FULL_CLINICAL_LITERATURES
@@ -599,7 +600,9 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
     # -------------------------------------------------------------------------
     # 2. TRACK 2: VECTOR DB SEMANTIC RETRIEVAL (Text-Embedding Semantic Space)
     # -------------------------------------------------------------------------
-    vector_matches = [_with_sources(m) for m in global_vector_store.search(query, top_k=3)]
+    # 混合檢索：TF-IDF＋Gemini 語意向量（語意向量不可用時只用 TF-IDF）
+    cards, retrieval_info = retrieval.search_cards(query, top_k=3)
+    vector_matches = [_with_sources(m) for m in cards]
     if not vector_matches:
         return {
             "success": True,
@@ -645,6 +648,13 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
             "title": f"依{top_lit.get('authority', '權威機構')}建議整理",
             "desc": f"這題屬於{top_lit.get('category')}問題，以下依權威機構的指引整理重點；已比對{elder_name}（{elder_condition}）的病況與用藥，沒有命中撞藥規則。",
         }
+
+    # -------------------------------------------------------------------------
+    # 3a. 原文段落與交叉驗證：引用同一成分的知識庫原文，統計出處涵蓋幾個機構
+    # -------------------------------------------------------------------------
+    passages = retrieval.find_passages(query, top_lit, retrieval_info["qvec"])
+    evidence = retrieval.evidence_check(top_lit.get("sources"), passages,
+                                        tfda_result.get("sources") if is_collision else [])
 
     # -------------------------------------------------------------------------
     # 3b. 即時查詢：親友用藥的美國 FDA 仿單與 MedlinePlus（只補充原文與連結，不會取消規則的警示）
@@ -719,6 +729,13 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
     # 4. LLM SYNTHESIS（只用檢索資料與規則結果，回覆附出處）
     # -------------------------------------------------------------------------
     gemini_text = ""
+    passage_block = ""
+    if passages:
+        passage_block = f"""
+【知識庫原文段落（原文照錄，只可忠實翻譯摘要）】
+{json.dumps([{'source': p['authority'] + '：' + p['title'], 'url': p['url'], 'excerpt': p['excerpt']} for p in passages], ensure_ascii=False, indent=2)}
+交叉驗證：{evidence['label']}
+"""
     live_block = ""
     if live:
         live_block = f"""
@@ -754,7 +771,7 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
 說明：{tfda_result['mechanism']}
 處置建議：{tfda_result['clinical_action']}
 來源：{json.dumps([{'name': r['authority'] + '：' + r['title'], 'url': r['url']} for r in tfda_result.get('sources', [])], ensure_ascii=False)}
-{live_block}
+{passage_block}{live_block}
 請以 20~30 歲年輕子女易懂、白話溫暖的語氣，簡要說明（2~3 句話）：
 1. 上方資料對這個問題的重點；資料沒有提到的事情不要補充，查不到依據就直接說「目前資料庫查無相關依據」。
 2. 是否命中交互作用規則；命中時以規則的警示為準。若有即時查詢的仿單原文，簡述仿單提到的內容；仿單沒有提到不代表確定沒有交互作用。
@@ -798,6 +815,11 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
             if top_lit.get("sources"):
                 gemini_text += "\n\n出處：\n" + _source_lines(top_lit["sources"])
 
+    # 交叉驗證與原文段落：Gemini 回覆只附交叉驗證結果，離線回覆附完整段落
+    if from_gemini:
+        gemini_text += f"\n\n【交叉驗證】{evidence['label']}"
+    else:
+        gemini_text += "\n\n" + retrieval.passages_text(passages, evidence)
     if live:
         if from_gemini:
             # Gemini 已依即時查詢資料回答；仍附上出處，確保網址可點
@@ -819,6 +841,9 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
         "tfda_verification": tfda_result,
         "vector_retrieval": vector_matches,
         "matched_literatures": vector_matches,
+        "passages": passages,
+        "evidence_check": evidence,
+        "retrieval": {"mode": retrieval_info["mode"]},
         "live_sources": live,
         "gemini_synthesis": gemini_text
     }

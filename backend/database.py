@@ -30,7 +30,7 @@ import db_engine
 from db_transfer import chat_seq_from, copy_database, table_columns, target_is_empty
 from models import (
     TIME_FMT, AiGuardUsage, Base, CashbackOrder, ChatMessage, ClinicalKnowledge, KnowledgeChunk, KnowledgeSource,
-    LiveSourceCache, Order, PharmacyCache, PointsLedger, RecommendationProduct, Recipient, RewardClaim, SystemConfig, User, now_str,
+    EmbeddingCache, LiveSourceCache, Order, PharmacyCache, PointsLedger, RecommendationProduct, Recipient, RewardClaim, SystemConfig, User, now_str,
 )
 import knowledge_base
 # 💡 暖心選物商品資料（藥局官網實際查價）統一放在 product_catalog.py，init_db 啟動時同步寫入
@@ -581,6 +581,24 @@ def get_live_cache(key: str):
             return None
         return {"payload": json.loads(row.payload_json) if row.payload_json else None,
                 "ok": bool(row.ok), "fetched_at": row.fetched_at or ""}
+
+
+def get_embeddings(keys: list) -> dict:
+    """語意檢索的向量快取：回傳 {key: base64 向量}，沒有的 key 不會出現"""
+    found = {}
+    keys = list(dict.fromkeys(keys))
+    with _session() as session:
+        for i in range(0, len(keys), 200):
+            for row in session.scalars(select(EmbeddingCache).where(EmbeddingCache.key.in_(keys[i:i + 200]))).all():
+                found[row.key] = row.vector_b64
+    return found
+
+
+def put_embeddings(items: dict, model: str, dim: int):
+    """items = {key: base64 向量}"""
+    with _session() as session:
+        for key, vec in items.items():
+            session.merge(EmbeddingCache(key=key, model=model, dim=dim, vector_b64=vec, created_at=now_str()))
 
 
 def clear_live_cache() -> int:

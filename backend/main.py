@@ -50,6 +50,8 @@ from database import (
 from social_auth import verify_social_token, SocialAuthError
 from line_messages import card as line_card, button as line_button
 from rag_engine import query_rag_engine, CLINICAL_LITERATURES
+import retrieval
+from semantic_index import semantic_index
 from vector_store import global_vector_store
 from tfda_service import global_tfda_service
 from pharmacy_crawler import search_pharmacy_products, get_recommended_products_by_condition, warmup_pharmacy_cache
@@ -296,6 +298,7 @@ def health_check():
         "python": platform.python_version(),
         "literatures_count": db_stats["counts"].get("clinical_knowledge", len(CLINICAL_LITERATURES)),
         "vector_engine": "MedicalVectorStore (High-Dimensional Cosine)",
+        "retrieval": {**semantic_index.info(), "passages_loaded": retrieval.chunk_count()},  # 語意檢索狀態（不含金鑰）
         "tfda_engine": "TFDAService (Official Black Box Registry)",
         # 只回報是否已設定，不回傳金鑰本身
         "auth_token_secret": "configured" if _token_secret_base("member") else "missing",
@@ -752,9 +755,15 @@ def add_points_tx(req: PointsTxRequest, admin: str = Depends(current_admin)):
     return {"success": True, "account": req.account, "amount": req.amount}
 
 def _refresh_rag_index():
-    """實證文獻有變動時重建 AI 守護助理的檢索索引（資料庫是唯一來源）"""
+    """實證文獻或原文段落有變動時重建 AI 守護助理的檢索索引（資料庫是唯一來源）：
+    TF-IDF 立即重建；語意向量在背景只計算有變動的部分，算好前檢索自動使用 TF-IDF"""
     try:
-        return global_vector_store.reload(get_all_clinical_knowledge())
+        items = get_all_clinical_knowledge()
+        count = global_vector_store.reload(items)
+        chunks = get_knowledge_chunks()
+        retrieval.load_chunks(chunks)
+        semantic_index.start(items, chunks)
+        return count
     except Exception as e:
         print("RAG 索引重建失敗：", e)
         return None
@@ -804,7 +813,9 @@ def list_knowledge_chunks(source_id: Optional[str] = None, ingredient: Optional[
 @app.post("/api/knowledge/sources/reload")
 def reload_knowledge_sources(admin: str = Depends(current_admin)):
     """重新匯入 knowledge_sources/ 的原文（新增或更新原文檔後使用）"""
-    return {"success": True, **sync_knowledge_base(force=True)}
+    result = sync_knowledge_base(force=True)
+    _refresh_rag_index()
+    return {"success": True, **result}
 
 @app.delete("/api/knowledge/{item_id}")
 def remove_clinical_knowledge(item_id: str, admin: str = Depends(current_admin)):

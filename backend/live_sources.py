@@ -317,7 +317,7 @@ def summary_text(live: dict) -> str:
     """離線回覆用：列出仿單原文摘錄（英文）與是否提到該成分"""
     if not live:
         return ""
-    lines = ["📄 即時查詢：美國 FDA 藥品仿單與 MedlinePlus"]
+    lines = ["【即時查詢】美國 FDA 藥品仿單與 MedlinePlus"]
     supp = (live.get("supplement") or {}).get("zh")
     for d in live["drugs"]:
         label = d.get("label")

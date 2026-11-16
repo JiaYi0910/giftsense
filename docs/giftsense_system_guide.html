@@ -398,7 +398,7 @@
     <div class="stat"><b>4 種</b><span>使用端：網頁、Android、iPhone、親友 LINE</span></div>
     <div class="stat"><b>55 支</b><span>後端 REST API</span></div>
     <div class="stat"><b>12 項</b><span>暖心選物商品（四大藥局官網實際查價）</span></div>
-    <div class="stat"><b>36 篇</b><span>實證文獻與照護指引＋18 條交互作用規則</span></div>
+    <div class="stat"><b>36 篇</b><span>實證文獻與照護指引＋21 條交互作用規則</span></div>
   </div>
   <h3>主要功能</h3>
   <table>
@@ -443,8 +443,8 @@
         <div class="gateway"><b>FastAPI 後端</b><span>55 支 REST API</span><span>提供 Flutter 網頁</span><span>會員／管理員 HMAC 通行證</span><span>台灣時間</span></div>
         <div class="mods">
           <div class="mod teal"><b>會員／第三方登入</b><code>social_auth</code><em class="ext">連 Google · Facebook · Apple</em></div>
-          <div class="mod"><b>AI 守護 RAG</b><code>vector_store · rag_engine</code><em>TF-IDF 檢索實證文獻</em></div>
-          <div class="mod"><b>交互作用規則</b><code>tfda_service</code><em>18 條交互作用規則把關</em></div>
+          <div class="mod"><b>AI 守護 RAG</b><code>retrieval · semantic_index · rag_engine</code><em>TF-IDF＋Gemini 語意混合檢索</em></div>
+          <div class="mod"><b>交互作用規則</b><code>tfda_service</code><em>21 條交互作用規則把關</em></div>
           <div class="mod teal"><b>暖心選物推薦</b><code>product_catalog</code><em class="ext">病況比對 · 連藥局官網</em></div>
           <div class="mod"><b>點數與購物回饋</b><code>database</code><em>暖幣存摺 · 回饋入帳</em></div>
           <div class="mod teal"><b>LINE Bot</b><code>line_messages</code><em class="ext">連 LINE Messaging API</em></div>
@@ -590,7 +590,7 @@
     <div class="fa-lane">
       <div class="fa-lane-h">AI 守護助理</div>
       <div class="fa-step">輸入症狀或保健品</div><i class="fa-dn"></i>
-      <div class="fa-step">實證文獻檢索<small>TF-IDF 向量相似度</small></div><i class="fa-dn"></i>
+      <div class="fa-step">實證文獻檢索<small>TF-IDF＋Gemini 語意混合檢索</small></div><i class="fa-dn"></i>
       <div class="fa-step">TFDA 撞藥判斷<small>親友用藥 × 保健成分</small></div><i class="fa-dn"></i>
       <div class="fa-step link">安全的商品建議 → 暖心選物</div>
     </div>
@@ -683,7 +683,7 @@ flowchart TD
   A -- 是 --> V
   A -- 否 --> B{"今日剩餘次數 &gt; 0？"}
   B -- 否 --> R["提示：用 1 點兌換 3 次"]
-  B -- 是 --> V["TF-IDF 向量檢索&lt;br/&gt;實證文獻 Top 3（餘弦相似度）"]
+  B -- 是 --> V["混合檢索：TF-IDF＋Gemini 語意向量&lt;br/&gt;實證文獻 Top 3＋原文段落＋交叉驗證"]
   V --> T{"TFDA 交互作用規則&lt;br/&gt;親友病況用藥 × 成分"}
   T -- 撞藥 --> X["紅色警示：機轉、臨床建議、官方引用"]
   X --> C1{"替代品在暖心選物&lt;br/&gt;且不在禁忌名單？"}
@@ -776,10 +776,10 @@ flowchart TD
       <table>
         <tr><th>技術</th><th>用途</th></tr>
         <tr><td>FastAPI · Uvicorn · Pydantic</td><td>55 支 REST API、資料驗證</td></tr>
-        <tr><td>SQLAlchemy 2.0 ORM</td><td>12 張資料表的模型、交易與條件更新；同一套程式支援 SQL Server、Turso 與 SQLite</td></tr>
+        <tr><td>SQLAlchemy 2.0 ORM</td><td>16 張資料表的模型、交易與條件更新；同一套程式支援 SQL Server、Turso 與 SQLite</td></tr>
         <tr><td>pyodbc（SQL Server）· libsql（Turso）</td><td>資料庫驅動；Turso 透過自寫轉接層使用 SQLAlchemy 的 SQLite 方言</td></tr>
-        <tr><td>TF-IDF ＋ 餘弦相似度</td><td>實證文獻向量檢索（中文單字＋雙字詞）</td></tr>
-        <tr><td>規則引擎</td><td>18 條藥物／食物／保健品交互作用規則、22 類病況快速提問、商品禁忌排除、否定詞判斷</td></tr>
+        <tr><td>TF-IDF ＋ Gemini embedding（gemini-embedding-001）</td><td>實證文獻混合檢索：字面（中文單字＋雙字詞）加語意向量（768 維、存資料庫快取），連不上 Gemini 時自動只用 TF-IDF；並引用知識庫原文段落、標示多機構交叉驗證</td></tr>
+        <tr><td>規則引擎</td><td>21 條藥物／食物／保健品交互作用規則、22 類病況快速提問、商品禁忌排除、否定詞判斷</td></tr>
         <tr><td>line-bot-sdk · Flex Message</td><td>LINE 關懷卡、圖文選單、Webhook</td></tr>
         <tr><td>PyJWT[crypto] · HMAC</td><td>Apple 憑證驗證、會員與管理員通行證簽章</td></tr>
         <tr><td>requests · 自訂 TLS Adapter</td><td>串接中央氣象署（相容 TWCA 憑證）</td></tr>
@@ -1125,7 +1125,7 @@ flowchart TD
     <table>
       <tr><th>可能被問到</th><th>建議回答</th></tr>
       <tr><td>資料會不會因為伺服器重啟消失？</td><td>資料存在雲端資料庫（目前是 Turso），Render 休眠或重新部署都不影響。</td></tr>
-      <tr><td>為什麼使用 ORM？</td><td>資料表以 SQLAlchemy 模型定義，程式不寫死特定資料庫的 SQL 語法，同一套程式可在 SQL Server、Turso 與 SQLite 上執行；三種資料庫各跑一次完整的自動化測試（145 項）都通過。改用 SQL Server 只要設定連線網址，舊資料會自動匯入。</td></tr>
+      <tr><td>為什麼使用 ORM？</td><td>資料表以 SQLAlchemy 模型定義，程式不寫死特定資料庫的 SQL 語法，同一套程式可在 SQL Server、Turso 與 SQLite 上執行；三種資料庫各跑一次完整的自動化測試（184 項）都通過。改用 SQL Server 只要設定連線網址，舊資料會自動匯入。</td></tr>
       <tr><td>AI 的建議可靠嗎？</td><td>以實證文獻（NIH、AHA、TFDA 等）做 RAG 檢索，再套用 TFDA 交互作用規則；有疑慮一律建議諮詢醫師，不提供未查價或有禁忌的商品。</td></tr>
       <tr><td>價格從哪裡來？</td><td>2026/10/13 逐一到四家連鎖藥局官網查價；包裝不同或缺貨的報價會顯示但不參與比價。</td></tr>
       <tr><td>點數怎麼算？</td><td>參考蝦皮與 ShopBack：註冊 +5、關懷卡 +0.1、小熊每週 +0.5，點數主要來自購物回饋（依藥局 3–5% 換算，回饋 $1 = 1 點，經確認才入帳）；折抵 1 點 = $1。</td></tr>

@@ -265,6 +265,17 @@ class LiveSourceCache(Base):
     fetched_at: Mapped[str | None] = mapped_column(Unicode(TIME_LEN), default=now_str)
 
 
+class EmbeddingCache(Base):
+    """語意檢索的向量快取（Gemini embedding），key＝模型、維度、任務類型與文字內容的雜湊，見 semantic_index.py"""
+    __tablename__ = "embedding_cache"
+
+    key: Mapped[str] = mapped_column(Unicode(64), primary_key=True)
+    model: Mapped[str | None] = mapped_column(Unicode(100))
+    dim: Mapped[int | None] = mapped_column(Integer)
+    vector_b64: Mapped[str | None] = mapped_column(UnicodeText)
+    created_at: Mapped[str | None] = mapped_column(Unicode(TIME_LEN), default=now_str)
+
+
 class SystemConfig(Base):
     """系統設定與一次性資料遷移的完成標記"""
     __tablename__ = "system_config"
@@ -278,5 +289,5 @@ class SystemConfig(Base):
 ALL_MODELS = [
     SystemConfig, User, Recipient, Order, PointsLedger, PharmacyCache, RecommendationProduct,
     AiGuardUsage, RewardClaim, ChatMessage, CashbackOrder, ClinicalKnowledge, KnowledgeSource, KnowledgeChunk,
-    LiveSourceCache,
+    LiveSourceCache, EmbeddingCache,
 ]
