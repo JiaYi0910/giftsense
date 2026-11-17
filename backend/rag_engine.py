@@ -3,13 +3,13 @@ import json
 # Handle local and package imports gracefully
 try:
     from backend.vector_store import global_vector_store, FULL_CLINICAL_LITERATURES
-    from backend.tfda_service import global_tfda_service
+    from backend.tfda_service import global_tfda_service, TFDA_COLLISION_RULES
     from backend.product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
     from backend.knowledge_base import source_refs
     from backend import gemini_client, live_sources, retrieval
 except ImportError:
     from vector_store import global_vector_store, FULL_CLINICAL_LITERATURES
-    from tfda_service import global_tfda_service
+    from tfda_service import global_tfda_service, TFDA_COLLISION_RULES
     from product_catalog import DEFAULT_RECOMMENDATION_PRODUCTS
     from knowledge_base import source_refs
     import gemini_client
@@ -517,6 +517,56 @@ INTAKE_TERMS = ("藥", "保健", "補充", "維生素", "維他命", "魚油", "
                 "飲食", "營養", "可以吃", "能吃", "可以喝", "能喝")
 
 
+# -------------------------------------------------------------------------
+# 查證摘要：取代舊的「五維相容性雷達評分」（分數是寫死的、沒有來源，且常與問題無關）。
+# 每一項都直接來自本次的規則比對、檢索與即時查詢結果，不打分數。
+# -------------------------------------------------------------------------
+def _label_summary(query: str, elder_condition: str, live, ingredient: str = "") -> dict:
+    if not live_sources.enabled():
+        return {"status": "info", "value": "即時查詢未啟用"}
+    drugs = live_sources.detect_drugs(elder_condition, query)
+    if not drugs:
+        return {"status": "info", "value": f"親友病況與問題沒有提到 {len(live_sources.DRUGS)} 種常見藥品，本次未查詢"}
+    names = "、".join(d["zh"] for d in drugs)
+    if not live:
+        return {"status": "info", "value": f"已查詢 {names}，暫時取不到仿單資料"}
+    if live["label_mentions"]:
+        m = live["label_mentions"][0]
+        return {"status": "warn", "value": f"{m['drug']} 仿單的交互作用段落提到{m['supplement']}"}
+    supp = (live.get("supplement") or {}).get("zh")
+    got = "、".join(d["zh"] for d in live["drugs"] if d.get("label")) or names
+    if supp:
+        return {"status": "info", "value": f"{got} 仿單的交互作用段落沒有直接提到{supp}（不代表確定沒有交互作用）"}
+    what = f"「{ingredient}」" if ingredient else "這項成分"
+    return {"status": "info",
+            "value": f"已取得 {got} 的仿單與衛教資料；{what}不在仿單比對的 {len(live_sources.SUPPLEMENTS)} 種成分內，請以醫師、藥師說明為準"}
+
+
+def build_evidence_summary(query: str, elder_condition: str, is_collision: bool, rule_title: str,
+                           top_lit: dict, evidence: dict, passages: list, live, ingredient: str = "") -> list:
+    """status：warn＝需要注意、ok＝有多方依據、info＝一般說明"""
+    items = []
+    if is_collision:
+        items.append({"key": "rule", "label": "交互作用規則", "status": "warn", "value": f"命中：{rule_title}"})
+    else:
+        items.append({"key": "rule", "label": "交互作用規則", "status": "info",
+                      "value": f"未命中已收錄的 {len(TFDA_COLLISION_RULES)} 條規則（不代表確定沒有交互作用）"})
+    level = (top_lit.get("evidence_level") or top_lit.get("evidenceLevel") or "").strip()
+    items.append({"key": "evidence", "label": "證據等級", "status": "info", "value": level or "未標示",
+                  "detail": top_lit.get("title", "")})
+    items.append({"key": "institutions", "label": "出處機構", "status": "ok" if evidence.get("status") == "multi" else "info",
+                  "value": evidence.get("label", "")})
+    if passages:
+        orgs = list(dict.fromkeys(retrieval.institution(p["authority"]) for p in passages))
+        items.append({"key": "passages", "label": "知識庫原文", "status": "ok",
+                      "value": f"引用 {len(passages)} 段（{'、'.join(orgs)}）"})
+    else:
+        items.append({"key": "passages", "label": "知識庫原文", "status": "info",
+                      "value": "這篇文獻的出處只存連結，尚無可引用的原文段落"})
+    items.append({"key": "label", "label": "FDA 仿單", **_label_summary(query, elder_condition, live, ingredient)})
+    return items
+
+
 def find_symptom_match(query: str, elder_name: str, elder_condition: str):
     q = query.lower()
     if any(t in q for t in INTAKE_TERMS):
@@ -631,7 +681,6 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
     )
 
     is_collision = tfda_result["is_collision"]
-    radar_scores = tfda_result["radar_scores"]
     is_guidance = top_lit.get("category") in GUIDANCE_CATEGORIES
     if is_guidance and not is_collision:
         tfda_result = {
@@ -712,7 +761,6 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
         "severity": tfda_result["severity"],
         "title": tfda_result["title"],
         "desc": tfda_result["desc"],
-        "radar_scores": radar_scores,
         "label_caution": label_caution,
         "action_card": action_card
     }
@@ -827,6 +875,8 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
         "matched_literatures": vector_matches,
         "passages": passages,
         "evidence_check": evidence,
+        "evidence_summary": build_evidence_summary(query, elder_condition, is_collision, tfda_result["title"],
+                                                   top_lit, evidence, passages, live, matched_ingredient),
         "retrieval": {"mode": retrieval_info["mode"]},
         "live_sources": live,
         "gemini_synthesis": gemini_text

@@ -169,6 +169,10 @@ def test_rule_hit_keeps_rule_warning_and_adds_label_excerpt(fake_apis):
     text = res["gemini_synthesis"]
     assert "Ginkgo biloba" in text and live_sources.DAILYMED_URL + "set-warfarin" in text
     assert res["live_sources"]["drugs"][0]["generic"] == "warfarin"
+    summary = {i["key"]: i for i in res["evidence_summary"]}
+    assert list(summary) == ["rule", "evidence", "institutions", "passages", "label"]
+    assert summary["rule"]["status"] == "warn" and res["safety"]["title"] in summary["rule"]["value"]
+    assert "radar" not in str(res)                                          # 舊的五維評分（寫死的分數）已移除
 
 
 def test_label_without_mention_says_so(fake_apis):
@@ -177,6 +181,8 @@ def test_label_without_mention_says_so(fake_apis):
     assert label["mentions"] is False and label["excerpts"] == []
     assert res["safety"]["label_caution"] is False
     assert "交互作用段落沒有提到魚油" in res["gemini_synthesis"]
+    label_item = res["evidence_summary"][-1]
+    assert label_item["status"] == "info" and "沒有直接提到魚油" in label_item["value"]
 
 
 def test_label_mention_without_rule_blocks_product(monkeypatch):
@@ -190,6 +196,20 @@ def test_label_mention_without_rule_blocks_product(monkeypatch):
     assert res["safety"]["action_card"]["price"] is None
     assert res["gemini_synthesis"].startswith("【仿單提醒】")
     assert "Coenzyme Q10 may alter" in res["gemini_synthesis"]
+    summary = {i["key"]: i for i in res["evidence_summary"]}
+    assert summary["rule"]["status"] == "info" and "未命中已收錄的 21 條規則" in summary["rule"]["value"]
+    assert summary["label"]["status"] == "warn" and "仿單的交互作用段落提到輔酶 Q10" in summary["label"]["value"]
+
+
+def test_evidence_summary_without_specific_drug(monkeypatch):
+    monkeypatch.setenv("LIVE_SOURCES", "on")                              # 沒有藥名就不會連線
+    monkeypatch.setattr(live_sources, "_get_json", lambda *a, **k: (_ for _ in ()).throw(AssertionError("不應連線")))
+    res = query_rag_engine("親友眼睛容易疲勞，葉黃素有幫助嗎？", "媽媽", "日常養生")
+    summary = {i["key"]: i for i in res["evidence_summary"]}
+    assert summary["label"]["status"] == "info" and "本次未查詢" in summary["label"]["value"]
+    assert summary["evidence"]["value"] and summary["evidence"]["detail"] == res["matched_literatures"][0]["title"]
+    assert summary["institutions"]["value"] == res["evidence_check"]["label"]
+    assert all(set(i) >= {"key", "label", "status", "value"} and i["status"] in ("warn", "ok", "info") for i in res["evidence_summary"])
 
 
 if __name__ == "__main__":

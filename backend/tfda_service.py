@@ -25,7 +25,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["nccih_red_yeast_rice", "efsa_monacolins"],
         "mechanism": "紅麴的 Monacolin K 與降血脂藥 Lovastatin 結構相同；含量高的紅麴產品可能有和 Statin 相同的副作用（肌肉、腎臟與肝臟損傷）與藥物交互作用，與 Statin 併用等於重複用藥。",
         "clinical_action": "已在服用 Statin 降血脂藥者不可自行併用紅麴產品；有疑問請帶著藥袋詢問醫師或藥師。",
-        "radar_scores": [20, 60, 10, 70, 10], # 用藥安全性: 10
         "alternative": None
     },
     # 2. Warfarin / 抗凝血藥 + 納豆激酶 (FATAL / 重大自發性出血)
@@ -40,7 +39,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["pmid_26109079", "label_warfarin", "tfda_material_nattokinase"],
         "mechanism": "人體試驗中，單次口服納豆激酶即可增強溶栓與抗凝血指標；Warfarin 仿單也提醒，部分草藥產品本身可能引起出血、具抗凝血或溶栓作用。兩者併用可能疊加出血風險。",
         "clinical_action": "服用抗凝血藥者避免濃縮納豆激酶產品（食藥署將納豆激酶純化物列為未經確認食用安全性、不得供為食品原料）；有出血、黑便或大片瘀青時立即就醫。",
-        "radar_scores": [30, 70, 15, 80, 15],
         "alternative": None
     },
     # 3. Warfarin / 抗凝血藥 + 銀杏 (MAJOR / 抑制血小板凝集)
@@ -55,7 +53,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["nccih_ginkgo", "nccih_herb_drug", "label_warfarin", "who_ginkgo_monograph", "tfda_material_ginkgo_leaf"],
         "mechanism": "NCCIH：銀杏與 Warfarin 併用，重大出血事件的風險比單用 Warfarin 高；Warfarin 仿單也列出銀杏可能單獨引起出血，並可能經由代謝酵素影響藥效。在台灣，銀杏葉不得供為食品原料，含銀杏葉萃取物的產品屬藥品。",
         "clinical_action": "服用抗凝血或抗血小板藥者避免自行使用銀杏；若醫師評估後仍需使用，須監測凝血指數（PT／INR）。",
-        "radar_scores": [35, 75, 20, 80, 20],
         "alternative": None
     },
     # 4. Warfarin / 抗凝血藥 + 高劑量魚油 / 薑黃 (MAJOR)
@@ -70,7 +67,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["label_warfarin", "nccih_turmeric", "ods_omega3fattyacids"],
         "mechanism": "Warfarin 仿單提醒，併用其他可能影響凝血的藥物或草藥產品時需特別注意出血風險；魚油、薑黃是否影響 Warfarin 的完整依據，待補 NIH ODS 資料後更新。",
         "clinical_action": "服用抗凝血藥者使用魚油或薑黃前先詢問醫師或藥師，並留意牙齦出血、瘀青或黑便等出血徵兆。",
-        "radar_scores": [40, 80, 25, 85, 25],
         "alternative": None
     },
     # 5. Warfarin / 抗凝血藥 + 蔓越莓萃取物 (MAJOR / 抑制 CYP2C9)
@@ -85,7 +81,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["nccih_cranberry", "nccih_herb_drug"],
         "mechanism": "NCCIH：蔓越莓是否會和抗凝血藥 Warfarin 產生交互作用，目前研究證據不一致。",
         "clinical_action": "服用 Warfarin 者使用高濃縮蔓越莓產品前，先詢問醫師或藥師。",
-        "radar_scores": [35, 70, 20, 75, 20],
         "alternative": None
     },
     # ---- 2026/11/16：依 NCCIH 官方資料補上的交互作用 ----
@@ -100,7 +95,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["nccih_glucosamine"],
         "mechanism": "NCCIH：葡萄糖胺與軟骨素和服用抗凝血藥 Warfarin 者的出血風險增加有關；葡萄糖胺也可能使部分人的血糖上升。",
         "clinical_action": "服用 Warfarin 者使用葡萄糖胺或軟骨素前先詢問醫師或藥師，並留意出血徵兆。",
-        "radar_scores": [40, 75, 25, 80, 25],
         "alternative": None
     },
     {
@@ -114,7 +108,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["nccih_coq10", "tfda_material_coq10"],
         "mechanism": "食藥署規定使用輔酶 Q10 作為原料的食品，應標示「服用抗凝血藥品(warfarin)之病患，不宜食用」；NCCIH 也指出輔酶 Q10 可能與抗凝血藥 Warfarin、糖尿病用藥胰島素產生交互作用。",
         "clinical_action": "服用 Warfarin 者不宜自行食用含輔酶 Q10 的產品；若醫師評估後仍要使用，開始或停用後依醫師指示追蹤凝血指數。",
-        "radar_scores": [50, 75, 30, 80, 30],
         "alternative": None
     },
     # 6. 創傷 / 燙傷創面 + 活血化瘀成分 (MAJOR / 創面滲血)
@@ -125,11 +118,10 @@ TFDA_COLLISION_RULES = [
         "severity": "MAJOR",
         "badge": "用藥安全提醒：傷口癒合期",
         "title": "傷口未癒合前，暫緩可能影響凝血的保健品",
-        "official_citation": "（尚無官方依據，見 docs/RAG_待查證清單.md）",
+        "official_citation": "（尚無官方依據，以保守原則提醒；待補官方資料後更新）",
         "sources": [],
-        "mechanism": "傷口癒合需要正常的凝血功能；這類成分是否影響傷口癒合，目前知識庫尚無官方依據（見待查證清單），以保守原則提醒。",
+        "mechanism": "傷口癒合需要正常的凝血功能；這類成分是否影響傷口癒合，目前知識庫尚無官方依據，以保守原則提醒。",
         "clinical_action": "傷口未癒合前，使用這類保健品前先詢問醫師；不要在傷口上貼草本貼布。",
-        "radar_scores": [35, 75, 25, 80, 25],
         "alternative": None
     },
     # 7. 降血壓藥 + 甘草萃取物 (MAJOR / 假性醛固酮症)
@@ -144,7 +136,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["nccih_licorice"],
         "mechanism": "NCCIH：甘草所含的甘草酸（glycyrrhizin）可能造成心律不整等嚴重不良反應，大量或長期使用時更明顯；即使少量，也曾在高血壓、心臟或腎臟疾病、高鹽飲食者身上造成嚴重反應。",
         "clinical_action": "高血壓、心臟或腎臟疾病者避免含甘草酸的補品與喉糖；使用前先詢問醫師或藥師。",
-        "radar_scores": [40, 70, 25, 75, 25],
         "alternative": None
     },
     # 8. 糖尿病親友 + 高糖滋補品 (MAJOR / 血糖劇烈波動)
@@ -159,7 +150,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["pmid_38078587"],
         "mechanism": "高糖滋補品含大量游離果糖與蔗糖，進入人體後迅速被小腸上皮吸收，造成餐後血糖暴衝，抵消口服降血糖藥物療效，加速血管內皮病變。",
         "clinical_action": "糖尿病患應嚴格選擇無糖、低 GI (低升糖指數) 之認證配方。",
-        "radar_scores": [45, 70, 30, 80, 30],
         "alternative": None
     },
     # ---- 2026/10/15 擴充：各病症常見的藥物、食物與保健品交互作用 ----
@@ -174,7 +164,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["fda_grapefruit", "pmid_23184849"],
         "mechanism": "葡萄柚會抑制腸道 CYP3A4 酵素，使鈣離子阻斷劑（如 felodipine、nifedipine）與部分 Statin（simvastatin、atorvastatin）的血中濃度升高，可能造成血壓過低、頭暈或肌肉病變，錯開時間吃也無法避免。",
         "clinical_action": "服用上述藥物期間避免葡萄柚與葡萄柚汁；不確定自己的藥是否受影響，請帶著藥袋詢問藥師。",
-        "radar_scores": [55, 75, 35, 80, 30],
         "alternative": None
     },
     {
@@ -188,7 +177,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["kdigo_ckd"],
         "mechanism": "非類固醇消炎止痛藥（NSAIDs）會減少腎臟血流，可能讓腎功能惡化並造成水腫與高血鉀；與降血壓藥或利尿劑一起使用時風險更高。",
         "clinical_action": "腎臟病親友不要自行購買消炎止痛藥；需要止痛時先詢問腎臟科醫師或藥師。",
-        "radar_scores": [50, 70, 30, 80, 25],
         "alternative": None
     },
     {
@@ -202,7 +190,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["label_warfarin"],
         "mechanism": "Warfarin 仿單列出抗血小板藥（如阿斯匹靈、保栓通）與非類固醇消炎止痛藥（NSAIDs）都會增加出血風險；與抗凝血藥一起使用時，出血的機會明顯增加。",
         "clinical_action": "服用抗凝血藥的親友不要自行吃消炎止痛藥；需要止痛退燒時先詢問醫師或藥師選擇較安全的藥。",
-        "radar_scores": [45, 70, 30, 80, 20],
         "alternative": None
     },
     {
@@ -216,7 +203,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["pmid_32829751"],
         "mechanism": "低鈉鹽多以氯化鉀取代氯化鈉；腎功能不好或服用保鉀利尿劑、ACEI／ARB 的人排鉀能力較差，可能使血鉀過高而引起心律不整。",
         "clinical_action": "腎臟病或服用上述藥物的親友，使用低鈉鹽前先詢問醫師；減鹽改用天然香料調味。",
-        "radar_scores": [55, 75, 35, 80, 30],
         "alternative": None
     },
     {
@@ -230,7 +216,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["fda_otc_m012"],
         "mechanism": "綜合感冒藥常含擬交感神經成分（如 pseudoephedrine、phenylephrine），可能使血壓與心跳上升，也可能加重青光眼與攝護腺肥大的症狀。",
         "clinical_action": "買感冒藥時主動告訴藥師親友的慢性病與用藥，請藥師挑選不含這類成分的藥品。",
-        "radar_scores": [60, 80, 40, 85, 35],
         "alternative": None
     },
     {
@@ -244,7 +229,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["pmid_27998379", "tfda_material_gaba"],
         "mechanism": "助眠成分與酒精和鎮靜安眠藥同樣作用在中樞神經，一起使用可能加重嗜睡、頭暈，增加長輩夜間跌倒的風險；食藥署也規定含 GABA 的食品須標示「避免同時飲酒或服用降血壓、鎮靜及癲癇等藥物」。",
         "clinical_action": "已在服用安眠藥的親友，不要自行加上助眠保健品，也不要喝酒；睡不好請回診與醫師討論調整。",
-        "radar_scores": [55, 75, 35, 80, 30],
         "alternative": None
     },
     {
@@ -258,7 +242,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["tfda_material_gaba"],
         "mechanism": "食藥署規定以微生物發酵製取的 GABA 原料每日食用限量為 100 毫克，且使用 GABA 作為原料的食品，應標示「使用本產品應避免同時飲酒或服用降血壓、鎮靜及癲癇等藥物；孕婦、授乳者、嬰幼兒，須諮詢醫師方可使用」。",
         "clinical_action": "正在服用降血壓藥、鎮靜安眠藥或抗癲癇藥的親友，不要自行使用含 GABA 的產品，也避免同時喝酒；請先帶著藥袋詢問醫師或藥師。",
-        "radar_scores": [55, 75, 35, 80, 30],
         "alternative": None
     },
     {
@@ -272,7 +255,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["pmid_38078587"],
         "mechanism": "苦瓜、肉桂、鉻等成分改善血糖的證據有限，但和降血糖藥或胰島素一起使用時，可能加強降血糖作用而增加低血糖風險。",
         "clinical_action": "使用前先和醫師討論，開始吃之後多量幾次血糖；不要用保健品取代藥物。",
-        "radar_scores": [60, 80, 45, 85, 40],
         "alternative": None
     },
     {
@@ -286,7 +268,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["nci_nutrition_hp"],
         "mechanism": "部分草藥（如聖約翰草）會改變藥物代謝，高劑量抗氧化劑可能影響化療或放療效果；白血球低時，活菌產品也有感染風險。",
         "clinical_action": "治療期間使用任何保健品或中草藥前，先告知腫瘤科醫師或個管師。",
-        "radar_scores": [50, 70, 30, 80, 25],
         "alternative": None
     },
     {
@@ -300,7 +281,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["who_antenatal", "tfda_material_coq10", "tfda_material_gaba"],
         "mechanism": "WHO 產前照護建議不建議一般孕婦常規補充維生素 A，過量維生素 A（視黃醇）可能影響胎兒；食藥署規定含輔酶 Q10 的食品須標示懷孕或哺乳期間婦女不宜食用，含 GABA 的食品須標示孕婦、授乳者須諮詢醫師方可使用。",
         "clinical_action": "懷孕或哺乳期間使用保健品前先詢問婦產科醫師，以醫師建議的孕期綜合維生素為主。",
-        "radar_scores": [55, 75, 35, 80, 30],
         "alternative": None
     },
     {
@@ -314,7 +294,6 @@ TFDA_COLLISION_RULES = [
         "sources": ["label_levothyroxine", "ods_calcium"],
         "mechanism": "Levothyroxine 仿單：碳酸鈣、硫酸亞鐵等會和甲狀腺素結合，需至少間隔 4 小時；制酸劑與胃藥也會降低吸收，使藥效變差。",
         "clinical_action": "甲狀腺藥早上空腹吃，鈣片、鐵劑、胃藥移到午餐或晚餐後，至少間隔 4 小時。",
-        "radar_scores": [70, 85, 55, 85, 50],
         "alternative": None
     }
 ]
@@ -343,7 +322,6 @@ class TFDAService:
                     "sources": knowledge_base.source_refs(rule.get("sources")),
                     "rule_id": rule["id"],
                     "mechanism": rule["mechanism"],
-                    "radar_scores": rule["radar_scores"],
                     "alternative": rule["alternative"]
                 }
 
@@ -359,7 +337,6 @@ class TFDAService:
             "sources": [],
             "rule_id": None,
             "mechanism": "未命中已收錄的交互作用規則。",
-            "radar_scores": [95, 96, 94, 92, 98],
             "alternative": None
         }
 
