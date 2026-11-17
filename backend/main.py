@@ -1132,7 +1132,7 @@ def _handle_line_event(event: dict):
             return
 
         if cmd in LINE_CMD_SOS:
-            _store("🚨【親友發出緊急求助訊號】", "text")
+            _store("【親友發出緊急求助訊號】", "text")
             reply(line_card(
                 "已通知守護家人",
                 subtitle="緊急求助",
@@ -1179,7 +1179,7 @@ def _handle_line_event(event: dict):
         return
 
     if msg_type == "sticker":
-        _store("🎨 [LINE 貼圖]", "sticker")
+        _store("[LINE 貼圖]", "sticker")
 
 def _download_line_audio(msg_id: str) -> str:
     if not LINE_CHANNEL_ACCESS_TOKEN:
@@ -1358,7 +1358,7 @@ def create_recipient_line_bind(rec_id: str, member: str = Depends(current_member
     invite_text = (
         f"{rec['name']}您好！請先加入 GiftSense 的 LINE 好友"
         + (f"：{add_friend_url}" if add_friend_url else "")
-        + f"\n加入後在聊天室傳送「綁定 {bind['code']}」，就能收到我的關懷卡與用藥叮嚀喔❤️（綁定碼 24 小時內有效）"
+        + f"\n加入後在聊天室傳送「綁定 {bind['code']}」，就能收到我的關懷卡與用藥叮嚀喔（綁定碼 24 小時內有效）"
     )
     return {
         "success": True,

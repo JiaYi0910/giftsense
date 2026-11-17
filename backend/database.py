@@ -403,6 +403,20 @@ def _run_data_migrations(session):
         except Exception as e:
             print("Notice: quick chips refresh deferred:", e)
 
+    # 一次性：介面不用 emoji，舊的緊急求助與 LINE 貼圖紀錄去掉 emoji（2026/11/17）。
+    # 在 Python 比對：SQL Server 的中文定序（非 _SC）比較字串時會忽略 emoji，SQL 的 REPLACE／LIKE 找不到它們。
+    # 只有 LINE 傳來的訊息（from_role = elder）會有這兩種紀錄，筆數少；emoji 以 \U 跳脫寫法表示
+    if not _migration_done(session, "chat_emoji_20261117"):
+        fixes = (("\U0001F6A8️【", "【"), ("\U0001F6A8【", "【"),
+                 ("\U0001F3A8️ [LINE 貼圖]", "[LINE 貼圖]"), ("\U0001F3A8 [LINE 貼圖]", "[LINE 貼圖]"))
+        for msg in session.scalars(select(ChatMessage).where(ChatMessage.from_role == "elder")).all():
+            content = msg.content or ""
+            for old, new in fixes:
+                content = content.replace(old, new)
+            if content != (msg.content or ""):
+                msg.content = content
+        _mark_migration(session, "chat_emoji_20261117")
+
     # 一次性：傳情小站訊息補上排序值（改用 ORM、支援 SQL Server 後取代 SQLite 專屬的 rowid）
     for msg in session.scalars(select(ChatMessage).where(ChatMessage.seq.is_(None))).all():
         msg.seq = chat_seq_from(msg.id, msg.timestamp)

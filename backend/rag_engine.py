@@ -136,9 +136,9 @@ SYMPTOM_KNOWLEDGE_BASE = {
             }
         ],
         "home_care": [
-            "🌡️ 40°C~42°C 定溫熱敷腰背：每次 15~20 分鐘，促進腰背深層血液循環，舒緩肌肉痙攣，切忌吹冷風受涼。",
-            "🪑 屈膝蹲下代替彎腰：親友撿拾地面物品時，務必先屈膝蹲下、保持背部挺直，嚴禁直接彎腰負重以免腰椎小面關節扭傷。",
-            "🛏️ 維持床墊適度支撐：床墊不可過軟塌陷，仰臥時可在膝下微墊小枕頭，減輕腰椎前凸壓力。"
+            "40°C~42°C 定溫熱敷腰背：每次 15~20 分鐘，促進腰背深層血液循環，舒緩肌肉痙攣，切忌吹冷風受涼。",
+            "屈膝蹲下代替彎腰：親友撿拾地面物品時，務必先屈膝蹲下、保持背部挺直，嚴禁直接彎腰負重以免腰椎小面關節扭傷。",
+            "維持床墊適度支撐：床墊不可過軟塌陷，仰臥時可在膝下微墊小枕頭，減輕腰椎前凸壓力。"
         ],
         "tools": [
             {
@@ -198,9 +198,9 @@ SYMPTOM_KNOWLEDGE_BASE = {
             }
         ],
         "home_care": [
-            "🌡️ 溫熱敷放鬆：以 40°C~42°C 熱毛巾或電熱敷墊溫敷頸肩部 15~20 分鐘，促進微血管擴張，切勿沖冷水以免肌肉痙攣。",
-            "🧘 輕柔收下巴伸展：親友挺胸坐正，緩慢收下巴（做出雙下巴動作），停留 5 秒後放鬆，重複 8~10 次，強化深層頸屈肌。",
-            "🛏️ 枕頭高度調整：睡眠時枕頭高度應約為親友一拳高，保持頸椎水平且完全支撐頸曲，避免頸部懸空加劇落枕。"
+            "溫熱敷放鬆：以 40°C~42°C 熱毛巾或電熱敷墊溫敷頸肩部 15~20 分鐘，促進微血管擴張，切勿沖冷水以免肌肉痙攣。",
+            "輕柔收下巴伸展：親友挺胸坐正，緩慢收下巴（做出雙下巴動作），停留 5 秒後放鬆，重複 8~10 次，強化深層頸屈肌。",
+            "枕頭高度調整：睡眠時枕頭高度應約為親友一拳高，保持頸椎水平且完全支撐頸曲，避免頸部懸空加劇落枕。"
         ],
         "tools": [
             {
@@ -452,9 +452,9 @@ SYMPTOM_KNOWLEDGE_BASE = {
             }
         ],
         "home_care": [
-            "👀 20-20-20 護眼原則：看電視或滑手機每 20 分鐘，將視線移向 20 呎（約 6 公尺）外的遠處至少 20 秒，放鬆睫狀肌。",
-            "♨️ 40°C 定溫熱敷眼部：早晚各熱敷 10~15 分鐘，幫助瞼板腺分泌健康的脂質層，防止淚液過度蒸發。",
-            "💡 調整環境照明：避免在昏暗環境閱讀，燈光應充足且避免眩光反光直接照射眼睛。"
+            "20-20-20 護眼原則：看電視或滑手機每 20 分鐘，將視線移向 20 呎（約 6 公尺）外的遠處至少 20 秒，放鬆睫狀肌。",
+            "40°C 定溫熱敷眼部：早晚各熱敷 10~15 分鐘，幫助瞼板腺分泌健康的脂質層，防止淚液過度蒸發。",
+            "調整環境照明：避免在昏暗環境閱讀，燈光應充足且避免眩光反光直接照射眼睛。"
         ],
         "tools": [
             {
@@ -487,26 +487,26 @@ def build_elder_safety_warning(symptom_cat: str, elder_name: str, elder_conditio
     # Warfarin / Anticoagulant elder
     if "warfarin" in cond or "抗凝血" in cond or "血壓" in cond:
         if symptom_cat == "neck_shoulder":
-            return f"⚠️ 【{elder_name} 專屬安全叮嚀（Warfarin/高血壓）】：\n" \
+            return f"【{elder_name} 專屬安全叮嚀（Warfarin/高血壓）】：\n" \
                    f"1. 嚴禁使用高頻筋膜槍直接重擊頸部兩側（頸動脈竇三角區），以免造成動脈血管斑塊脫落或內膜剝離風險！\n" \
                    f"2. 切勿自行口服非類固醇消炎止痛藥 (NSAIDs，如布洛芬)，兩者併用會導致消化道大出血風險倍增。\n" \
                    f"3. 溫敷溫度應控制在 40°C~42°C，每次不超過 15 分鐘，避免微血管驟然擴張導致血壓波動。"
         elif symptom_cat == "knee_joint":
-            return f"⚠️ 【{elder_name} 專屬安全叮嚀（Warfarin/高血壓）】：\n" \
+            return f"【{elder_name} 專屬安全叮嚀（Warfarin/高血壓）】：\n" \
                    f"1. 關節按摩力道宜柔和，禁止大力敲擊或深層重力推拿，以免皮下微血管破裂造成深層血腫。\n" \
                    f"2. 若關節處於急性紅腫熱痛期，切勿熱敷，應先就醫排查痛風或滑囊炎。"
         else:
-            return f"⚠️ 【{elder_name} 專屬安全叮嚀（Warfarin/抗凝血）】：親友凝血機能較慢，居家穴位按壓請保持輕柔微酸即可，嚴禁重力刮痧或重擊敲打，避免造成皮下瘀血。"
+            return f"【{elder_name} 專屬安全叮嚀（Warfarin/抗凝血）】：親友凝血機能較慢，居家穴位按壓請保持輕柔微酸即可，嚴禁重力刮痧或重擊敲打，避免造成皮下瘀血。"
 
     # Burn / Wound elder
     elif "燙傷" in cond or "傷口" in cond or "皮膚" in cond:
-        return f"⚠️ 【{elder_name} 專屬安全叮嚀（創面修復期）】：\n" \
+        return f"【{elder_name} 專屬安全叮嚀（創面修復期）】：\n" \
                f"1. 燙傷創面及周圍皮膚【嚴禁熱敷或貼附任何外用草本貼布】，避免刺激新生上皮組織或引發二次感染！\n" \
                f"2. 穴位指壓與溫熱敷僅限於無傷口之完好健康皮膚區域，保持創面乾燥透氣。"
 
     # Diabetes elder
     elif "糖" in cond:
-        return f"⚠️ 【{elder_name} 專屬安全叮嚀（糖尿病親友）】：親友末梢神經溫度感知可能較遲鈍，使用電熱敷墊時請務必隔著衣物或毛巾，並定時 15 分鐘自動斷電，切防低溫燙傷起水泡。"
+        return f"【{elder_name} 專屬安全叮嚀（糖尿病親友）】：親友末梢神經溫度感知可能較遲鈍，使用電熱敷墊時請務必隔著衣物或毛巾，並定時 15 分鐘自動斷電，切防低溫燙傷起水泡。"
 
     else:
         return f"ℹ️ 【{elder_name} 專屬健康叮嚀】：穴位指壓請以親友感覺「酸脹微溫」為原則，切勿用力過猛造成皮下瘀青。如持續劇痛或出現手麻放射性麻木，應即刻前往神經內科或骨科門診就醫。"
@@ -575,8 +575,8 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
             ap_str = f"「{first_ap}」" + (f"與「{second_ap}」" if second_ap else "")
             
             gemini_text = f"親友出現【{query}】，多因頸椎關節退化、姿勢不良受寒或肌筋膜緊繃所致。\n" \
-                          f"💡 居家第一步：建議先以 40°C~42°C 溫熱敷 15~20 分鐘促進微循環，隨後可幫親友輕柔按壓 {ap_str}，釋放深層僵硬壓力。\n" \
-                          f"🛠️ 藥局實用輔具：可至大樹或杏一等連鎖藥局選購「醫療級電熱敷墊」或「金門一條根草本舒緩貼片」，物理透皮舒緩且不增加肝腎代謝負擔。\n" \
+                          f"居家第一步：建議先以 40°C~42°C 溫熱敷 15~20 分鐘促進微循環，隨後可幫親友輕柔按壓 {ap_str}，釋放深層僵硬壓力。\n" \
+                          f"藥局實用輔具：可至大樹或杏一等連鎖藥局選購「醫療級電熱敷墊」或「金門一條根草本舒緩貼片」，物理透皮舒緩且不增加肝腎代謝負擔。\n" \
                           f"{symptom_data['elder_safety_warning']}"
 
         return {
@@ -785,17 +785,17 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
     if not gemini_text:
         # 離線回覆：只用檢索到的資料與規則，附上出處
         if is_collision:
-            gemini_text = (f"⚠️ 【用藥安全警示】{tfda_result['title']}\n"
+            gemini_text = (f"【用藥安全警示】{tfda_result['title']}\n"
                            f"針對「{query}」，檢索到的成分為【{matched_ingredient}】；比對【{elder_name}】（{elder_condition}）的病況與用藥，命中交互作用規則。\n"
                            f"{tfda_result['mechanism']}\n"
-                           f"💡 處置建議：{tfda_result['clinical_action']}")
+                           f"處置建議：{tfda_result['clinical_action']}")
             if tfda_result.get("sources"):
                 gemini_text += "\n\n出處：\n" + _source_lines(tfda_result["sources"])
         else:
-            gemini_text = (f"✅ 【未命中已收錄的交互作用規則】\n"
+            gemini_text = (f"【未命中已收錄的交互作用規則】\n"
                            f"針對「{query}」，檢索到的資料為【{top_lit['title']}】（{top_lit['authority']}）。\n"
                            f"已比對【{elder_name}】（{elder_condition}）的病況與用藥，沒有命中本系統收錄的交互作用規則；這不代表確定沒有交互作用，購買前仍請詢問醫師或藥師。\n"
-                           f"💡 重點：{top_lit['mechanism']}")
+                           f"重點：{top_lit['mechanism']}")
             if top_lit.get("sources"):
                 gemini_text += "\n\n出處：\n" + _source_lines(top_lit["sources"])
 
@@ -812,7 +812,7 @@ def query_rag_engine(query: str, elder_name: str, elder_condition: str, api_key:
             gemini_text += "\n\n" + live_sources.summary_text(live)
         if label_caution:
             mention = live["label_mentions"][0]
-            gemini_text = (f"⚠️ 【仿單提醒】美國 FDA 的 {mention['drug']} 仿單在交互作用段落提到{mention['supplement']}，"
+            gemini_text = (f"【仿單提醒】美國 FDA 的 {mention['drug']} 仿單在交互作用段落提到{mention['supplement']}，"
                            f"本系統的交互作用規則沒有命中，仍建議先詢問醫師或藥師。\n\n" + gemini_text)
 
     return {

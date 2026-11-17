@@ -7,15 +7,22 @@ Gemini 文字生成的共用呼叫：首頁問候語、親友快速提問、AI �
   gemini-3.1-flash-lite 約 1～2 秒。舊版 App 或管理後台存的舊模型名稱一律改用預設模型
 - 金鑰放在 x-goog-api-key 標頭，不放網址，錯誤訊息與伺服器記錄才不會出現金鑰
 - 關閉「思考」：思考會用掉輸出字數上限、拖慢回應，問候語與提問這類短文不需要
+- 介面不使用 emoji：回傳的文字一律濾掉 emoji
 - 任何失敗都回傳空字串，由呼叫端改用內建內容
 """
 import os
+import re
 
 import requests
 
 DEFAULT_MODEL = "gemini-3.1-flash-lite"
 SUPPORTED_MODELS = ("gemini-3.1-flash-lite",)
 GENERATE_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+_EMOJI = re.compile(r"[\u2600-\u27bf\u2b00-\u2bff\U0001F000-\U0001FAFF]\ufe0f?")   # emoji 與變體選擇符
+
+
+def strip_emoji(text: str) -> str:
+    return _EMOJI.sub("", text or "")
 
 
 def text_model(requested: str = None) -> str:
@@ -56,7 +63,7 @@ def generate(prompt: str, api_key: str, model: str = None, temperature: float = 
             print(f"【Gemini】{name} 回應 HTTP {res.status_code}，改用內建內容")
             return ""
         parts = (res.json().get("candidates") or [{}])[0].get("content", {}).get("parts") or []
-        return "".join(p.get("text", "") for p in parts if not p.get("thought")).strip()
+        return strip_emoji("".join(p.get("text", "") for p in parts if not p.get("thought"))).strip()
     except Exception as e:  # 只印例外類型，不印內容
         print(f"【Gemini】{name} 呼叫失敗（{type(e).__name__}），改用內建內容")
         return ""

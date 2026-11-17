@@ -111,6 +111,26 @@ def test_webhook_rejects_everything_without_secret(monkeypatch, line_calls):
     assert line_calls["http"] == []
 
 
+def test_old_chat_messages_lose_emoji_once():
+    """介面不用 emoji：舊的緊急求助與 LINE 貼圖紀錄在啟動時去掉 emoji（一次性遷移）"""
+    import uuid
+    from models import ChatMessage, SystemConfig
+
+    ids = [f"emoji-{uuid.uuid4().hex[:10]}" for _ in range(3)]
+    contents = ["\U0001F6A8【親友發出緊急求助訊號】", "\U0001F3A8 [LINE 貼圖]", "奶奶今天很好"]
+    with database._session() as session:
+        for msg_id, content in zip(ids, contents):
+            session.add(ChatMessage(id=msg_id, owner_account="emoji_test", elder="奶奶", sender="奶奶", content=content,
+                                    type="text", timestamp=database.now_str(), from_role="elder"))
+        marker = session.get(SystemConfig, "chat_emoji_20261117")
+        if marker is not None:
+            session.delete(marker)
+    database.init_db()
+    with database._session() as session:
+        assert [session.get(ChatMessage, i).content for i in ids] == ["【親友發出緊急求助訊號】", "[LINE 貼圖]", "奶奶今天很好"]
+        assert session.get(SystemConfig, "chat_emoji_20261117") is not None
+
+
 def test_webhook_accepts_correct_signature_when_secret_set(monkeypatch, line_calls):
     monkeypatch.setattr(main, "LINE_CHANNEL_SECRET", TEST_SECRET)
     monkeypatch.setattr(main, "LINE_CHANNEL_ACCESS_TOKEN", "")  # 沒有 token：回覆要安靜略過，不打 LINE API

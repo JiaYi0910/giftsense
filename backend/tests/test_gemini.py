@@ -6,8 +6,10 @@ Gemini 文字生成：模型名稱、金鑰位置、AI 快速提問的篩選與�
 
 不連線 Gemini：HTTP 呼叫與生成結果一律換成假的。
 """
+import glob
 import json
 import os
+import re
 import sys
 
 BACKEND = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -136,6 +138,35 @@ def test_greeting_uses_gemini_text_but_keeps_the_builtin_insight(monkeypatch):
     assert "指引、期刊、機構名稱" in calls[0]
     gg.generate_ai_greeting(**GREETING_ARGS, api_key=FAKE_KEY)     # 同一天同條件：用快取，不再呼叫
     assert len(calls) == 1
+
+
+# -------------------------------------------------------------------------
+# 介面不使用 emoji
+# -------------------------------------------------------------------------
+EMOJI = re.compile(r"[☀-➿⬀-⯿\U0001F000-\U0001FAFF]")
+
+
+def test_backend_source_has_no_emoji_outside_comments():
+    """回答範本、規則標籤、聊天紀錄等使用者看得到的文字都不用 emoji；偵測 emoji 的正規表示式一律用 \\u 跳脫寫法"""
+    offenders = []
+    for path in sorted(glob.glob(os.path.join(BACKEND, "*.py"))):
+        for no, line in enumerate(open(path, encoding="utf-8"), 1):
+            if EMOJI.search(line) and not line.lstrip().startswith("#"):
+                offenders.append(f"{os.path.basename(path)}:{no}")
+    assert offenders == []
+
+
+def test_gemini_output_and_builtin_greetings_have_no_emoji(monkeypatch):
+    monkeypatch.setattr(gemini_client.requests, "post", lambda *a, **k: FakeResponse(200, {"candidates": [{"content": {
+        "parts": [{"text": "⚠️ 奶奶早安❤️ 今天 18°C～"}]}}]}))
+    assert gemini_client.generate("提示", FAKE_KEY) == "奶奶早安 今天 18°C～"
+    for tone in ("spoiled", "taiwanese", "reserved"):
+        for status in ("normal", "joint_pain", "insomnia", "high_bp"):
+            for condition in ("高血壓", "糖尿病", "膝關節退化", "日常養生"):
+                for variant in range(4):
+                    out = gg.generate_local_dynamic_greeting(**{**GREETING_ARGS, "tone": tone, "elder_status": status,
+                                                                "elder_condition": condition, "variant": variant})
+                    assert not EMOJI.search(out["message"] + out["clinical_insight"]), out["message"]
 
 
 def test_greeting_falls_back_to_builtin_text(monkeypatch):

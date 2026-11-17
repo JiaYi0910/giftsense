@@ -188,7 +188,7 @@ def test_label_mention_without_rule_blocks_product(monkeypatch):
     database.clear_live_cache()
     assert res["safety"]["is_collision"] is False and res["safety"]["label_caution"] is True
     assert res["safety"]["action_card"]["price"] is None
-    assert res["gemini_synthesis"].startswith("⚠️ 【仿單提醒】")
+    assert res["gemini_synthesis"].startswith("【仿單提醒】")
     assert "Coenzyme Q10 may alter" in res["gemini_synthesis"]
 
 

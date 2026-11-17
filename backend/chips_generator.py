@@ -4,13 +4,13 @@ from typing import List, Dict, Any, Optional, Callable
 
 import gemini_client
 
-_LEADING_EMOJI = re.compile(r"^[\s☀-➿⬀-⯿️\U0001F000-\U0001FAFF]+")
-_ANY_EMOJI = re.compile(r"[☀-➿⬀-⯿️\U0001F000-\U0001FAFF]")
+_LEADING_EMOJI = re.compile(r"^[\s\u2600-\u27bf\u2b00-\u2bff\ufe0f\U0001F000-\U0001FAFF]+")
+_ANY_EMOJI = re.compile(r"[\u2600-\u27bf\u2b00-\u2bff\U0001F000-\U0001FAFF]\ufe0f?")
 
 def normalize_chip(chip: Dict[str, Any]) -> Dict[str, Any]:
-    """標籤不使用 emoji：去掉開頭的 emoji，原本以 ⚠️ 標示的撞藥警示改用 warning 欄位"""
+    """標籤不使用 emoji：去掉開頭的 emoji，原本以警示符號（U+26A0）開頭的撞藥題改用 warning 欄位"""
     label = str(chip.get("label", ""))
-    warning = bool(chip.get("warning")) or "⚠" in label
+    warning = bool(chip.get("warning")) or "\u26a0" in label
     return {**chip, "label": _LEADING_EMOJI.sub("", label).strip(), "warning": warning}
 
 def normalize_chips(chips) -> List[Dict[str, Any]]:
